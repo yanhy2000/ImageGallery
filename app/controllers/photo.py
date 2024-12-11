@@ -10,10 +10,10 @@ from werkzeug.utils import secure_filename
 from app.utils import generate_uuid_filename, get_project_root
 from datetime import datetime
 from app.config import Config
-
+from flask_cors import CORS
 # 获取照片列表（公开）
 def get_photo_list():
-    current_page = request.args.get('current_page', 1, type=int)
+    current_page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     query = Photo.query
     pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
@@ -186,13 +186,13 @@ def delete_photo(usertoken):
     return jsonify({"code": 200, "message": "Photo deleted successfully"}), 200
 
 # 下载照片（通过photo_id获取文件；如果thumbnail为true，则获取缩略图）
-def get_photo_file(photo_id, thumbnail=True):
+def get_photo_file(photo_id, thumbnail=1):
     photo = Photo.query.filter_by(photoid=photo_id).first()
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
 
     # 获取文件路径
-    if thumbnail:
+    if thumbnail==1:
         if "http" in photo.thumbnail:
             return redirect(photo.thumbnail)  # 重定向到缩略图URL
         else:

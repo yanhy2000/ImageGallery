@@ -10,7 +10,7 @@ with app.app_context():
     # 创建初始管理员
     adminName = "admin"
     uuid = utils.generate_user_uuid()
-    print(f"管理员用户初始化完毕！请保存初始登录信息：用户名{adminName}, token:{uuid}")
+    print(f"管理员用户初始化完毕！请保存初始登录信息：用户名{adminName}, token: {uuid}")
     new_user = user.User(username=adminName, usertoken=uuid, permissions=1)
     db.session.add(new_user)
     db.session.commit()

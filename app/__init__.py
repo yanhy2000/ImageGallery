@@ -1,7 +1,15 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+
+
+
 # 创建Flask应用实例
 app = Flask(__name__)
+
+# 允许跨域访问
+CORS(app)
+#CORS(app, origins=["http://127.0.0.1:8080"])
 
 # 配置文件
 try:

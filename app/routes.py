@@ -2,12 +2,24 @@ from app import app
 from flask import request, jsonify
 from app.controllers import photo, album, user
 
+# 拆分token
+def split_token(request):
+    try:
+        return request.headers.get('Authorization').split("Bearer ")[1]
+    except:
+        return None
+
+# 解析Json数据
+# def parse_json(request):
+#     try:
+#         return request.get_json()
+#     except:
+#         return None
+
 # [ok]获取照片列表
 @app.route('/api/photos_list', methods=['GET'])
 def get_photos():
-    current_page = request.args.get('page')
-    per_page = request.args.get('perpage')
-    return photo.get_photo_list(current_page, per_page)
+    return photo.get_photo_list()
 
 # # 获取所有相册列表
 # @app.route('/api/albums', methods=['GET'])
@@ -30,14 +42,14 @@ def get_photos():
 def get_photo():
     photo_id = request.args.get('photoid')
     if photo_id:
-        thumbnail = request.args.get('thumbnail', 'true').lower() == 'true'
+        thumbnail = request.args.get('thumbnail', 'true')
         return photo.get_photo_file(photo_id, thumbnail)
     return jsonify({"code": 400, "message": "photoid is required"}), 400
 
 # [ok]获取图片信息
 @app.route('/api/getphotoinfo_all', methods=['GET'])
 def get_photo_info_all():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     photo_id = request.args.get('photoid')
     if usertoken and photo_id:
         return photo.get_photo_info_all(photo_id, usertoken)
@@ -54,7 +66,7 @@ def get_photo_info():
 # [ok]获取用户名
 @app.route('/api/getusername', methods=['GET'])
 def get_username():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     user_id = request.args.get('userid')
     if usertoken and user_id:
         return user.get_username(user_id, usertoken)
@@ -63,7 +75,7 @@ def get_username():
 # [ok]更新图片信息
 @app.route('/api/updatephoto', methods=['POST'])
 def update_photo():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     if usertoken:
         return photo.update_photo_info(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
@@ -71,7 +83,7 @@ def update_photo():
 # [ok]上传照片
 @app.route('/api/upload', methods=['POST'])
 def upload_photo():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     if usertoken:
         return photo.upload_new_photo(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
@@ -79,7 +91,7 @@ def upload_photo():
 # [ok]删除照片
 @app.route('/api/deletephoto', methods=['POST'])
 def delete_photo_route():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     if usertoken:
         return photo.delete_photo(usertoken)
     return jsonify({"code": 400, "message": "usertoken and photoid are required"}), 400
@@ -87,7 +99,7 @@ def delete_photo_route():
 # [ok]新增用户
 @app.route('/api/adduser', methods=['POST'])
 def add_user():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     if usertoken:
         return user.add_new_user(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
@@ -95,7 +107,7 @@ def add_user():
 # [ok]删除用户
 @app.route('/api/deluser', methods=['POST'])
 def delete_user():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     if usertoken:
         return user.delete_user(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
@@ -103,7 +115,7 @@ def delete_user():
 # [ok]修改用户
 @app.route('/api/setuser', methods=['POST'])
 def set_user():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     if usertoken:
         return user.modify_user(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
@@ -112,7 +124,7 @@ def set_user():
 # 创建相册
 @app.route('/api/createalbum', methods=['POST'])
 def create_album():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     if usertoken:
         data = request.get_json()
         return album.create_album(data, usertoken)
@@ -121,7 +133,7 @@ def create_album():
 # 删除相册
 @app.route('/api/deletealbum', methods=['POST'])
 def delete_album():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     if usertoken:
         data = request.get_json()
         return album.delete_album(data, usertoken)
@@ -130,7 +142,7 @@ def delete_album():
 # 获取相册信息
 @app.route('/api/getalbuminfo', methods=['GET'])
 def get_album_info():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     album_id = request.args.get('albumid')
     if usertoken and album_id:
         usertoken = usertoken.split("Bearer ")[1]
@@ -140,7 +152,7 @@ def get_album_info():
 # 修改相册信息
 @app.route('/api/setalbum', methods=['POST'])
 def set_album():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     if usertoken:
         data = request.get_json()
         return album.modify_album(data, usertoken)
@@ -150,7 +162,7 @@ def set_album():
 # 获取用户相册列表
 @app.route('/api/getalbums', methods=['GET'])
 def get_user_albums():
-    usertoken = request.headers.get('Authorization').split("Bearer ")[1]
+    usertoken = split_token(request)
     username = request.args.get('username')
     if usertoken:
         return album.get_user_albums(username, usertoken)
