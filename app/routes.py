@@ -23,7 +23,7 @@ from app.controllers import photo, album, user
 #         return photo.get_photos_by_album_name(album_name)
 #     return jsonify({"code": 400, "message": "Invalid parameters"}), 400
 
-# 获取图片文件（根据photoid获取）
+# [ok]获取图片文件（根据photoid获取）
 @app.route('/api/getphoto', methods=['GET'])
 def get_photo():
     photo_id = request.args.get('photoid')
@@ -32,21 +32,23 @@ def get_photo():
         return photo.get_photo_file(photo_id, thumbnail)
     return jsonify({"code": 400, "message": "photoid is required"}), 400
 
-# 获取图片信息
+# [ok]获取图片信息
 @app.route('/api/getphotoinfo', methods=['GET'])
 def get_photo_info():
     usertoken = request.headers.get('Authorization')
     photo_id = request.args.get('photoid')
     if usertoken and photo_id:
+        usertoken = usertoken.split("Bearer ")[1]
         return photo.get_photo_info(photo_id, usertoken)
     return jsonify({"code": 400, "message": "usertoken and photoid are required"}), 400
 
-# 获取用户名
+# [ok]获取用户名
 @app.route('/api/getusername', methods=['GET'])
 def get_username():
     usertoken = request.headers.get('Authorization')
     user_id = request.args.get('userid')
     if usertoken and user_id:
+        usertoken = usertoken.split("Bearer ")[1]
         return user.get_username(user_id, usertoken)
     return jsonify({"code": 400, "message": "usertoken and userid are required"}), 400
 
@@ -56,10 +58,11 @@ def update_photo(photoid):
     usertoken = request.headers.get('Authorization')
     if usertoken:
         data = request.get_json()
+        usertoken = usertoken.split("Bearer ")[1]
         return photo.update_photo_info(photoid, data, usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-# 上传照片
+# [ok]上传照片
 @app.route('/api/upload', methods=['POST'])
 def upload_photo():
     usertoken = request.headers.get('Authorization')
@@ -77,7 +80,7 @@ def create_update_album():
         return album.create_or_update_album(data, usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-# 删除照片
+# [ok]删除照片
 @app.route('/api/deletephoto', methods=['POST'])
 def delete_photo_route():
     # 获取请求中的参数
@@ -102,7 +105,6 @@ def get_user_albums():
 def add_user():
     usertoken = request.headers.get('Authorization')
     if usertoken:
-        data = request.get_json()
         usertoken = usertoken.split("Bearer ")[1]
         return user.add_new_user(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400

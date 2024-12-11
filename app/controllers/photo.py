@@ -176,3 +176,37 @@ def get_photo_file(photo_id, thumbnail=True):
         return send_file(file_path, as_attachment=True)
     except Exception as e:
         return jsonify({"code": 500, "message": f"Error reading file: {str(e)}"}), 500
+
+# 获取照片信息
+def get_photo_info(photo_id, usertoken):
+    user = User.query.filter_by(usertoken=usertoken).first()
+    if not user:
+        return jsonify({"code": 401, "message": "token failed"}), 401
+    photo = Photo.query.filter_by(photoid=photo_id).first()
+    if not photo:
+        return jsonify({"code": 404, "message": "Photo not found"}), 404
+    # 检查用户是否有权限查看该照片（如果是上传者或者管理员可以查看）
+    if photo.userid != user.userid and user.permissions < 0:
+        return jsonify({"code": 403, "message": "permission denied"}), 403
+
+    return jsonify({
+        "code": 200,
+        "message": "success",
+        "data": {
+            "photoid": photo.photoid,
+            "name": photo.name,
+            "desc": photo.desc,
+            "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "thumbnail": photo.thumbnail,
+            "photo_url": photo.photo_url,
+            "albumid": photo.albumid,
+            "userid": photo.userid
+        }
+    })
+
+
+
+
+
+
+
