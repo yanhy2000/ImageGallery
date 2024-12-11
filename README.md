@@ -30,7 +30,8 @@
 # 开发进展
 - [x] 下载图片（Get /api/getphoto）
 - [x] 删除图片（Get /api/delphoto）
-- [x] 获取图片信息（Get /api/getphotoinfo）
+- [x] 获取图片信息（Get /api/getphotoinfo_all）
+- [x] 获取图片展示信息（Get /api/getphotoinfo）
 - [x] 获取用户名（Get /api/getusername）
 - [x] 新增用户（Post /api/adduser）
 - [x] 删除用户（Post /api/deluser）（由于数据库设计，无法直接删除用户，改成注销用户）

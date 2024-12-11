@@ -11,6 +11,34 @@ from app.utils import generate_uuid_filename, get_project_root
 from datetime import datetime
 from app.config import Config
 
+# 获取照片列表（公开）
+def get_photo_list():
+    current_page = request.args.get('current_page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    query = Photo.query
+    pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
+    photos = pagination.items
+    photo_list = []
+    for photo in photos:
+        username = User.query.filter_by(userid=photo.userid).first().username
+        photo_list.append({
+            "photoid": photo.photoid,
+            "desc": photo.desc if photo.desc else "无描述",
+            "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "upload_user": username, 
+            "thumbnail": photo.thumbnail,  
+        })
+    return jsonify({
+        "code": 200,
+        "message": "success",
+        "data": {
+            "total": pagination.total,
+            "per_page": per_page, 
+            "current_page": current_page,
+            "photos": photo_list 
+        }
+    })
+
 # 创建本地缩略图并上传
 def create_thumbnail(image_path):
     with Image.open(image_path) as img:
@@ -122,7 +150,9 @@ def upload_new_photo(usertoken):
     })
 
 # 删除照片
-def delete_photo(usertoken, photoid):
+def delete_photo(usertoken):
+    data = request.get_json()
+    photoid = data.get('photoid')
     user = User.query.filter_by(usertoken=usertoken).first()
     if not user:
         return jsonify({"code": 401, "message": "token failed"}), 401
@@ -178,7 +208,7 @@ def get_photo_file(photo_id, thumbnail=True):
         return jsonify({"code": 500, "message": f"Error reading file: {str(e)}"}), 500
 
 # 获取照片信息
-def get_photo_info(photo_id, usertoken):
+def get_photo_info_all(photo_id, usertoken):
     user = User.query.filter_by(usertoken=usertoken).first()
     if not user:
         return jsonify({"code": 401, "message": "token failed"}), 401
@@ -203,8 +233,30 @@ def get_photo_info(photo_id, usertoken):
         }
     })
 
+# 获取照片公开展示信息（包含desc、userid、uploader、thumbnail、upload_time）
+def get_photo_info(photo_id):
+    photo = Photo.query.filter_by(photoid=photo_id).first()
+    username = User.query.filter_by(userid=photo.userid).first().username
+    if not photo:
+        return jsonify({"code": 404, "message": "Photo not found"}), 404
+    return jsonify({
+        "code": 200,
+        "message": "success",
+        "data": {
+            "photoid": photo.photoid,
+            "name": photo.name,
+            "desc": photo.desc,
+            "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "uploader": username,
+            "thumbnail": photo.thumbnail,
+            "photo_url": photo.photo_url,
+            "userid": photo.userid
+        }
+    })
+
 # 更新照片信息
-def update_photo_info(data, usertoken):
+def update_photo_info(usertoken):
+    data = request.get_json()
     user = User.query.filter_by(usertoken=usertoken).first()
     photoid = data.get("photoid")
     if not user:
