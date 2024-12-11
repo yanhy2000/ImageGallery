@@ -185,7 +185,6 @@ def get_photo_info(photo_id, usertoken):
     photo = Photo.query.filter_by(photoid=photo_id).first()
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
-    # 检查用户是否有权限查看该照片（如果是上传者或者管理员可以查看）
     if photo.userid != user.userid and user.permissions < 0:
         return jsonify({"code": 403, "message": "permission denied"}), 403
 
@@ -204,7 +203,35 @@ def get_photo_info(photo_id, usertoken):
         }
     })
 
+# 更新照片信息
+def update_photo_info(data, usertoken):
+    user = User.query.filter_by(usertoken=usertoken).first()
+    photoid = data.get("photoid")
+    if not user:
+        return jsonify({"code": 401, "message": "token failed"}), 401
+    photo = Photo.query.filter_by(photoid=photoid).first()
+    if not photo:
+        return jsonify({"code": 404, "message": "Photo not found"}), 404
+    if photo.userid != user.userid and user.permissions < 0:
+        return jsonify({"code": 403, "message": "permission denied"}), 403
 
+    # 更新数据库记录
+    try:
+        if "name" in data:
+            photo.name = data["name"]
+        if "desc" in data:
+            photo.desc = data["desc"]
+        if "albumid" in data:
+            album = Album.query.filter_by(albumid=data["albumid"]).first()
+            if not album:
+                return jsonify({"code": 400, "message": "album not found, please create album first"}), 400
+            photo.albumid = data["albumid"]
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"code": 500, "message": f"Error updating database: {str(e)}"}), 500
+
+    return jsonify({"code": 200, "message": "Photo updated successfully"}), 200
 
 
 

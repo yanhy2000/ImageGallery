@@ -12,7 +12,7 @@
 
 当前只能使用api上传，api上传需要带用户信息，确保每个图片都有唯一标识。
 
-为保证不容易被篡改，增加用户权限，`-1`为封禁的用户，·`0`为普通用户，`1`为管理员。
+为保证不被随意篡改，增加用户权限，`-2`为注销的用户,`-1`为封禁的用户，·`0`为普通用户，`1`为管理员。
 
 图片展示后可以带图片名称、简介、上传日期，并显示所在相册，如用户上传未指定相册，则相册默认为用户名
 
@@ -33,11 +33,22 @@
 - [x] 获取图片信息（Get /api/getphotoinfo）
 - [x] 获取用户名（Get /api/getusername）
 - [x] 新增用户（Post /api/adduser）
-- [ ] 删除用户（Post /api/deluser）
-- [ ] 修改用户（Post /api/setuser）
-- [ ] 更新图片信息（PUT /api/updatephoto）
+- [x] 删除用户（Post /api/deluser）（由于数据库设计，无法直接删除用户，改成注销用户）
+- [x] 修改用户（Post /api/setuser）
+- [x] 更新图片信息（PUT /api/updatephoto）
 - [x] 上传图片（Post /api/upload）
+- [ ] 创建/更新相册（Post /api/album）
+- [ ] 删除相册（DELETE /api/album）
+- [ ] 获取用户相册列表（GET /api/getalbums）
+- [ ] 获取相册中的图片列表（GET /api/getphotosbyalbum）
+- [ ] 图片管理客户端
+- [ ] 点赞like系统
+- [ ] 评论系统
+- [ ] 账号登录系统
+- [ ] 图片管理系统
+- [ ] 接入mc模组截图快捷上传
 
+# 数据库设计
 ## 数据库结构设计
 
 数据库类型：sqlite

@@ -43,3 +43,63 @@ def get_username(user_id, usertoken):
             "username": user.username
         }
     })
+
+# 删除用户（注销用户）
+def delete_user(usertoken):
+    data = request.get_json()
+    user_id = data.get('userid')
+    if not user_id:
+        return jsonify({"code": 400, "message": "Userid is required"}), 400
+    user = User.query.filter_by(usertoken=usertoken).first()#操作人
+    deluser = User.query.filter_by(userid=user_id).first()#被注销的用户
+    if not user or not deluser:
+        return jsonify({"code": 401, "message": "Token is invalid or user does not exist"}), 400
+    #用户不能自己注销自己，且只能管理员注销用户
+    if not deluser.userid == user_id or user.permissions < 1:
+        return jsonify({"code": 401, "message": "Permissions denied"}), 401
+    if deluser.username == data.get('name') and not deluser.permissions == -2:
+        deluser.permissions = -2 #-2代表注销，-1代表封禁
+        db.session.commit()
+        return jsonify({"code": 200, "message": "success"})
+    elif deluser.username == data.get('name') and deluser.permissions == -2:
+        return jsonify({"code": 400, "message": "User has been deleted"}), 400
+    else:
+        return jsonify({"code": 400, "message": "Username is not correct"}), 400
+
+# 修改用户
+def modify_user(usertoken):
+    data = request.get_json()
+    user_id = data.get('userid')
+    username = data.get('name') 
+    set_permissions = data.get('set_permissions')
+    set_name = data.get('set_name') 
+    regen_token = data.get('regen_token', False)
+    if not user_id or not username:
+        return jsonify({"code": 400, "message": "Userid and username are required"}), 400
+    
+    user = User.query.filter_by(usertoken=usertoken).first()  # 操作人
+    moduser = User.query.filter_by(userid=user_id).first()  # 被修改的用户
+    if not user or not moduser:
+        return jsonify({"code": 401, "message": "Token is invalid or user does not exist"}), 400
+    
+    if moduser.userid == user.userid or user.permissions < 1:
+        return jsonify({"code": 401, "message": "Permissions denied"}), 401
+
+    if len(User.query.filter_by(username=username).all()) > 1:
+        return jsonify({"code": 400, "message": "Username already exists"}), 400
+
+    moduser.username = username
+    if set_permissions is not None:
+        moduser.permissions = set_permissions
+    
+    # 重新生成Token
+    if regen_token:
+        moduser.usertoken = generate_user_uuid()
+    db.session.commit()
+
+    return jsonify({"code": 200, "message": "success", "data": {
+        "userid": moduser.userid,
+        "username": moduser.username,
+        "permissions": moduser.permissions,
+        "usertoken": moduser.usertoken
+    }})

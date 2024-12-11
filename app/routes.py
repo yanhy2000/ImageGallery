@@ -52,14 +52,14 @@ def get_username():
         return user.get_username(user_id, usertoken)
     return jsonify({"code": 400, "message": "usertoken and userid are required"}), 400
 
-# 更新图片信息
-@app.route('/api/updatephoto/<photoid>', methods=['PUT'])
-def update_photo(photoid):
+# [ok]更新图片信息
+@app.route('/api/updatephoto', methods=['POST'])
+def update_photo():
     usertoken = request.headers.get('Authorization')
     if usertoken:
         data = request.get_json()
         usertoken = usertoken.split("Bearer ")[1]
-        return photo.update_photo_info(photoid, data, usertoken)
+        return photo.update_photo_info(data, usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
 # [ok]上传照片
@@ -100,7 +100,7 @@ def get_user_albums():
         return album.get_user_albums(username, usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-# 新增用户
+# [ok]新增用户
 @app.route('/api/adduser', methods=['POST'])
 def add_user():
     usertoken = request.headers.get('Authorization')
@@ -109,13 +109,13 @@ def add_user():
         return user.add_new_user(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-# 删除用户
+# [ok]删除用户
 @app.route('/api/deluser', methods=['POST'])
 def delete_user():
     usertoken = request.headers.get('Authorization')
     if usertoken:
-        data = request.get_json()
-        return user.delete_user(data, usertoken)
+        usertoken = usertoken.split("Bearer ")[1]
+        return user.delete_user(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
 # 修改用户
@@ -123,6 +123,6 @@ def delete_user():
 def set_user():
     usertoken = request.headers.get('Authorization')
     if usertoken:
-        data = request.get_json()
-        return user.modify_user(data, usertoken)
+        usertoken = usertoken.split("Bearer ")[1]
+        return user.modify_user(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
