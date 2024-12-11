@@ -29,6 +29,7 @@
 
 # 开发进展
 - [x] 下载图片（Get /api/getphoto）
+- [x] 删除图片（Get /api/delphoto）
 - [ ] 获取图片信息（Get /api/getphotoinfo）
 - [ ] 获取用户名（Get /api/getusername）
 - [x] 新增用户（Post /api/adduser）

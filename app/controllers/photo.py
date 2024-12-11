@@ -5,57 +5,50 @@ import requests
 import re
 from app import db
 from app.models import Photo, Album, User
-from flask import request, jsonify
+from flask import request, jsonify, send_file, redirect
 from werkzeug.utils import secure_filename
-from app.utils import generate_uuid_filename
+from app.utils import generate_uuid_filename, get_project_root
 from datetime import datetime
 from app.config import Config
 
-
-# 生成缩略图并上传到外部服务器
+# 创建本地缩略图并上传
 def create_thumbnail(image_path):
-    # 使用PIL打开图片
     with Image.open(image_path) as img:
         img.thumbnail((900, 900))  # 设置缩略图最大尺寸
-        thumbnail_path = f"uploads/.thumbnails/{generate_uuid_filename()}.jpg"  # 存放缩略图的路径
-
-        # 保存缩略图到本地
+        thumbnail_path_dir = os.path.join("uploads/.thumbnails")
+        if not os.path.exists(thumbnail_path_dir):
+            os.makedirs(thumbnail_path_dir)
+        thumbnail_path = f"{thumbnail_path_dir}/{generate_uuid_filename()}"
         img.save(thumbnail_path, format="JPEG")
 
-        # 上传缩略图到外部服务器
+        #使用聚合图床API,后期可替换为其他图床API或者做兼容处理
         url = "https://api.superbed.cn/upload"
         with open(thumbnail_path, "rb") as f:
-            resp = requests.post(url, data={"token": config.SUPERBED_TOKEN}, files={"file": f})
-
+            resp = requests.post(url, data={"token": Config.SUPERBED_TOKEN}, files={"file": f})
         if resp.status_code == 200:
-            # 删除本地缩略图
             os.remove(thumbnail_path)
-            return resp.json().get("url")  # 返回上传后的外部URL
+            return resp.json().get("url")
         return None
 
 # 删除云端缩略图
 def del_thumbnail(photo_id):
-    # 获取照片记录
     photo = Photo.query.filter_by(photoid=photo_id).first()
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
 
-    # 提取缩略图的ID
     thumbnail_url = photo.thumbnail
     match = re.search(r'/item/([a-f0-9]+)', thumbnail_url)
     if not match:
         return jsonify({"code": 400, "message": "Invalid thumbnail URL"}), 400
 
-    thumbnail_id = match.group(1)  # 提取出来的图片ID
+    thumbnail_id = match.group(1)
 
-    # 构建删除请求的URL
     api_url = f'https://api.superbed.cn/info/{thumbnail_id}'
     data = {
-        'token': config.SUPERBED_TOKEN,
+        'token': Config.SUPERBED_TOKEN,
         'action': 'delete'
     }
 
-    # 发送POST请求删除云端图片
     try:
         response = requests.post(api_url, data=data)
         result = response.json()
@@ -69,42 +62,34 @@ def del_thumbnail(photo_id):
         
 # 上传新照片
 def upload_new_photo(usertoken):
-    # 验证用户token
     user = User.query.filter_by(usertoken=usertoken).first()
     if not user:
         return jsonify({"code": 401, "message": "token failed"}), 401
-    # 判断用户权限，如果小于0，返回权限不足
     if user.permissions < 0:
         return jsonify({"code": 403, "message": "permission denied"}), 403
-    # 获取上传的文件和参数
     file = request.files.get("file")
-    name = request.form.get("name", "无名")
+    name = request.form.get("name", file.filename)
     desc = request.form.get("desc", "无描述")
     album_name = request.form.get("album", user.username)
 
-    # 生成UUID文件名并保存文件
     if not file:
         return jsonify({"code": 400, "message": "need file"}), 400
 
-    # 获取当前日期
     today = datetime.utcnow()
-    month = today.month  # 当前月份
-    day = today.day      # 当前日期
+    month = today.month
+    day = today.day
 
-    # 创建存储路径
     upload_dir = os.path.join('uploads', str(month).zfill(2), str(day).zfill(2))
     if not os.path.exists(upload_dir):
-        os.makedirs(upload_dir)  # 如果目录不存在，创建目录
+        os.makedirs(upload_dir)
 
     # 处理文件名
     filename = generate_uuid_filename() + os.path.splitext(file.filename)[-1]
-    file_path = os.path.join(upload_dir, filename)  # 存储路径
-    file.save(file_path)  # 保存文件到指定路径
-
+    file_path = os.path.join(upload_dir, filename)
+    file.save(file_path)
     try:
         # 生成缩略图并上传
         thumbnail_url = create_thumbnail(file_path)
-
         # 保存图片信息到数据库
         album = Album.query.filter_by(name=album_name, userid=user.userid).first()
         if not album:
@@ -138,29 +123,22 @@ def upload_new_photo(usertoken):
 
 # 删除照片
 def delete_photo(usertoken, photoid):
-    # 根据usertoken查找用户
     user = User.query.filter_by(usertoken=usertoken).first()
     if not user:
         return jsonify({"code": 401, "message": "token failed"}), 401
-    # 判断用户权限，如果小于0，返回权限不足
-    if user.permissions < 0:
-        return jsonify({"code": 403, "message": "permission denied"}), 403
-    # 根据photoid查找照片记录
     photo = Photo.query.filter_by(photoid=photoid).first()
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
-
     # 检查用户是否有权限删除该照片（如果是上传者或者管理员可以删除）
     if photo.userid != user.userid and user.permissions < 0:
-        return jsonify({"code": 403, "message": "非管理员只能删除自己的图片"}), 403
+        return jsonify({"code": 403, "message": "permission denied"}), 403
 
     # 删除本地存储的图片文件
     try:
-        # 拼接文件路径，删除文件
-        file_path = photo.photo_url  # 假设 photo_url 存储了图片的存储路径
+        # 删除原图文件
+        file_path = photo.photo_url
         if os.path.exists(file_path):
             os.remove(file_path)
-        
         # 删除缩略图文件
         del_thumbnail(photo.photoid)
     except Exception as e:
@@ -175,3 +153,26 @@ def delete_photo(usertoken, photoid):
         return jsonify({"code": 500, "message": f"Error deleting from database: {str(e)}"}), 500
 
     return jsonify({"code": 200, "message": "Photo deleted successfully"}), 200
+
+# 下载照片（通过photo_id获取文件；如果thumbnail为true，则获取缩略图）
+def get_photo_file(photo_id, thumbnail=True):
+    photo = Photo.query.filter_by(photoid=photo_id).first()
+    if not photo:
+        return jsonify({"code": 404, "message": "Photo not found"}), 404
+
+    # 获取文件路径
+    if thumbnail:
+        if "http" in photo.thumbnail:
+            return redirect(photo.thumbnail)  # 重定向到缩略图URL
+        else:
+            file_path = os.path.join(photo.thumbnail)
+    else:
+        file_path = os.path.join(get_project_root(), photo.photo_url)
+
+    if not os.path.exists(file_path):
+        return jsonify({"code": 404, "message": "File not found"}), 404
+
+    try:
+        return send_file(file_path, as_attachment=True)
+    except Exception as e:
+        return jsonify({"code": 500, "message": f"Error reading file: {str(e)}"}), 500

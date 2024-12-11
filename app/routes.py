@@ -2,33 +2,33 @@ from app import app
 from flask import request, jsonify
 from app.controllers import photo, album, user
 
-# 获取照片名列表
-@app.route('/api/photos', methods=['GET'])
-def get_photos():
-    return photo.get_all_photos()
+# # 获取照片名列表
+# @app.route('/api/photos', methods=['GET'])
+# def get_photos():
+#     return photo.get_all_photos()
 
-# 获取所有相册列表
-@app.route('/api/albums', methods=['GET'])
-def get_albums():
-    return album.get_all_albums()
+# # 获取所有相册列表
+# @app.route('/api/albums', methods=['GET'])
+# def get_albums():
+#     return album.get_all_albums()
 
-# 获取指定相册中的所有照片
-@app.route('/api/getphotosbyalbum', methods=['GET'])
-def get_photos_by_album():
-    album_id = request.args.get('album_id')
-    album_name = request.args.get('album_name')
-    if album_id:
-        return photo.get_photos_by_album_id(album_id)
-    elif album_name:
-        return photo.get_photos_by_album_name(album_name)
-    return jsonify({"code": 400, "message": "Invalid parameters"}), 400
+# # 获取指定相册中的所有照片
+# @app.route('/api/getphotosbyalbum', methods=['GET'])
+# def get_photos_by_album():
+#     album_id = request.args.get('album_id')
+#     album_name = request.args.get('album_name')
+#     if album_id:
+#         return photo.get_photos_by_album_id(album_id)
+#     elif album_name:
+#         return photo.get_photos_by_album_name(album_name)
+#     return jsonify({"code": 400, "message": "Invalid parameters"}), 400
 
 # 获取图片文件（根据photoid获取）
 @app.route('/api/getphoto', methods=['GET'])
 def get_photo():
     photo_id = request.args.get('photoid')
-    thumbnail = request.args.get('thumbnail', 'True')
     if photo_id:
+        thumbnail = request.args.get('thumbnail', 'true').lower() == 'true'
         return photo.get_photo_file(photo_id, thumbnail)
     return jsonify({"code": 400, "message": "photoid is required"}), 400
 

@@ -3,3 +3,5 @@ test.jpg
 app/config.py
 __pycache__/
 app/__pycache__/
+instance/
+uploads/
