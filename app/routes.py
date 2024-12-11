@@ -71,14 +71,53 @@ def upload_photo():
         return photo.upload_new_photo(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-# 创建/更新相册
-@app.route('/api/album', methods=['POST'])
-def create_update_album():
+# 创建相册
+@app.route('/api/createalbum', methods=['POST'])
+def create_album():
     usertoken = request.headers.get('Authorization')
     if usertoken:
         data = request.get_json()
-        return album.create_or_update_album(data, usertoken)
+        return album.create_album(data, usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# 删除相册
+@app.route('/api/deletealbum', methods=['POST'])
+def delete_album():
+    usertoken = request.headers.get('Authorization')
+    if usertoken:
+        data = request.get_json()
+        return album.delete_album(data, usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# 获取相册信息
+@app.route('/api/getalbuminfo', methods=['GET'])
+def get_album_info():
+    usertoken = request.headers.get('Authorization')
+    album_id = request.args.get('albumid')
+    if usertoken and album_id:
+        usertoken = usertoken.split("Bearer ")[1]
+        return album.get_album_info(album_id, usertoken)
+    return jsonify({"code": 400, "message": "usertoken and albumid are required"}), 400
+
+# 修改相册信息
+@app.route('/api/setalbum', methods=['POST'])
+def set_album():
+    usertoken = request.headers.get('Authorization')
+    if usertoken:
+        data = request.get_json()
+        return album.modify_album(data, usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+
+# 获取用户相册列表
+@app.route('/api/getalbums', methods=['GET'])
+def get_user_albums():
+    usertoken = request.headers.get('Authorization')
+    username = request.args.get('username')
+    if usertoken:
+        return album.get_user_albums(username, usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
 
 # [ok]删除照片
 @app.route('/api/deletephoto', methods=['POST'])
@@ -90,15 +129,6 @@ def delete_photo_route():
     if not usertoken or not photoid:
         return jsonify({"code": 400, "message": "usertoken and photoid are required"}), 400
     return photo.delete_photo(usertoken, photoid)
-
-# 获取用户相册列表
-@app.route('/api/getalbums', methods=['GET'])
-def get_user_albums():
-    usertoken = request.headers.get('Authorization')
-    username = request.args.get('username')
-    if usertoken:
-        return album.get_user_albums(username, usertoken)
-    return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
 # [ok]新增用户
 @app.route('/api/adduser', methods=['POST'])
@@ -118,7 +148,7 @@ def delete_user():
         return user.delete_user(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-# 修改用户
+# [ok]修改用户
 @app.route('/api/setuser', methods=['POST'])
 def set_user():
     usertoken = request.headers.get('Authorization')

@@ -37,7 +37,10 @@
 - [x] 修改用户（Post /api/setuser）
 - [x] 更新图片信息（PUT /api/updatephoto）
 - [x] 上传图片（Post /api/upload）
-- [ ] 创建/更新相册（Post /api/album）
+- [ ] 创建相册（Post /api/createalbum）
+- [ ] 更新相册（PUT /api/setalbum）
+- [ ] 获取相册信息（GET /api/getalbuminfo）
+- [ ] 获取用户相册列表（GET /api/getalbums）
 - [ ] 删除相册（DELETE /api/album）
 - [ ] 获取用户相册列表（GET /api/getalbums）
 - [ ] 获取相册中的图片列表（GET /api/getphotosbyalbum）
