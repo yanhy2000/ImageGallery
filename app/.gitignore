@@ -1,0 +1,5 @@
+test.jpg
+tmp/
+app/config.py
+*/__pycache__
+__pycache__
