@@ -49,38 +49,39 @@ def create_thumbnail(image_path):
         thumbnail_path = f"{thumbnail_path_dir}/{generate_uuid_filename()}"
         img.save(thumbnail_path, format="JPEG")
 
-        #使用聚合图床API,后期可替换为其他图床API或者做兼容处理
-        url = "https://api.superbed.cn/upload"
-        with open(thumbnail_path, "rb") as f:
-            resp = requests.post(url, data={"token": Config.SUPERBED_TOKEN}, files={"file": f})
-        if resp.status_code == 200:
-            os.remove(thumbnail_path)
-            return resp.json().get("url")
+        if not Config.SUPERBED_TOKEN == "false":
+            #使用聚合图床API,后期可替换为其他图床API或者做兼容处理
+            url = "https://api.superbed.cn/upload"
+            with open(thumbnail_path, "rb") as f:
+                resp = requests.post(url, data={"token": Config.SUPERBED_TOKEN}, files={"file": f})
+            if resp.status_code == 200:
+                os.remove(thumbnail_path)
+                return resp.json().get("url")
+        else:#不使用聚合图床API，本地存储缩略图
+            return thumbnail_path
         return None
 
-# 删除云端缩略图
+# 删除缩略图（如使用云端缩略图，则本地不保留）
 def del_thumbnail(photo_id):
     photo = Photo.query.filter_by(photoid=photo_id).first()
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
-
     thumbnail_url = photo.thumbnail
+    if Config.SUPERBED_TOKEN == "false" and thumbnail_url.startswith("uploads/.thumbnails/"):
+        os.remove(thumbnail_url)
+        return
     match = re.search(r'/item/([a-f0-9]+)', thumbnail_url)
     if not match:
         return jsonify({"code": 400, "message": "Invalid thumbnail URL"}), 400
-
     thumbnail_id = match.group(1)
-
     api_url = f'https://api.superbed.cn/info/{thumbnail_id}'
     data = {
         'token': Config.SUPERBED_TOKEN,
         'action': 'delete'
     }
-
     try:
         response = requests.post(api_url, data=data)
         result = response.json()
-
         if result.get('err') == 0:
             return jsonify({"code": 200, "message": "Thumbnail deleted successfully"}), 200
         else:

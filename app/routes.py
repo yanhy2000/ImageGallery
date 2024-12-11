@@ -47,7 +47,7 @@ def get_photo_info_all():
 @app.route('/api/getphotoinfo', methods=['GET'])
 def get_photo_info():
     photo_id = request.args.get('photoid')
-    if usertoken and photo_id:
+    if photo_id:
         return photo.get_photo_info(photo_id)
     return jsonify({"code": 400, "message": "usertoken and photoid are required"}), 400
 

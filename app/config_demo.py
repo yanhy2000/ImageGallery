@@ -3,4 +3,4 @@ class Config:
     SQLALCHEMY_DATABASE_NAME = 'gallery.db'
     SQLALCHEMY_DATABASE_URI = f'sqlite:///{SQLALCHEMY_DATABASE_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SUPERBED_TOKEN = 'token'
+    SUPERBED_TOKEN = 'false'

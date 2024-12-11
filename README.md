@@ -29,15 +29,17 @@
 
 # 开发进展
 - [x] 下载图片（Get /api/getphoto）
+- [x] 上传图片（Post /api/upload）
 - [x] 删除图片（Get /api/delphoto）
 - [x] 获取图片信息（Get /api/getphotoinfo_all）
-- [x] 获取图片展示信息（Get /api/getphotoinfo）
+- [x] 获取图片公开信息（Get /api/getphotoinfo）
+- [x] 获取图片列表（Get /api/photos_list）
+- [x] 更新图片信息（PUT /api/updatephoto）
 - [x] 获取用户名（Get /api/getusername）
 - [x] 新增用户（Post /api/adduser）
 - [x] 删除用户（Post /api/deluser）（由于数据库设计，无法直接删除用户，改成注销用户）
 - [x] 修改用户（Post /api/setuser）
-- [x] 更新图片信息（PUT /api/updatephoto）
-- [x] 上传图片（Post /api/upload）
+- [x] 不使用图床时切换本地缩略图存储
 - [ ] 创建相册（Post /api/createalbum）
 - [ ] 更新相册（PUT /api/setalbum）
 - [ ] 获取相册信息（GET /api/getalbuminfo）
@@ -73,103 +75,37 @@
 
 ## 后端接口设计
 
-### 修改用户（Post /api/setuser）
+# 图片
 
-**描述**：管理员通过此端点修改用户，可选择修改用户权限、用户名、token等。
+## 下载图片（Get /api/getphoto）
 
-**请求**：
-
-* **URL**：`/api/setuser`
-* **方法**：`POST`
-
-**请求头**：
-
-* `Content-Type: application/json`
-* `Authorization: Bearer <usertoken>`
-
-**参数**：
-
-* **载荷**：包含用户名、用户ID信息，以及要修改的内容，留空则为不修改。
-
-**请求体示例**：
-
-```json
-{
-	"userid": 123,
-	"name": "用户名",
-	"set_permissions": 0,
-	"set_name": "",
-	"set_token": ""
-}
-```
-
-**返回**：
-
-* **格式**：`application/json`
-* **示例**：
-
-```json
-
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "userid": "123456",
-	"username": "aaa",
-	"permissions": 1,
-	"token": "aabbcc"
-  }
-}
-```
-
----
-
-### 更新图片信息（PUT /api/updatephoto）
-
-**描述**：用户通过此端点更新图片的名称、描述或所属相册，需要提供 `usertoken` 进行身份验证。
+**描述**：用于获取图片文件。此操作不需要身份验证。
 
 **请求**：
 
-* **URL**：`/api/updatephoto`
-* **方法**：`PUT`
-* **请求头**：
-
-  * `Content-Type: application/json`
-  * `Authorization: Bearer <usertoken>`
+* **URL**：`/api/getphoto`
+* **方法**：`GET`
 
 **参数**：
 
-* **路径参数**：
+* **查询参数**：
 
-  * `photoid`: 图片的唯一标识符
-* **载荷**：包含要更新的字段。
+  * `photoid`: 图片唯一值ID（必填）
+  * `thumbnail`: 是否为缩略图，默认为True（可选）
 
-**请求体示例**：
-
-```json
-{
-  "name": "新的图片名称",
-  "desc": "新的图片描述",
-  "album": "新的相册名称"
-}
-```
+  **示例：**
+* ```url
+  http://127.0.0.1:5000/api/getphoto?photoid=1&thumbnail=false
+  ```
 
 **返回**：
 
-* **格式**：`application/json`
-* **示例**：
-
-```json
-{
-  "code": 200,
-  "message": "Photo information updated successfully"
-}
-```
+* **格式**：`image/jpeg` 或 `image/png`（根据图片类型）
+* **内容**：图片文件的二进制数据
 
 ---
 
-
-### 上传图片（Post /api/upload）
+## 上传图片（Post /api/upload）
 
 **描述**：用户通过此端点上传图片，并在上传时需要提供 `usertoken` 进行身份验证。
 
@@ -219,16 +155,17 @@ Content-Disposition: form-data; name="album"
 
 ---
 
-### 删除图片（DELETE /api/deletephoto）
+## 删除图片（POST /api/deletephoto）
 
 **描述**：用户通过此端点删除特定图片，需要提供 `usertoken` 进行身份验证。
 
 **请求**：
 
 * **URL**：`/api/deletephoto`
-* **方法**：`DELETE`
+* **方法**：`POST`
 * **请求头**：
 
+  * `Content-Type: application/json`
   * `Authorization: Bearer <usertoken>`
 
 **参数**：
@@ -257,6 +194,382 @@ Content-Disposition: form-data; name="album"
 
 ---
 
+## 获取图片信息（Get /api/getphotoinfo_all）
+
+**描述**：用于获取图片信息。需要提供 `usertoken` 进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/getphotoinfo_all`
+* **方法**：`GET`
+* **请求头**：
+
+  * `Content-Type: application/json`
+  * `Authorization: Bearer <usertoken>`
+
+**参数**：
+
+* **查询参数**：
+
+  * `photoid`: 图片唯一值ID（必填）
+* 示例：
+
+  ```url
+  curl -X GET http://127.0.0.1:5000/api/getphotoinfo_all?photoid=1 -H "Authorization: Bearer 254d4299-354d-4f51-ab62-9b3da50a73e9"
+  ```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "photoid": "abcdefg",
+    "name": "phname",
+    "desc": "this is a photo",
+    "upload_time": "2021-01-01 12:00:00",
+    "small_url": "https://cdn.example.com/small/abcdefg.jpg",
+    "large_url": "https://cdn.example.com/large/abcdefg.jpg",
+    "album": "albumname",
+    "user_id": 123456
+  }
+}
+```
+
+---
+
+## 获取图片公开展示信息（Get /api/getphotoinfo）
+
+**描述**：用于获取图片信息。无需进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/getphotoinfo`
+* **方法**：`GET`
+* **请求头**：
+
+  * `Content-Type: application/json`
+
+**参数**：
+
+* **查询参数**：
+
+  * `photoid`: 图片唯一值ID（必填）
+* 示例：
+
+  ```url
+  curl -X GET http://127.0.0.1:5000/api/getphotoinfo?photoid=1
+  ```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "data": {
+    "desc": "无描述",
+    "name": "photo test",
+    "photo_url": "uploads\\12\\11\\f8fca309-7b55-4d62-98a4-fc2cbf786954.jpg",
+    "photoid": 1,
+    "thumbnail": "https://pic.xx/a.jpg",
+    "upload_time": "2024-12-11 02:58:39",
+    "uploader": "admin",
+    "userid": 1
+  },
+  "message": "success"
+}
+```
+
+---
+
+## 获取全部图片列表（Get /api/photos_list）
+
+**描述**：用于获取图片列表。无需进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/photos_list`
+* **方法**：`GET`
+* **请求头**：
+
+  * `Content-Type: application/json`
+
+**参数**：
+
+* **查询参数**：
+
+  * `page`: 当前页数(可选)
+  * `perpage`: 每页数量(可选)
+* 示例：
+
+  ```url
+  curl -X GET http://127.0.0.1:5000/api/photos_list?page=1&perpage=10
+  ```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "data": {
+    "current_page": 1,
+    "per_page": 10,
+    "photos": [
+      {
+        "desc": "无描述",
+        "photoid": 1,
+        "thumbnail": "https://pic.xx/a.jpg",
+        "upload_time": "2024-12-11 02:58:39",
+        "upload_user": "admin"
+      }
+    ],
+    "total": 1
+  },
+  "message": "success"
+}
+```
+
+---
+
+## 更新图片信息（POST /api/updatephoto）
+
+**描述**：用户通过此端点更新图片的名称、描述或所属相册，需要提供 `usertoken` 进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/updatephoto`
+* **方法**：`POST`
+* **请求头**：
+
+  * `Content-Type: application/json`
+  * `Authorization: Bearer <usertoken>`
+
+**参数**：
+
+* **载荷**：包含要更新的字段。
+
+  **请求体示例**：
+
+  ```json
+  {
+    "photoid": 1,
+    "name": "新的图片名称",
+    "desc": "新的图片描述",
+    "album": "新的相册名称"
+  }
+  ```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "message": "Photo information updated successfully"
+}
+```
+
+---
+
+
+# 用户
+
+## 新增用户（Post /api/adduser）
+
+**描述**：管理员通过此端点新增用户，并在创建成功后获取用户token。需要提供 `usertoken` 进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/adduser`
+* **方法**：`POST`
+
+**请求头**：
+
+* `Content-Type: application/json`
+* `Authorization: Bearer <usertoken>`
+
+**参数**：
+
+* **载荷**：包含用户名信息。
+
+**请求体示例**：
+
+```json
+{
+  "name": "新的用户名"
+}
+```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "userid": "123456",
+	"username": "aaa",
+	"permissions": 1,
+	"token": "aabbcc"
+  }
+}
+```
+
+---
+
+## 删除用户（Post /api/deluser）
+
+**描述**：管理员通过此端点删除用户。需要提供 `usertoken` 进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/deluser`
+* **方法**：`POST`
+
+**请求头**：
+
+* `Content-Type: application/json`
+* `Authorization: Bearer <usertoken>`
+
+**参数**：
+
+* **载荷**：包含用户名、用户ID信息。
+
+**请求体示例**：
+
+```json
+{
+	"userid": 123,
+	"name": "用户名"
+}
+```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+	"deluser": "aaa",
+  }
+}
+```
+
+---
+
+## 修改用户（Post /api/setuser）
+
+**描述**：管理员通过此端点修改用户，可选择修改用户权限、用户名、token等。需要提供 `usertoken` 进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/setuser`
+* **方法**：`POST`
+
+**请求头**：
+
+* `Content-Type: application/json`
+* `Authorization: Bearer <usertoken>`
+
+**参数**：
+
+* **载荷**：包含用户名、用户ID信息，以及要修改的内容，留空则为不修改。
+
+**请求体示例**：
+
+```json
+{
+	"userid": 123,
+	"name": "用户名",
+	"set_permissions": 0,
+	"set_name": "",
+	"regen_token": False
+}
+```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "userid": "123456",
+	"username": "aaa",
+	"permissions": 1,
+	"token": "aabbcc"
+  }
+}
+```
+
+---
+
+## 获取用户名（Get /api/getusername）
+
+**描述**：用于获取用户的用户名。需要提供 `usertoken` 进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/getusername`
+* **方法**：`GET`
+
+**请求头**：
+
+* `Content-Type: application/json`
+* `Authorization: Bearer <usertoken>`
+
+**参数**：
+
+* `userid`: 用户ID（必填）
+* 示例：
+
+  ```url
+  curl -X GET http://127.0.0.1:5000/api/getusername?userid=1 -H "Authorization: Bearer 254d4299-354d-4f51-ab62-9b3da50a73e9"
+  ```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "username": "testuser123"
+  }
+}
+```
+
+---
+
+# 相册
+
 ### 创建/更新相册（Post /api/album）
 
 **描述**：允许用户创建新的相册或更新相册信息。需要提供 `usertoken` 进行身份验证。
@@ -282,7 +595,6 @@ Content-Disposition: form-data; name="album"
 
 * **格式**：`application/json`
 * **示例**：
-
 ```json
 {
   "code": 200,
