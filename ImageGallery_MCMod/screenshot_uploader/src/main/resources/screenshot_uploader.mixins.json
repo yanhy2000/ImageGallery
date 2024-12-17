@@ -3,7 +3,7 @@
 	"package": "top.yanhy.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ExampleMixin"
+		"TestEventMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
