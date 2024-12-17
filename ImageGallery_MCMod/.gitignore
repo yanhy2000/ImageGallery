@@ -1,15 +1,7 @@
-tmp/
-test.jpg
-app/config.py
-__pycache__/
-app/__pycache__/
-instance/
-uploads/
-.vscode/
 .DS_Store
 
 # gradle
-.github/
+
 .gradle/
 build/
 out/
