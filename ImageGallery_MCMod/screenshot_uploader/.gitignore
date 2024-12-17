@@ -1,0 +1,42 @@
+# Java 编译器生成的文件
+*.class
+
+# Maven 生成的文件夹
+target/
+
+# Eclipse 生成的文件夹
+bin/
+.settings/
+.project
+.classpath
+
+# IntelliJ IDEA 生成的文件夹
+out/
+.idea/
+*.iml
+
+# NetBeans 生成的文件夹
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# Gradle 生成的文件夹
+build/
+.gradle/
+buildSrc/
+
+# Spring Boot 生成的文件夹
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+*.swp
+*~
+*.tmp
