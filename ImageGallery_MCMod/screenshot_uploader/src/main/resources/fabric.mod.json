@@ -15,7 +15,7 @@
 	"icon": "assets/screenshot_uploader/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": [
+		"client": [
 			"top.yanhy.Screenshot_uploader"
 		]
 	},
