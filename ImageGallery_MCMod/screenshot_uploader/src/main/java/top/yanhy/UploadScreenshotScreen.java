@@ -10,7 +10,14 @@ import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import static top.yanhy.Screenshot_uploader.USERNAME;
+import static top.yanhy.Screenshot_uploader.USERTOKEN;
+import static top.yanhy.Screenshot_uploader.SERVERURL;
+
 
 public class UploadScreenshotScreen extends Screen {
     private static final Logger LOGGER = LogManager.getLogger("ScreenshotUploader");
@@ -54,7 +61,6 @@ public class UploadScreenshotScreen extends Screen {
 
         ButtonWidget buttonClose = ButtonWidget.builder(Text.of("取消"), (btn) -> {
             if (this.client != null) {
-                //关闭当前窗口
                 close();
             }
         }).dimensions(this.width / 2 + 10, this.height / 2 + 20, 100, 20).build();
@@ -64,8 +70,6 @@ public class UploadScreenshotScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-
-//        this.renderBackground(context);
         this.renderBackground(context,mouseX,mouseY,delta);
         context.drawText(this.textRenderer, this.title, this.width / 2-40, this.height / 2 - 80, 0xFFFFFFFF, true);
         super.render(context, mouseX, mouseY, delta);
@@ -75,16 +79,40 @@ public class UploadScreenshotScreen extends Screen {
     }
 
     private void handleUpload(String filename, String description, String album) {
+        File mcDirectory = MinecraftClient.getInstance().runDirectory;
+        String filepath = String.valueOf(new File(mcDirectory, "screenshot/"+filename).getAbsoluteFile());
         if (album.isEmpty()) {
             album = USERNAME;
         }
         if (description.isEmpty()) {
             description = "这个人很懒，什么都没写";
         }
-        LOGGER.info("上传截图: 文件名={}, 描述={}, 相册={}", filename, description, album);
-        if (MinecraftClient.getInstance().player != null) {
-            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传测试成功！"), false);
+        LOGGER.info("上传截图: 文件路径={}, 描述={}, 相册={}", filepath, description, album);
+        try {
+            UploadHttpApi uploadHttpApi = new UploadHttpApi();
+            String response = String.valueOf(uploadHttpApi.uploadImage(USERTOKEN, filepath, description, album, SERVERURL));
+            UploadHttpApi.UploadResponse uploadResponse = uploadHttpApi.parseResponse(response);
+            if (uploadResponse.getCode() == 200) {
+                LOGGER.info("上传成功. Photo ID: {}", uploadResponse.getData());
+                if (MinecraftClient.getInstance().player != null) {
+                    MinecraftClient.getInstance().player.sendMessage(Text.literal("上传测试成功！"), false);
+                }
+            } else {
+                LOGGER.error("上传失败. Message: {}", uploadResponse.getMessage());
+                if (MinecraftClient.getInstance().player != null) {
+                    MinecraftClient.getInstance().player.sendMessage(Text.literal("上传测试失败！"), false);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOGGER.error("上传过程中错误发生: {}", e.getMessage());
+            if (MinecraftClient.getInstance().player != null) {
+                MinecraftClient.getInstance().player.sendMessage(Text.literal("上传测试失败, 网络错误！"), false);
+            }
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
+
         this.close();
     }
 

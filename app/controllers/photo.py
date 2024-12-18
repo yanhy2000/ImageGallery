@@ -145,9 +145,7 @@ def upload_new_photo(usertoken):
     return jsonify({
         "code": 200,
         "message": "success",
-        "data": {
-            "photoid": new_photo.photoid
-        }
+        "data": new_photo.photoid
     })
 
 # 删除照片

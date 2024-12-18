@@ -147,9 +147,7 @@ Content-Disposition: form-data; name="album"
 {
   "code": 200,
   "message": "success",
-  "data": {
-    "photoid": "abcdefg"
-  }
+  "data": "photoid"
 }
 ```
 
