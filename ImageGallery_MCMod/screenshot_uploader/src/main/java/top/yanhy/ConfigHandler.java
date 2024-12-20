@@ -1,10 +1,12 @@
 package top.yanhy;
 
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Properties;
 
 public class ConfigHandler {
@@ -31,14 +33,21 @@ public class ConfigHandler {
         }
     }
 
-    public static String getUsername() {
-        return properties.getProperty("username", "username");
+    public static String getModVersion(String modId) {
+        Optional<ModContainer> modContainer = FabricLoader.getInstance().getModContainer(modId);
+        return modContainer.map(container -> container.getMetadata().getVersion().getFriendlyString())
+                .orElse("unknown");
     }
-
     public static String getUserToken() {
         return properties.getProperty("usertoken", "token");
     }
-    public static String getServerUrl() {
-        return properties.getProperty("serverurl", "serverurl");
+    public static String getServerHost() {
+        return properties.getProperty("serverhost", "example.com");
+    }
+    public static int getServerPort() {
+        return Integer.parseInt(properties.getProperty("serverport", "8888"));
+    }
+    public static String getServerHttp() {
+        return properties.getProperty("serverhttp", "https");
     }
 }

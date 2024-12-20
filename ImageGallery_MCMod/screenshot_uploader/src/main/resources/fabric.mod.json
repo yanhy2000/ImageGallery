@@ -19,9 +19,7 @@
 			"top.yanhy.Screenshot_uploader"
 		]
 	},
-	"mixins": [
-		"screenshot_uploader.mixins.json"
-	],
+	"mixins": [],
 	"depends": {
 		"fabricloader": ">=0.16.9",
 		"minecraft": "~1.21.3",

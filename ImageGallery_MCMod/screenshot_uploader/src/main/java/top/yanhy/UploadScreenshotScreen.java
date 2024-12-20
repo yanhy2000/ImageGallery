@@ -14,9 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static top.yanhy.Screenshot_uploader.USERNAME;
-import static top.yanhy.Screenshot_uploader.USERTOKEN;
-import static top.yanhy.Screenshot_uploader.SERVERURL;
+import static top.yanhy.Screenshot_uploader.*;
 
 
 public class UploadScreenshotScreen extends Screen {
@@ -37,22 +35,22 @@ public class UploadScreenshotScreen extends Screen {
         this.descriptionField.setMaxLength(50);
         this.addSelectableChild(this.descriptionField);
         this.descriptionField.setFocusUnlocked(true);
-        this.descriptionField.setChangedListener(text -> {
-            this.descriptionField.setSuggestion(null);
-        });
+        this.descriptionField.setChangedListener(text -> this.descriptionField.setSuggestion(null));
 
         this.albumField = new TextFieldWidget(this.textRenderer, this.width / 2 - 100, this.height / 2 - 20, 200, 20, Text.literal("相册集"));
         this.albumField.setSuggestion("留空默认使用用户名");
         this.albumField.setMaxLength(15);
         this.addSelectableChild(this.albumField);
         this.albumField.setFocusUnlocked(true);
-        this.albumField.setChangedListener(text -> {
-            this.albumField.setSuggestion(null);
-        });
+        this.albumField.setChangedListener(text -> this.albumField.setSuggestion(null));
 
         ButtonWidget buttonUpload = ButtonWidget.builder(Text.of("上传"), (btn) -> {
             if (this.client != null) {
-                handleUpload(this.filename, this.descriptionField.getText(), this.albumField.getText());
+                try {
+                    handleUpload(this.filename, this.descriptionField.getText(), this.albumField.getText());
+                } catch (IOException | URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
                 this.client.getToastManager().add(
                         SystemToast.create(this.client, SystemToast.Type.NARRATOR_TOGGLE, Text.of("上传中..."), Text.of("开始上传图片墙"))
                 );
@@ -78,40 +76,40 @@ public class UploadScreenshotScreen extends Screen {
 
     }
 
-    private void handleUpload(String filename, String description, String album) {
+    private void handleUpload(String filename, String description, String album) throws IOException, URISyntaxException {
         File mcDirectory = MinecraftClient.getInstance().runDirectory;
-        String filepath = String.valueOf(new File(mcDirectory, "screenshot/"+filename).getAbsoluteFile());
-        if (album.isEmpty()) {
-            album = USERNAME;
-        }
+        String filepath = String.valueOf(new File(mcDirectory, "screenshots/"+filename).getAbsoluteFile());
         if (description.isEmpty()) {
             description = "这个人很懒，什么都没写";
         }
         LOGGER.info("上传截图: 文件路径={}, 描述={}, 相册={}", filepath, description, album);
-        try {
-            UploadHttpApi uploadHttpApi = new UploadHttpApi();
-            String response = String.valueOf(uploadHttpApi.uploadImage(USERTOKEN, filepath, description, album, SERVERURL));
-            UploadHttpApi.UploadResponse uploadResponse = uploadHttpApi.parseResponse(response);
-            if (uploadResponse.getCode() == 200) {
-                LOGGER.info("上传成功. Photo ID: {}", uploadResponse.getData());
+            try {
+                UploadHttpApi uploadHttpApi = new UploadHttpApi();
+                UploadHttpApi.UploadResponse uploadClass = uploadHttpApi.uploadImage(USERTOKEN, filepath, filename, description, album, SERVERHOST, SERVERPORT, SERVERHTTP);
+                LOGGER.info("上传结果 Code={}, Message={}, Data={}", uploadClass.getCode(), uploadClass.getMessage(), uploadClass.getData());
+                    if (uploadClass.getCode() == 200) {
+                        LOGGER.info("上传成功. Photo ID: {}", uploadClass.getData());
+                        if (MinecraftClient.getInstance().player != null) {
+                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传成功！"), false);
+                        }
+                    } else if (uploadClass.getCode() == 401) {
+                        LOGGER.error("上传失败,Token失效. Message: {}", uploadClass.getMessage());
+                        if (MinecraftClient.getInstance().player != null) {
+                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败, 请检查用户Token信息！"), false);
+                        } else {
+                            LOGGER.error("上传失败. Message: {}", uploadClass.getMessage());
+                            if (MinecraftClient.getInstance().player != null) {
+                                MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败！"), false);
+                            }
+                        }
+                    }
+            } catch (Exception e) {
+                LOGGER.error("上传时发生异常. Message: {}", e.getMessage());
                 if (MinecraftClient.getInstance().player != null) {
-                    MinecraftClient.getInstance().player.sendMessage(Text.literal("上传测试成功！"), false);
-                }
-            } else {
-                LOGGER.error("上传失败. Message: {}", uploadResponse.getMessage());
-                if (MinecraftClient.getInstance().player != null) {
-                    MinecraftClient.getInstance().player.sendMessage(Text.literal("上传测试失败！"), false);
+                    MinecraftClient.getInstance().player.sendMessage(Text.literal("上传时发生异常！请检查日志或尝试重新上传。"), false);
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            LOGGER.error("上传过程中错误发生: {}", e.getMessage());
-            if (MinecraftClient.getInstance().player != null) {
-                MinecraftClient.getInstance().player.sendMessage(Text.literal("上传测试失败, 网络错误！"), false);
-            }
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+
 
         this.close();
     }
