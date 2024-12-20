@@ -41,7 +41,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 	public static List<String> file_info = new ArrayList<>();
 	public static String file_path = "";
 
-	public static final String VERSION = "1.0.0";
+	public static final String VERSION = ConfigHandler.getModVersion(MOD_ID);
 	public static String USERTOKEN = "";
 	public static String SERVERHOST = "";
 	public static Integer SERVERPORT = 0;
@@ -50,7 +50,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		LOGGER.info("Screenshot_uploader mod initialized! version: " + VERSION);
+        LOGGER.info("Screenshot_uploader mod initialized! version: {}", VERSION);
 		ConfigHandler.initConfig();
 		USERTOKEN = ConfigHandler.getUserToken();
 		SERVERHOST = ConfigHandler.getServerHost();
@@ -61,39 +61,10 @@ public class Screenshot_uploader implements ClientModInitializer {
 		KeyBinding screenshotKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("截图上传快捷键", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "key.category.screenshot_uploader"));
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (screenshotKey.wasPressed()) {
-				try {
-					ScreenshotRecorder.saveScreenshot(
-							MinecraftClient.getInstance().runDirectory,
-							MinecraftClient.getInstance().getFramebuffer(),
-							(file)->{
-								file.visit((string) -> {
-									file_info.add(string);
-									return Optional.empty();
-								});
-								file_path = file_info.get(1);
-								if (MinecraftClient.getInstance().player != null) {
-									MinecraftClient.getInstance().player.sendMessage(file, false);
-									Text uploadButton = Text.literal("[上传到图片墙]")
-											.setStyle(Style.EMPTY
-													.withColor(0x00FF00)
-													.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uploadScreenshot " + file_path))
-													.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击上传截图到图片墙。命令: /uploadScreenshot " + file_path)))
-											);
-									Text message = Text.literal(MOD_NAME + "截图已保存。" )
-											.append(uploadButton);
-									MinecraftClient.getInstance().player.sendMessage(message, false);
-									file_info.clear();
-								}
-							}
-					);
-				} catch (Exception e) {
-					LOGGER.error("快捷键截图失败: {}", e.getMessage());
-                    if (MinecraftClient.getInstance().player != null) {
-                        MinecraftClient.getInstance().player.sendMessage(Text.literal("快捷键截图失败，请查看日志。"), false);
-                    }
-                }
+				screenshot();
 			}
 		});
+		LOGGER.info("注册快捷键成功");
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated,environment) -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("uploadScreenshot")
@@ -101,9 +72,10 @@ public class Screenshot_uploader implements ClientModInitializer {
                                 .executes(this::executeUploadCommandwithargs))
                         .executes(this::executeUploadCommand)
         ));
+		LOGGER.info("注册命令成功");
+
 		UseItemCallback.EVENT.register((player, world, hand) -> {
 			ItemStack itemStack = player.getStackInHand(hand);
-
 			if (itemStack.getItem() == Items.SPYGLASS && itemStack.getName().getString().contains("相机")) {
 				if (world.isClient) {
 					if (Objects.equals(USERTOKEN, "token" ) || Objects.equals(SERVERHOST, "example.com")){
@@ -122,35 +94,8 @@ public class Screenshot_uploader implements ClientModInitializer {
 						}
 						return ActionResult.FAIL;
 					}
-					try {
-						ScreenshotRecorder.saveScreenshot(
-								MinecraftClient.getInstance().runDirectory,
-								MinecraftClient.getInstance().getFramebuffer(),
-								(file)->{
-									file.visit((string) -> {
-										file_info.add(string);
-                                        return Optional.empty();
-                                    });
-									file_path = file_info.get(1);
-                                    if (MinecraftClient.getInstance().player != null) {
-                                        MinecraftClient.getInstance().player.sendMessage(file, false);
-										Text uploadButton = Text.literal("[上传到图片墙]")
-												.setStyle(Style.EMPTY
-														.withColor(0x00FF00)
-														.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uploadScreenshot " + file_path))
-														.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击上传截图到图片墙。命令: /uploadScreenshot " + file_path)))
-												);
-										Text message = Text.literal(MOD_NAME + "截图已保存。" )
-												.append(uploadButton);
-										MinecraftClient.getInstance().player.sendMessage(message, false);
-										file_info.clear();
-                                    }
-                                }
-						);
-					} catch (Exception e) {
-						LOGGER.error("截图失败: {}", e.getMessage());
-						player.sendMessage(Text.literal("截图失败，请查看日志。"), false);
-					}
+
+					screenshot();
 
 					return ActionResult.FAIL;
 				}
@@ -159,11 +104,46 @@ public class Screenshot_uploader implements ClientModInitializer {
 
 			return ActionResult.PASS;
 		});
+		LOGGER.info("注册物品成功");
+	}
+
+	private void screenshot() {
+		try {
+			LOGGER.info("开始截图...");
+			ScreenshotRecorder.saveScreenshot(
+					MinecraftClient.getInstance().runDirectory,
+					MinecraftClient.getInstance().getFramebuffer(),
+					(file)->{
+						file.visit((string) -> {
+							file_info.add(string);
+							return Optional.empty();
+						});
+						file_path = file_info.get(1);
+						if (MinecraftClient.getInstance().player != null) {
+							MinecraftClient.getInstance().player.sendMessage(file, false);
+							Text uploadButton = Text.literal("[上传到图片墙]")
+									.setStyle(Style.EMPTY
+											.withColor(0x00FF00)
+											.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uploadScreenshot " + file_path))
+											.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击上传截图到图片墙。命令: /uploadScreenshot " + file_path)))
+									);
+							Text message = Text.literal(MOD_NAME + "截图已保存。" )
+									.append(uploadButton);
+							MinecraftClient.getInstance().player.sendMessage(message, false);
+							file_info.clear();
+						}
+					}
+			);
+		} catch (Exception e) {
+			LOGGER.error("快捷键截图失败: {}", e.getMessage());
+			if (MinecraftClient.getInstance().player != null) {
+				MinecraftClient.getInstance().player.sendMessage(Text.literal("快捷键截图失败，请查看日志。"), false);
+			}
+		}
 	}
 
 	private int executeUploadCommandwithargs(CommandContext<ServerCommandSource> context) {
 		String filename = context.getArgument("filename", String.class);
-		LOGGER.info("上传截图命令触发，文件名: {}", filename);
 		MinecraftClient client = MinecraftClient.getInstance();
 		if (client.player != null) {
 			client.execute(() -> client.setScreen(new UploadScreenshotScreen(filename)));
