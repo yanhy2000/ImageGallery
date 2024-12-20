@@ -24,7 +24,7 @@ public class UploadHttpApi {
 
         try (
                 OutputStream outputStream = connection.getOutputStream();
-                PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true)
         ) {
             writer.append("--").append(boundary).append("\r\n");
             writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"").append(imageName).append("\"").append("\r\n");

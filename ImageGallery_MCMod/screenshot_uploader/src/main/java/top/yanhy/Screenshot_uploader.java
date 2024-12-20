@@ -5,9 +5,13 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -20,6 +24,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 
 
+import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +42,6 @@ public class Screenshot_uploader implements ClientModInitializer {
 	public static String file_path = "";
 
 	public static final String VERSION = "1.0.0";
-//	public static String USERNAME = "";
 	public static String USERTOKEN = "";
 	public static String SERVERHOST = "";
 	public static Integer SERVERPORT = 0;
@@ -48,20 +52,55 @@ public class Screenshot_uploader implements ClientModInitializer {
 	public void onInitializeClient() {
 		LOGGER.info("Screenshot_uploader mod initialized! version: " + VERSION);
 		ConfigHandler.initConfig();
-//		USERNAME = ConfigHandler.getUsername();
 		USERTOKEN = ConfigHandler.getUserToken();
 		SERVERHOST = ConfigHandler.getServerHost();
 		SERVERPORT = ConfigHandler.getServerPort();
 		SERVERHTTP = ConfigHandler.getServerHttp();
 		LOGGER.info("加载配置文件成功");
-		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated,environment) -> {
-			dispatcher.register(
-					LiteralArgumentBuilder.<ServerCommandSource>literal("uploadScreenshot")
-							.then(CommandManager.argument("filename", StringArgumentType.string())
-									.executes(this::executeUploadCommandwithargs))
-							.executes(this::executeUploadCommand)
-			);
+
+		KeyBinding screenshotKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("截图上传快捷键", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "key.category.screenshot_uploader"));
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			if (screenshotKey.wasPressed()) {
+				try {
+					ScreenshotRecorder.saveScreenshot(
+							MinecraftClient.getInstance().runDirectory,
+							MinecraftClient.getInstance().getFramebuffer(),
+							(file)->{
+								file.visit((string) -> {
+									file_info.add(string);
+									return Optional.empty();
+								});
+								file_path = file_info.get(1);
+								if (MinecraftClient.getInstance().player != null) {
+									MinecraftClient.getInstance().player.sendMessage(file, false);
+									Text uploadButton = Text.literal("[上传到图片墙]")
+											.setStyle(Style.EMPTY
+													.withColor(0x00FF00)
+													.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uploadScreenshot " + file_path))
+													.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击上传截图到图片墙。命令: /uploadScreenshot " + file_path)))
+											);
+									Text message = Text.literal(MOD_NAME + "截图已保存。" )
+											.append(uploadButton);
+									MinecraftClient.getInstance().player.sendMessage(message, false);
+									file_info.clear();
+								}
+							}
+					);
+				} catch (Exception e) {
+					LOGGER.error("快捷键截图失败: {}", e.getMessage());
+                    if (MinecraftClient.getInstance().player != null) {
+                        MinecraftClient.getInstance().player.sendMessage(Text.literal("快捷键截图失败，请查看日志。"), false);
+                    }
+                }
+			}
 		});
+
+		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated,environment) -> dispatcher.register(
+                LiteralArgumentBuilder.<ServerCommandSource>literal("uploadScreenshot")
+                        .then(CommandManager.argument("filename", StringArgumentType.string())
+                                .executes(this::executeUploadCommandwithargs))
+                        .executes(this::executeUploadCommand)
+        ));
 		UseItemCallback.EVENT.register((player, world, hand) -> {
 			ItemStack itemStack = player.getStackInHand(hand);
 

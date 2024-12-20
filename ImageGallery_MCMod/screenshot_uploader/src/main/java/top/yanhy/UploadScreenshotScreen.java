@@ -35,18 +35,14 @@ public class UploadScreenshotScreen extends Screen {
         this.descriptionField.setMaxLength(50);
         this.addSelectableChild(this.descriptionField);
         this.descriptionField.setFocusUnlocked(true);
-        this.descriptionField.setChangedListener(text -> {
-            this.descriptionField.setSuggestion(null);
-        });
+        this.descriptionField.setChangedListener(text -> this.descriptionField.setSuggestion(null));
 
         this.albumField = new TextFieldWidget(this.textRenderer, this.width / 2 - 100, this.height / 2 - 20, 200, 20, Text.literal("相册集"));
         this.albumField.setSuggestion("留空默认使用用户名");
         this.albumField.setMaxLength(15);
         this.addSelectableChild(this.albumField);
         this.albumField.setFocusUnlocked(true);
-        this.albumField.setChangedListener(text -> {
-            this.albumField.setSuggestion(null);
-        });
+        this.albumField.setChangedListener(text -> this.albumField.setSuggestion(null));
 
         ButtonWidget buttonUpload = ButtonWidget.builder(Text.of("上传"), (btn) -> {
             if (this.client != null) {
@@ -83,9 +79,6 @@ public class UploadScreenshotScreen extends Screen {
     private void handleUpload(String filename, String description, String album) throws IOException, URISyntaxException {
         File mcDirectory = MinecraftClient.getInstance().runDirectory;
         String filepath = String.valueOf(new File(mcDirectory, "screenshots/"+filename).getAbsoluteFile());
-//        if (album.isEmpty()) {
-//            album = USERNAME;
-//        }
         if (description.isEmpty()) {
             description = "这个人很懒，什么都没写";
         }
