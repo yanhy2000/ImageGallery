@@ -83,9 +83,9 @@ public class UploadScreenshotScreen extends Screen {
     private void handleUpload(String filename, String description, String album) throws IOException, URISyntaxException {
         File mcDirectory = MinecraftClient.getInstance().runDirectory;
         String filepath = String.valueOf(new File(mcDirectory, "screenshots/"+filename).getAbsoluteFile());
-        if (album.isEmpty()) {
-            album = USERNAME;
-        }
+//        if (album.isEmpty()) {
+//            album = USERNAME;
+//        }
         if (description.isEmpty()) {
             description = "这个人很懒，什么都没写";
         }

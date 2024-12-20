@@ -37,7 +37,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 	public static String file_path = "";
 
 	public static final String VERSION = "1.0.0";
-	public static String USERNAME = "";
+//	public static String USERNAME = "";
 	public static String USERTOKEN = "";
 	public static String SERVERHOST = "";
 	public static Integer SERVERPORT = 0;
@@ -48,7 +48,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 	public void onInitializeClient() {
 		LOGGER.info("Screenshot_uploader mod initialized! version: " + VERSION);
 		ConfigHandler.initConfig();
-		USERNAME = ConfigHandler.getUsername();
+//		USERNAME = ConfigHandler.getUsername();
 		USERTOKEN = ConfigHandler.getUserToken();
 		SERVERHOST = ConfigHandler.getServerHost();
 		SERVERPORT = ConfigHandler.getServerPort();
@@ -67,7 +67,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 
 			if (itemStack.getItem() == Items.SPYGLASS && itemStack.getName().getString().contains("相机")) {
 				if (world.isClient) {
-					if (Objects.equals(USERNAME, "username") || Objects.equals(USERTOKEN, "token")){
+					if (Objects.equals(USERTOKEN, "token" ) || Objects.equals(SERVERHOST, "example.com")){
 						File mcDirectory = MinecraftClient.getInstance().runDirectory;
 						File configFile = new File(mcDirectory, "config/screenshot_uploader.yml");
 						if (MinecraftClient.getInstance().player != null) {

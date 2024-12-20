@@ -31,9 +31,9 @@ public class ConfigHandler {
         }
     }
 
-    public static String getUsername() {
-        return properties.getProperty("username", "username");
-    }
+//    public static String getUsername() {
+//        return properties.getProperty("username", "username");
+//    }
 
     public static String getUserToken() {
         return properties.getProperty("usertoken", "token");
