@@ -42,6 +42,8 @@ def get_photo_list():
 # 创建本地缩略图并上传
 def create_thumbnail(image_path):
     with Image.open(image_path) as img:
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
         img.thumbnail((900, 900))  # 设置缩略图最大尺寸
         thumbnail_path_dir = os.path.join("uploads/.thumbnails")
         if not os.path.exists(thumbnail_path_dir):
@@ -97,7 +99,7 @@ def upload_new_photo(usertoken):
     if user.permissions < 0:
         return jsonify({"code": 403, "message": "permission denied"}), 403
     file = request.files.get("file")
-    name = request.form.get("name", file.filename)
+    name =request.form.get("name", file.filename)
     desc = request.form.get("desc", "无描述")
     album_name = request.form.get("album", user.username)
 
@@ -117,6 +119,7 @@ def upload_new_photo(usertoken):
     file_path = os.path.join(upload_dir, filename)
     file.save(file_path)
     try:
+
         # 生成缩略图并上传
         thumbnail_url = create_thumbnail(file_path)
         # 保存图片信息到数据库
@@ -140,6 +143,7 @@ def upload_new_photo(usertoken):
         db.session.add(new_photo)
         db.session.commit()
     except Exception as e:
+        print("upload_new_photo error:",e)
         return jsonify({"code": 500, "message": f"error:{e}"}), 500
     # 返回成功响应
     return jsonify({
