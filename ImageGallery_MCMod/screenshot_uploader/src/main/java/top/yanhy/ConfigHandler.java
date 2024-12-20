@@ -38,7 +38,13 @@ public class ConfigHandler {
     public static String getUserToken() {
         return properties.getProperty("usertoken", "token");
     }
-    public static String getServerUrl() {
-        return properties.getProperty("serverurl", "serverurl");
+    public static String getServerHost() {
+        return properties.getProperty("serverhost", "example.com");
+    }
+    public static int getServerPort() {
+        return Integer.parseInt(properties.getProperty("serverport", "8888"));
+    }
+    public static String getServerHttp() {
+        return properties.getProperty("serverhttp", "https");
     }
 }

@@ -1,3 +1,14 @@
+# 填写用户昵称
 username: username
+
+# 填写用户token
 usertoken: token
-serverurl: http://example.com
+
+# 填写服务器协议，可选：http或https
+serverhttp: https
+
+# 填写服务器IP或者域名
+serverhost: example.com
+
+# 填写服务器端口
+serverport: 8080

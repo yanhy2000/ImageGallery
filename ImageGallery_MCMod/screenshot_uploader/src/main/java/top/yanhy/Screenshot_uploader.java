@@ -39,7 +39,10 @@ public class Screenshot_uploader implements ClientModInitializer {
 	public static final String VERSION = "1.0.0";
 	public static String USERNAME = "";
 	public static String USERTOKEN = "";
-	public static String SERVERURL = "";
+	public static String SERVERHOST = "";
+	public static Integer SERVERPORT = 0;
+	public static String SERVERHTTP = "";
+
 
 	@Override
 	public void onInitializeClient() {
@@ -47,8 +50,10 @@ public class Screenshot_uploader implements ClientModInitializer {
 		ConfigHandler.initConfig();
 		USERNAME = ConfigHandler.getUsername();
 		USERTOKEN = ConfigHandler.getUserToken();
-		SERVERURL = ConfigHandler.getServerUrl();
-		LOGGER.info("加载配置文件成功 - Username: {}, UserToken: {}", USERNAME, USERTOKEN);
+		SERVERHOST = ConfigHandler.getServerHost();
+		SERVERPORT = ConfigHandler.getServerPort();
+		SERVERHTTP = ConfigHandler.getServerHttp();
+		LOGGER.info("加载配置文件成功");
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated,environment) -> {
 			dispatcher.register(
 					LiteralArgumentBuilder.<ServerCommandSource>literal("uploadScreenshot")
