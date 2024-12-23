@@ -37,7 +37,7 @@
 - [x] 更新图片信息（PUT /api/updatephoto）
 - [x] 获取用户名（Get /api/getusername）
 - [x] 新增用户（Post /api/adduser）
-- [x] 删除用户（Post /api/deluser）（由于数据库设计，无法直接删除用户，改成注销用户）
+- [x] 删除用户（Post /api/deluser）
 - [x] 修改用户（Post /api/setuser）
 - [x] 不使用图床时切换本地缩略图存储
 - [ ] 后台Web管理系统
@@ -69,12 +69,12 @@
 | ------------------------ | ------------- | --------------------- |
 | photoid                | userid      | albumid             |
 | name                   | username    | name                |
-| desc                   | usertoken   | userid->user.userid |
+| desc                   | usertoken   | userid |
 | upload_time            | permissions | create_time         |
 | thumbnail              |             |                     |
 | photo_url              |             |                     |
-| albumid->album.albumid |             |                     |
-| userid->user.userid    |             |                     |
+| albumid                |             |                     |
+| userid                 |             |                     |
 
 
 ## 后端接口设计

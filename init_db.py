@@ -1,7 +1,7 @@
 from app import app, db,utils
 from app.controllers import user
 import os
-db_path = os.path.join("instance")
+db_path = os.path.join(".")
 if not os.path.exists(db_path):
     os.makedirs(db_path)
 with app.app_context():

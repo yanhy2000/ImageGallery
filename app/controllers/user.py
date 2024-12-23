@@ -67,23 +67,25 @@ def get_username(user_id, usertoken):
         }
     })
 
-# 删除用户（注销用户）
+# 删除用户
 def delete_user(usertoken):
     data = request.get_json()
     user_id = data.get('userid')
     if not user_id:
         return jsonify({"code": 400, "message": "Userid is required"}), 400
     user = User.query.filter_by(usertoken=usertoken).first()#操作人
-    deluser = User.query.filter_by(userid=user_id).first()#被注销的用户
+    deluser = User.query.filter_by(userid=user_id).first()
     if not user or not deluser:
         return jsonify({"code": 401, "message": "Token is invalid or user does not exist"}), 400
-    #用户不能自己注销自己，且只能管理员注销用户
     if not deluser.userid == user_id or user.permissions < 1:
         return jsonify({"code": 401, "message": "Permissions denied"}), 401
-    if deluser.username == data.get('name') and not deluser.permissions == -2:
-        deluser.permissions = -2 #-2代表注销，-1代表封禁
-        db.session.commit()
-        return jsonify({"code": 200, "message": "success"})
+    if deluser.username == data.get('name'):
+        try:
+            db.session.delete(deluser)
+            db.session.commit()
+            return jsonify({"code": 200, "message": "success"})
+        except:
+            return jsonify({"code": 500, "message": "Delete User Failed, Error occurred"}), 500
     elif deluser.username == data.get('name') and deluser.permissions == -2:
         return jsonify({"code": 400, "message": "User has been deleted"}), 400
     else:
@@ -114,7 +116,9 @@ def modify_user(usertoken):
     moduser.username = username
     if set_permissions is not None:
         moduser.permissions = set_permissions
-    
+    if set_name is not None:
+        moduser.username = set_name
+
     # 重新生成Token
     if regen_token:
         moduser.usertoken = generate_user_uuid()
