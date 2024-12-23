@@ -1,5 +1,6 @@
 tmp/
 test.jpg
+package-lock.json
 app/config.py
 __pycache__/
 app/__pycache__/
