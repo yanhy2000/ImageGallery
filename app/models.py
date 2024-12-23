@@ -9,9 +9,6 @@ class User(db.Model):
     usertoken = db.Column(db.String(120), unique=True, nullable=False)
     permissions = db.Column(db.Integer, nullable=False)
 
-    # 反向关系
-    albums = db.relationship('Album', back_populates='user')
-    photos = db.relationship('Photo', back_populates='user')
 
 # 相册表
 class Album(db.Model):
@@ -21,10 +18,6 @@ class Album(db.Model):
     description = db.Column(db.String(500), nullable=True)  # 可选字段
     create_time = db.Column(db.DateTime, default=datetime.utcnow)
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'), nullable=False)
-
-    # 定义关系
-    user = db.relationship('User', back_populates='albums')
-    photos = db.relationship('Photo', back_populates='album')  # 反向关系，获取相册下的所有照片
 
 # 照片表
 class Photo(db.Model):
@@ -38,6 +31,3 @@ class Photo(db.Model):
     albumid = db.Column(db.Integer, db.ForeignKey('album.albumid'), nullable=False)
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'), nullable=False)
 
-    # 定义关系
-    album = db.relationship('Album', back_populates='photos')
-    user = db.relationship('User', back_populates='photos')

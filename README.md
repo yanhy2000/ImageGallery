@@ -40,6 +40,10 @@
 - [x] 删除用户（Post /api/deluser）（由于数据库设计，无法直接删除用户，改成注销用户）
 - [x] 修改用户（Post /api/setuser）
 - [x] 不使用图床时切换本地缩略图存储
+- [ ] 后台Web管理系统
+- [ ] 后台Web管理接口-图片管理
+- [x] 后台Web管理接口-用户管理(Post /api/userlist)
+- [x] 后台Web管理接口-相册管理(Post /api/albumlist)
 - [ ] 创建相册（Post /api/createalbum）
 - [ ] 更新相册（PUT /api/setalbum）
 - [ ] 获取相册信息（GET /api/getalbuminfo）
@@ -336,6 +340,59 @@ Content-Disposition: form-data; name="album"
   "message": "success"
 }
 ```
+---
+
+## 获取图片详细信息列表（Post /api/photolist）
+
+**描述**：用于获取图片列表,需要提供 `usertoken` 进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/photolist`
+* **方法**：`POST`
+* **请求头**：
+
+  * `Content-Type: application/json`
+  * `Authorization: Bearer <usertoken>`
+
+**参数**：
+
+* **载荷**：包含分页信息。
+
+**请求体示例**：
+
+```json
+{
+	"page": 1,
+	"perpage": 10
+}
+```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "data": {
+    "current_page": 1,
+    "per_page": 10,
+    "photos": [
+      {
+        "desc": "无描述",
+        "photoid": 1,
+        "thumbnail": "https://pic.xx/a.jpg",
+        "upload_time": "2024-12-11 02:58:39",
+        "upload_user": "admin"
+      }
+    ],
+    "total": 1
+  },
+  "message": "success"
+}
+```
 
 ---
 
@@ -563,9 +620,109 @@ Content-Disposition: form-data; name="album"
   }
 }
 ```
-
 ---
+## 获取用户列表（POST /api/userlist）
+**描述**：管理员通过此端点获取用户列表。需要提供 `usertoken` 进行身份验证。
+**请求**：
 
+* **URL**：`/api/userlist`
+* **方法**：`POST`
+
+**请求头**：
+
+* `Content-Type: application/json`
+* `Authorization: Bearer <usertoken>`
+
+**参数**：
+
+* **载荷**：无
+
+**请求体示例**：
+
+```json
+{
+	"page": 1,
+	"perpage": 10
+}
+```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "current_page": 1,
+    "per_page": 10,
+    "users": [
+      {
+        "userid": "123456",
+        "username": "testuser123",
+        "permissions": 1
+      },
+      // ...更多用户
+    ],
+    "total": 10
+  }
+}
+```
+---
+## 获取相册列表（Post /api/albumlist）
+
+**描述**：管理员通过此端点获取相册列表。需要提供 `usertoken` 进行身份验证。
+
+**请求**：
+
+* **URL**：`/api/albumlist`
+* **方法**：`POST`
+
+**请求头**：
+
+* `Content-Type: application/json`
+* `Authorization: Bearer <usertoken>`
+
+**参数**：
+
+* **载荷**：无
+
+**请求体示例**：
+
+```json
+{
+	"page": 1,
+	"perpage": 10
+}
+```
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "current_page": 1,
+    "per_page": 10,
+    "albums": [
+      {
+        "album_id": "相册唯一标识符",
+        "album_name": "相册名称",
+        "description": "相册描述"
+      },
+      // ...更多相册
+    ],
+    "total": 10
+  }
+}
+```
+---
 # 相册
 
 ### 创建/更新相册（Post /api/album）

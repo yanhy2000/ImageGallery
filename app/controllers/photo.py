@@ -39,6 +39,44 @@ def get_photo_list():
         }
     })
 
+# 获取图片列表(后台管理)
+def get_photolist(usertoken):
+    user = User.query.filter_by(usertoken=usertoken).first()
+    if not user:
+        return jsonify({"code": 401, "message": "token failed"}), 401
+    if user.permissions < 1:
+        return jsonify({"code": 403, "message": "permission denied"}), 403
+    current_page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    query = Photo.query.filter_by(userid=user.userid)
+    pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
+    photos = pagination.items
+    photo_list = []
+    for photo in photos:
+        album = Album.query.filter_by(albumid=photo.albumid).first()
+        photo_list.append({
+            "photoid": photo.photoid,
+            "name": photo.name,
+            "desc": photo.desc,
+            "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "thumbnail": photo.thumbnail,
+            "photo_url": photo.photo_url,
+            "album_name": album.name,
+            "albumid": photo.albumid,
+            "userid": photo.userid,
+            "username": User.query.filter_by(userid=photo.userid).first().username
+        })
+    return jsonify({
+        "code": 200,
+        "message": "success",
+        "data": {
+            "total": pagination.total,
+            "per_page": per_page,
+            "current_page": current_page,
+            "photos": photo_list
+        }
+    })
+
 # 创建本地缩略图并上传
 def create_thumbnail(image_path):
     with Image.open(image_path) as img:

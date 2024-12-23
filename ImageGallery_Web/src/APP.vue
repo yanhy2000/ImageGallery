@@ -89,7 +89,7 @@ new Vue({
         // 下载图片
         downloadImage(photoid) {
             const photo = this.photos.find(p => p.photoid === photoid);
-            const downloadUrl = `${config.API_BASE_URL}/api/getphoto?photoid=${photoid}&thumbnail=0`;
+            const downloadUrl = `${config.API_BASE_URL}/api/getphoto?photoid=${photoid}&thumbnail=1`;
             window.location.href = downloadUrl;
         },
 

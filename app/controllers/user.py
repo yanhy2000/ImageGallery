@@ -3,6 +3,29 @@ from app import db
 from app.models import User
 from app.utils import generate_user_uuid
 
+def get_all_users(usertoken):
+    user = User.query.filter_by(usertoken=usertoken).first()
+    if not user:
+        return jsonify({"code": 401, "message": "Token is invalid"}), 401
+    if user.permissions < 1:
+        return jsonify({"code": 403, "message": "Permissions denied"}), 403
+    users = User.query.all()
+    user_list = []
+    for u in users:
+        user_list.append({
+            "userid": u.userid,
+            "username": u.username,
+            "permissions": u.permissions,
+            "usertoken": u.usertoken
+        })
+    return jsonify({
+        "code": 200,
+        "message": "success",
+        "data": {
+            "users": user_list
+        }
+    })
+
 def add_new_user(usertoken):
     print(usertoken)
     data = request.get_json()

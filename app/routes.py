@@ -16,15 +16,35 @@ def split_token(request):
 #     except:
 #         return None
 
-# [ok]获取照片列表
+# [ok]获取公开照片列表
 @app.route('/api/photos_list', methods=['GET'])
 def get_photos():
     return photo.get_photo_list()
 
-# # 获取所有相册列表
-# @app.route('/api/albums', methods=['GET'])
-# def get_albums():
-#     return album.get_all_albums()
+# [ok]获取图片详细信息列表
+@app.route('/api/photolist', methods=['POST'])
+def get_photolist():
+    usertoken = split_token(request)
+    if usertoken:
+        return photo.get_photolist(usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# [ok]获取所有相册列表
+@app.route('/api/albumlist', methods=['POST'])
+def get_albums():
+    usertoken = split_token(request)
+    if usertoken:
+        return album.get_all_albums(usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+    
+
+# [ok]获取所有用户列表
+@app.route('/api/userlist', methods=['POST'])
+def get_users():
+    usertoken = split_token(request)
+    if usertoken:
+        return user.get_all_users(usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
 # # 获取指定相册中的所有照片
 # @app.route('/api/getphotosbyalbum', methods=['GET'])
