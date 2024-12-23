@@ -3,15 +3,15 @@
 	"id": "screenshot_uploader",
 	"version": "${version}",
 	"name": "screenshot_uploader",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "为图片墙编写的模组,可以便捷上传截图,支持用两组方式上传:1.望远镜物品重命名为相机,右键使用;2.快捷键绑定使用",
 	"authors": [
-		"Me!"
+		"Yanhy2000"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
-	"license": "CC0-1.0",
+	"license": "GPL-3.0",
 	"icon": "assets/screenshot_uploader/icon.png",
 	"environment": "*",
 	"entrypoints": {
