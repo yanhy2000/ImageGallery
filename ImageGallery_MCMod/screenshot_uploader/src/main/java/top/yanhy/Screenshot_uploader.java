@@ -61,7 +61,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 		SERVERHTTP = ConfigHandler.getServerHttp();
 		LOGGER.info("加载配置文件成功");
 
-		KeyBinding screenshotKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("截图上传快捷键", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "key.category.screenshot_uploader"));
+		KeyBinding screenshotKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("截图快捷键", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_Z, "截图上传快捷键"));
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (screenshotKey.wasPressed()) {
 				screenshot();

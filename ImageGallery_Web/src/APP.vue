@@ -11,7 +11,7 @@ new Vue({
         subtitle: 'Browse and download images',
         photos: [],
         currentPage: 1,
-        perPage: 10,
+        perPage: 20,
         currentImage: null,
         currentIndex: 0, // 当前图片的索引
         imageModalVisible: false,
@@ -20,7 +20,7 @@ new Vue({
     },
 
     mounted() {
-        this.fetchPhotos();  // 初次加载图片列表
+        this.fetchPhotos(1,30);  // 初次加载图片列表
         // 设置 favicon
         const link = document.createElement('link');
         link.rel = 'icon';
@@ -53,7 +53,7 @@ new Vue({
     methods: {
         // 获取图片列表
         fetchPhotos(page = 1, perPage = 10) {
-            axios.get(`${config.API_BASE_URL}/api/photos_list`)
+            axios.get(`${config.API_BASE_URL}/api/photos_list?page=${page}&per_page=${perPage}`)
                 .then(response => {
                     if (response.data.code === 200) {
                         this.photos = response.data.data.photos;
