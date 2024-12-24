@@ -206,7 +206,6 @@ export default {
     const prepareBanUser = (user) => {
       selectedUser.value = user;
       showBanModal.value = true;
-      console.log(selectedUser,showBanModal);
     };
     const closeBanModal = ()=> {
       showBanModal.value = false;

@@ -101,33 +101,19 @@ def create_thumbnail(image_path):
             return thumbnail_path
         return None
 
-# 删除缩略图（如使用云端缩略图，则本地不保留）
+# 删除缩略图(云端有bug，暂时不使用云端删除)
 def del_thumbnail(photo_id):
     photo = Photo.query.filter_by(photoid=photo_id).first()
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
+    
     thumbnail_url = photo.thumbnail
+    # 删除本地缩略图
     if Config.SUPERBED_TOKEN == "false" and thumbnail_url.startswith("uploads/.thumbnails/"):
         os.remove(thumbnail_url)
-        return
-    match = re.search(r'/item/([a-f0-9]+)', thumbnail_url)
-    if not match:
-        return jsonify({"code": 400, "message": "Invalid thumbnail URL"}), 400
-    thumbnail_id = match.group(1)
-    api_url = f'https://api.superbed.cn/info/{thumbnail_id}'
-    data = {
-        'token': Config.SUPERBED_TOKEN,
-        'action': 'delete'
-    }
-    try:
-        response = requests.post(api_url, data=data)
-        result = response.json()
-        if result.get('err') == 0:
-            return jsonify({"code": 200, "message": "Thumbnail deleted successfully"}), 200
-        else:
-            return jsonify({"code": 500, "message": f"Error: {result.get('msg')}"}, 500)
-    except requests.RequestException as e:
-        return jsonify({"code": 500, "message": f"Request error: {str(e)}"}), 500
+        return jsonify({"code": 200, "message": "Thumbnail deleted"}), 200
+    return jsonify({"code": 200, "message": "success"}), 200
+
         
 # 上传新照片
 def upload_new_photo(usertoken):
@@ -208,12 +194,16 @@ def delete_photo(usertoken):
 
     # 删除本地存储的图片文件
     try:
+        # 删除缩略图文件
+        thu = del_thumbnail(photoid)
+        if thu[1] == 200:
+            pass
+        else:
+            return jsonify({"code": 201, "message": f"Error deleting thumbnail:{thu}"}), 500
         # 删除原图文件
         file_path = photo.photo_url
         if os.path.exists(file_path):
             os.remove(file_path)
-        # 删除缩略图文件
-        del_thumbnail(photo.photoid)
     except Exception as e:
         return jsonify({"code": 500, "message": f"Error deleting files: {str(e)}"}), 500
 

@@ -411,7 +411,7 @@ Content-Disposition: form-data; name="album"
 
 **参数**：
 
-* **载荷**：包含要更新的字段。
+* **载荷**：包含要更新的字段，需要至少传入`photoid`，其余为空则不更新。
 
   **请求体示例**：
 
