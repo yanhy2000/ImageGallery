@@ -3,8 +3,11 @@ package top.yanhy;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -66,13 +69,8 @@ public class Screenshot_uploader implements ClientModInitializer {
 		});
 		LOGGER.info("注册快捷键成功");
 
-		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated,environment) -> dispatcher.register(
-                LiteralArgumentBuilder.<ServerCommandSource>literal("uploadScreenshot")
-                        .then(CommandManager.argument("filename", StringArgumentType.string())
-                                .executes(this::executeUploadCommandwithargs))
-                        .executes(this::executeUploadCommand)
-        ));
-		LOGGER.info("注册命令成功");
+		registerClientCommands();
+		LOGGER.info("客户端命令注册成功");
 
 		UseItemCallback.EVENT.register((player, world, hand) -> {
 			ItemStack itemStack = player.getStackInHand(hand);
@@ -105,6 +103,16 @@ public class Screenshot_uploader implements ClientModInitializer {
 			return ActionResult.PASS;
 		});
 		LOGGER.info("注册物品成功");
+	}
+	public void registerClientCommands() {
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+			dispatcher.register(
+					LiteralArgumentBuilder.<FabricClientCommandSource>literal("uploadScreenshot")
+							.then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("filename", StringArgumentType.string())
+									.executes(context -> executeUploadCommandwithargs(context.getSource(), StringArgumentType.getString(context, "filename"))))
+							.executes(context -> executeUploadCommand(context.getSource()))
+			);
+		});
 	}
 
 	private void screenshot() {
@@ -142,8 +150,8 @@ public class Screenshot_uploader implements ClientModInitializer {
 		}
 	}
 
-	private int executeUploadCommandwithargs(CommandContext<ServerCommandSource> context) {
-		String filename = context.getArgument("filename", String.class);
+	private int executeUploadCommandwithargs(FabricClientCommandSource source,String  filename) {
+		source.sendFeedback(Text.of("执行上传截图命令，文件名：" + filename));
 		MinecraftClient client = MinecraftClient.getInstance();
 		if (client.player != null) {
 			client.execute(() -> client.setScreen(new UploadScreenshotScreen(filename)));
@@ -151,7 +159,8 @@ public class Screenshot_uploader implements ClientModInitializer {
 		return Command.SINGLE_SUCCESS;
 	}
 
-	public int executeUploadCommand(CommandContext<ServerCommandSource> context) {
+	public int executeUploadCommand(FabricClientCommandSource source) {
+		source.sendFeedback(Text.of("执行缺少参数的命令"));
         if (MinecraftClient.getInstance().player != null) {
             MinecraftClient.getInstance().player.sendMessage(Text.literal(MOD_NAME + "需要指定参数，请使用 /uploadScreenshot filename"), false);
         }
