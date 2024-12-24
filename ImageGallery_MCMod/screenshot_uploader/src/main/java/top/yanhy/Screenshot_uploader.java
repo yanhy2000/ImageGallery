@@ -76,30 +76,11 @@ public class Screenshot_uploader implements ClientModInitializer {
 			ItemStack itemStack = player.getStackInHand(hand);
 			if (itemStack.getItem() == Items.SPYGLASS && itemStack.getName().getString().contains("相机")) {
 				if (world.isClient) {
-					if (Objects.equals(USERTOKEN, "token" ) || Objects.equals(SERVERHOST, "example.com")){
-						File mcDirectory = MinecraftClient.getInstance().runDirectory;
-						File configFile = new File(mcDirectory, "config/screenshot_uploader.yml");
-						if (MinecraftClient.getInstance().player != null) {
-							Text configButton = Text.literal("[打开配置文件]")
-									.setStyle(Style.EMPTY
-											.withColor(0x00FF00)
-											.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, configFile.getAbsolutePath()))
-											.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击打开配置文件。")))
-									);
-							Text message = Text.literal(MOD_NAME + "请先在配置文件中配置用户名和用户Token，保存后请重启游戏。" )
-									.append(configButton);
-							MinecraftClient.getInstance().player.sendMessage(message, false);
-						}
-						return ActionResult.FAIL;
-					}
-
 					screenshot();
-
 					return ActionResult.FAIL;
 				}
 				return ActionResult.FAIL;
 			}
-
 			return ActionResult.PASS;
 		});
 		LOGGER.info("注册物品成功");
@@ -116,36 +97,52 @@ public class Screenshot_uploader implements ClientModInitializer {
 	}
 
 	private void screenshot() {
-		try {
-			LOGGER.info("开始截图...");
-			ScreenshotRecorder.saveScreenshot(
-					MinecraftClient.getInstance().runDirectory,
-					MinecraftClient.getInstance().getFramebuffer(),
-					(file)->{
-						file.visit((string) -> {
-							file_info.add(string);
-							return Optional.empty();
-						});
-						file_path = file_info.get(1);
-						if (MinecraftClient.getInstance().player != null) {
-							MinecraftClient.getInstance().player.sendMessage(file, false);
-							Text uploadButton = Text.literal("[上传到图片墙]")
-									.setStyle(Style.EMPTY
-											.withColor(0x00FF00)
-											.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uploadScreenshot " + file_path))
-											.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击上传截图到图片墙。命令: /uploadScreenshot " + file_path)))
-									);
-							Text message = Text.literal(MOD_NAME + "截图已保存。" )
-									.append(uploadButton);
-							MinecraftClient.getInstance().player.sendMessage(message, false);
-							file_info.clear();
-						}
-					}
-			);
-		} catch (Exception e) {
-			LOGGER.error("快捷键截图失败: {}", e.getMessage());
+		if (Objects.equals(USERTOKEN, "token" ) || Objects.equals(SERVERHOST, "example.com")){
+			File mcDirectory = MinecraftClient.getInstance().runDirectory;
+			File configFile = new File(mcDirectory, "config/screenshot_uploader.yml");
 			if (MinecraftClient.getInstance().player != null) {
-				MinecraftClient.getInstance().player.sendMessage(Text.literal("快捷键截图失败，请查看日志。"), false);
+				Text configButton = Text.literal("[打开配置文件]")
+						.setStyle(Style.EMPTY
+								.withColor(0x00FF00)
+								.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, configFile.getAbsolutePath()))
+								.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击打开配置文件。")))
+						);
+				Text message = Text.literal(MOD_NAME + "请先在配置文件中配置用户名和用户Token，保存后请重启游戏。" )
+						.append(configButton);
+				MinecraftClient.getInstance().player.sendMessage(message, false);
+			}
+		}else {
+			try {
+				LOGGER.info("开始截图...");
+				ScreenshotRecorder.saveScreenshot(
+						MinecraftClient.getInstance().runDirectory,
+						MinecraftClient.getInstance().getFramebuffer(),
+						(file) -> {
+							file.visit((string) -> {
+								file_info.add(string);
+								return Optional.empty();
+							});
+							file_path = file_info.get(1);
+							if (MinecraftClient.getInstance().player != null) {
+								MinecraftClient.getInstance().player.sendMessage(file, false);
+								Text uploadButton = Text.literal("[上传到图片墙]")
+										.setStyle(Style.EMPTY
+												.withColor(0x00FF00)
+												.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uploadScreenshot " + file_path))
+												.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击上传截图到图片墙。")))
+										);
+								Text message = Text.literal(MOD_NAME + "截图已保存。")
+										.append(uploadButton);
+								MinecraftClient.getInstance().player.sendMessage(message, false);
+								file_info.clear();
+							}
+						}
+				);
+			} catch (Exception e) {
+				LOGGER.error("快捷键截图失败: {}", e.getMessage());
+				if (MinecraftClient.getInstance().player != null) {
+					MinecraftClient.getInstance().player.sendMessage(Text.literal("快捷键截图失败，请查看日志。"), false);
+				}
 			}
 		}
 	}

@@ -48,7 +48,7 @@ def get_photolist(usertoken):
         return jsonify({"code": 403, "message": "permission denied"}), 403
     current_page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
-    query = Photo.query.filter_by(userid=user.userid)
+    query = Photo.query
     pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
     photos = pagination.items
     photo_list = []
@@ -140,6 +140,8 @@ def upload_new_photo(usertoken):
     name =request.form.get("name", file.filename)
     desc = request.form.get("desc", "无描述")
     album_name = request.form.get("album", user.username)
+    if album_name == "":
+        album_name = user.username
 
     if not file:
         return jsonify({"code": 400, "message": "need file"}), 400
