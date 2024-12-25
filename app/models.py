@@ -15,7 +15,6 @@ class Album(db.Model):
     __tablename__ = 'album'
     albumid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(120), nullable=False)
-    description = db.Column(db.String(500), nullable=True)  # 可选字段
     create_time = db.Column(db.DateTime, default=datetime.utcnow)
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'), nullable=False)
 

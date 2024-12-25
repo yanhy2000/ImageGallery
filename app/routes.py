@@ -144,50 +144,27 @@ def set_user():
         return user.modify_user(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-#======================================暂停更新======================================#
-# 创建相册
+# [ok]创建相册
 @app.route('/api/createalbum', methods=['POST'])
 def create_album():
     usertoken = split_token(request)
     if usertoken:
-        data = request.get_json()
-        return album.create_album(data, usertoken)
+        return album.create_album(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-# 删除相册
+# [ok]删除相册
 @app.route('/api/deletealbum', methods=['POST'])
 def delete_album():
     usertoken = split_token(request)
     if usertoken:
-        data = request.get_json()
-        return album.delete_album(data, usertoken)
+        return album.delete_album(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-# 获取相册信息
-@app.route('/api/getalbuminfo', methods=['GET'])
-def get_album_info():
-    usertoken = split_token(request)
-    album_id = request.args.get('albumid')
-    if usertoken and album_id:
-        usertoken = usertoken.split("Bearer ")[1]
-        return album.get_album_info(album_id, usertoken)
-    return jsonify({"code": 400, "message": "usertoken and albumid are required"}), 400
-
-# 修改相册信息
+# [ok]修改相册信息
 @app.route('/api/setalbum', methods=['POST'])
 def set_album():
     usertoken = split_token(request)
     if usertoken:
-        data = request.get_json()
-        return album.modify_album(data, usertoken)
+        return album.modify_album(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
-
-# 获取用户相册列表
-@app.route('/api/getalbums', methods=['GET'])
-def get_user_albums():
-    usertoken = split_token(request)
-    username = request.args.get('username')
-    if usertoken:
-        return album.get_user_albums(username, usertoken)
-    return jsonify({"code": 400, "message": "usertoken is required"}), 400

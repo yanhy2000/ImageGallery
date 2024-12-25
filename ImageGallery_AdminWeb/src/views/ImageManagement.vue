@@ -38,7 +38,7 @@
         </tbody>
       </table>
 
-      <div v-if="showModifyDescModal" class="modal">
+    <div v-if="showModifyDescModal" class="modal">
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
         <p>填写ID为 {{ selectedPhoto.photoid }} 的图片描述：</p>

@@ -54,7 +54,7 @@
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
         <p v-if="modalType === 'add'">请输入用户名：</p>
-        <p v-else>确定删除用户 {{ selectedUser.username }}?</p>
+        <p v-else>确定删除用户 {{ selectedUser.username }}? 删除用户不会删除图片和相册。</p>
         <input v-if="modalType === 'add'" v-model="newUsername" type="text" placeholder="用户名">
         <button v-if="modalType === 'add'" @click="addUser">提交</button>
         <button v-else @click="deleteUser">确定</button>

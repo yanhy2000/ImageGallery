@@ -6,22 +6,40 @@
         <tr>
           <th>相册ID</th>
           <th>相册名称</th>
-          <th>描述</th>
           <th>用户ID</th>
           <th>创建时间</th>
+          <th>操作</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="album in albums" :key="album.albumid">
           <td>{{ album.albumid }}</td>
-          <td>{{ album.name }}</td>
-          <td>{{ album.description }}</td>
+          <td><button @click="_showModifyNameModal(album)">修改</button> {{ album.name }}</td>
           <td>{{ album.userid }}</td>
           <td>{{ album.create_time }}</td>
+          <td><button @click="_showDeleteAlbumModal(album)">删除</button></td>
         </tr>
       </tbody>
     </table>
-  </div>
+
+    <div v-if="showModifyNameModal" class="modal">
+      <div class="modal-content">
+        <span class="close" @click="closeModal">&times;</span>
+        <p>填写ID为 {{ selectedAlbum.photoid }} 的相册名：</p>
+        <input type="text" v-model="selectedAlbum.name">
+        <button @click="ModifyName(selectedAlbum)">确定</button>
+        <button @click="closeModal">取消</button>
+      </div>
+    </div>
+      <div v-else-if="showDeleteAlbumModal" class="modal">
+        <div class="modal-content">
+        <span class="close" @click="closeModal">&times;</span>
+        <p>确定要删除ID为 {{ selectedAlbum.albumid }} 的相册？删除相册会删除该相册下所有照片。</p>
+        <button @click="DeleteAlbum(selectedAlbum)">确定</button>
+        <button @click="closeModal">取消</button>
+      </div>
+      </div>
+    </div>
 </template>
 
 
@@ -33,6 +51,9 @@ export default {
   setup() {
     const albums = ref([]);
     const error = ref(null);
+    const selectedAlbum = ref(null);
+    const showModifyNameModal = ref(false);
+    const showDeleteAlbumModal = ref(false);
 
     const fetchAlbums = async () => {
       try {
@@ -61,9 +82,94 @@ export default {
       }
     };
 
+    const ModifyName = async (album) => {
+      try {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/setalbum`, {
+          albumid: album.albumid,
+          name: album.name
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_ADMIN_TOKEN}`
+          }
+        });
+
+        if (response.status !== 200) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = response.data;
+        if (data.code === 200) {
+          fetchAlbums();
+        } else {
+          alert(data.message);
+        }
+      } catch (e) {
+        alert(e.message); 
+      } finally {
+        closeModal();
+      }
+    };
+
+    const DeleteAlbum = async (album) => {
+      try {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/deletealbum`, {
+          albumid: album.albumid
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_ADMIN_TOKEN}`
+          }
+        });
+
+        if (response.status !== 200) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = response.data;
+
+        if (data.code === 200) {
+          fetchAlbums();
+        } else {
+          alert(data);
+        }
+      } catch (e) {
+        alert(e.message);
+      } finally {
+        closeModal();
+      }
+    };
+
+    const _showModifyNameModal = (albums) => {
+      selectedAlbum.value = albums;
+      showModifyNameModal.value = true;
+    };
+
+    const _showDeleteAlbumModal = (albums) => {
+      selectedAlbum.value = albums;
+      showDeleteAlbumModal.value = true;
+    };
+
+    const closeModal = () => {
+      showDeleteAlbumModal.value = false;
+      showModifyNameModal.value = false;
+      selectedAlbum.value = {};
+    };
+
     fetchAlbums();
 
-    return { albums, error };
+    return { 
+      albums, 
+      error, 
+      selectedAlbum, 
+      showModifyNameModal, 
+      showDeleteAlbumModal, 
+      _showModifyNameModal, 
+      _showDeleteAlbumModal, 
+      closeModal,
+      ModifyName,
+      DeleteAlbum
+     };
   }
 };
 </script>
@@ -90,4 +196,43 @@ export default {
   background-color: #f9f9f9;
 }
 
+button {
+  padding: 8px 16px;
+  margin-top: 8px;
+  margin-right: 8px;
+}
+
+.modal {
+  display: block;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
 </style>

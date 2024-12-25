@@ -34,14 +34,14 @@ public class UploadScreenshotScreen extends Screen {
     @Override
     protected void init() {
         this.descriptionField = new TextFieldWidget(this.textRenderer, this.width / 2 - 100, this.height / 2 - 50, 200, 20, Text.literal("图片描述"));
-        this.descriptionField.setSuggestion("这个人很懒，什么都没写");
+        this.descriptionField.setSuggestion("图片描述: 这个人很懒，什么都没写");
         this.descriptionField.setMaxLength(50);
         this.addSelectableChild(this.descriptionField);
         this.descriptionField.setFocusUnlocked(true);
         this.descriptionField.setChangedListener(text -> this.descriptionField.setSuggestion(null));
 
         this.albumField = new TextFieldWidget(this.textRenderer, this.width / 2 - 100, this.height / 2 - 20, 200, 20, Text.literal("相册集"));
-        this.albumField.setSuggestion("留空默认使用用户名");
+        this.albumField.setSuggestion("相册: 留空默认使用用户名");
         this.albumField.setMaxLength(15);
         this.addSelectableChild(this.albumField);
         this.albumField.setFocusUnlocked(true);
@@ -99,7 +99,7 @@ public class UploadScreenshotScreen extends Screen {
                                         .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, WEBURL))
                                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击打开图片墙网站。")))
                                 );
-                        Text message = Text.literal(MOD_NAME + "上传成功!  Photo ID: "+ uploadClass.getData())
+                        Text message = Text.literal(MOD_NAME + "上传成功! ID: "+ uploadClass.getData())
                                 .append(openWebUrlButton);
                         if (MinecraftClient.getInstance().player != null) {
                             MinecraftClient.getInstance().player.sendMessage(message, false);
