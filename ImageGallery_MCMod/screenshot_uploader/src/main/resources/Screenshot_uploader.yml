@@ -9,3 +9,9 @@ serverhost: example.com
 
 # 填写服务器端口
 serverport: 8080
+
+# 填写图片墙网址
+weburl: https://example.com:8800
+
+# CONFIG Version 请勿修改
+configversion: 1.0.0

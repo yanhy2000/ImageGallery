@@ -16,6 +16,10 @@ def split_token(request):
 #     except:
 #         return None
 
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({"code": 200, "message": "Welcome to ImageGallery API"})
+
 # [ok]获取公开照片列表
 @app.route('/api/photos_list', methods=['GET'])
 def get_photos():

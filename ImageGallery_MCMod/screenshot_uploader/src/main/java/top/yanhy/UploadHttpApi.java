@@ -47,17 +47,35 @@ public class UploadHttpApi {
 
             writer.append("--").append(boundary).append("--").append("\r\n").flush();
         }
-
-        StringBuilder response = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line.trim());
-            }
+        catch (Exception e) {
+            System.out.println("在构建请求体时发生错误: " + e.getMessage());
         }
 
-        connection.disconnect();
-        return parseResponse(String.valueOf(response));
+        StringBuilder response = new StringBuilder();
+        UploadResponse uploadResponse = null;
+        try {
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line.trim());
+                    }
+                }
+                uploadResponse = parseResponse(String.valueOf(response));
+            } else {
+                System.out.println("请求码错误: " + responseCode + " URL: " + connection.getURL());
+                uploadResponse = new UploadResponse();
+                uploadResponse.setCode(403);
+            }
+        } catch (Exception e) {
+            System.out.println("在读取响应体时发生错误: " + e.getMessage());
+            uploadResponse = new UploadResponse();
+            uploadResponse.setCode(500);
+        } finally {
+            connection.disconnect();
+        }
+        return uploadResponse;
     }
 
 

@@ -130,7 +130,7 @@ def upload_new_photo(usertoken):
         album_name = user.username
 
     if not file:
-        return jsonify({"code": 400, "message": "need file"}), 400
+        return jsonify({"code": 404, "message": "need file"}), 404
 
     today = datetime.utcnow()
     month = today.month

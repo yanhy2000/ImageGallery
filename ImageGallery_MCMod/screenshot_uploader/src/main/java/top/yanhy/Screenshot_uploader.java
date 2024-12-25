@@ -4,13 +4,11 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -18,8 +16,6 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
@@ -45,10 +41,12 @@ public class Screenshot_uploader implements ClientModInitializer {
 	public static String file_path = "";
 
 	public static final String VERSION = ConfigHandler.getModVersion(MOD_ID);
+	public static final String CONFIG_VERSION = "1.0.0";
 	public static String USERTOKEN = "";
 	public static String SERVERHOST = "";
 	public static Integer SERVERPORT = 0;
 	public static String SERVERHTTP = "";
+	public static String WEBURL = "";
 
 
 	@Override
@@ -59,6 +57,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 		SERVERHOST = ConfigHandler.getServerHost();
 		SERVERPORT = ConfigHandler.getServerPort();
 		SERVERHTTP = ConfigHandler.getServerHttp();
+		WEBURL = ConfigHandler.getWebUrl();
 		LOGGER.info("加载配置文件成功");
 
 		KeyBinding screenshotKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("截图快捷键", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_Z, "截图上传快捷键"));
@@ -139,16 +138,15 @@ public class Screenshot_uploader implements ClientModInitializer {
 						}
 				);
 			} catch (Exception e) {
-				LOGGER.error("快捷键截图失败: {}", e.getMessage());
+				LOGGER.error("截图失败: {}", e.getMessage());
 				if (MinecraftClient.getInstance().player != null) {
-					MinecraftClient.getInstance().player.sendMessage(Text.literal("快捷键截图失败，请查看日志。"), false);
+					MinecraftClient.getInstance().player.sendMessage(Text.literal("截图失败，请查看日志。"), false);
 				}
 			}
 		}
 	}
 
 	private int executeUploadCommandwithargs(FabricClientCommandSource source,String  filename) {
-		source.sendFeedback(Text.of("执行上传截图命令，文件名：" + filename));
 		MinecraftClient client = MinecraftClient.getInstance();
 		if (client.player != null) {
 			client.execute(() -> client.setScreen(new UploadScreenshotScreen(filename)));

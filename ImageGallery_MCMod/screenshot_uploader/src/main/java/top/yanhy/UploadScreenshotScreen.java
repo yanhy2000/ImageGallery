@@ -6,6 +6,9 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.toast.SystemToast;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -89,18 +92,40 @@ public class UploadScreenshotScreen extends Screen {
                 LOGGER.info("上传结果 Code={}, Message={}, Data={}", uploadClass.getCode(), uploadClass.getMessage(), uploadClass.getData());
                     if (uploadClass.getCode() == 200) {
                         LOGGER.info("上传成功. Photo ID: {}", uploadClass.getData());
+
+                        Text openWebUrlButton = Text.literal(" [打开图片墙网站] ")
+                                .setStyle(Style.EMPTY
+                                        .withColor(0x00FF00)
+                                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, WEBURL))
+                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击打开图片墙网站。")))
+                                );
+                        Text message = Text.literal(MOD_NAME + "上传成功!  Photo ID: "+ uploadClass.getData())
+                                .append(openWebUrlButton);
                         if (MinecraftClient.getInstance().player != null) {
-                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传成功！"), false);
+                            MinecraftClient.getInstance().player.sendMessage(message, false);
                         }
                     } else if (uploadClass.getCode() == 401) {
                         LOGGER.error("上传失败,Token失效. Message: {}", uploadClass.getMessage());
                         if (MinecraftClient.getInstance().player != null) {
                             MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败, 请检查用户Token信息！"), false);
-                        } else {
-                            LOGGER.error("上传失败. Message: {}", uploadClass.getMessage());
-                            if (MinecraftClient.getInstance().player != null) {
-                                MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败！"), false);
-                            }
+                        }
+                    }
+                    else if (uploadClass.getCode() == 403){
+                        LOGGER.error("上传失败,账号无权限. Message: {}", uploadClass.getMessage());
+                        if (MinecraftClient.getInstance().player != null) {
+                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败, 账号无权限！"), false);
+                        }
+                    }
+                    else if (uploadClass.getCode() == 500) {
+                        LOGGER.error("上传失败,服务器响应错误. Message: {}", uploadClass.getMessage());
+                        if (MinecraftClient.getInstance().player != null) {
+                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败, 服务器响应错误！请检查服务器通讯是否正常。"), false);
+                        }
+                    }
+                    else {
+                        LOGGER.error("上传失败. Message: {}", uploadClass.getMessage());
+                        if (MinecraftClient.getInstance().player != null) {
+                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败！"), false);
                         }
                     }
             } catch (Exception e) {

@@ -11,7 +11,7 @@ new Vue({
         subtitle: 'Browse and download images',
         photos: [],
         currentPage: 1,
-        perPage: 20,
+        perPage: 10,
         currentImage: null,
         currentIndex: 0, // 当前图片的索引
         imageModalVisible: false,
@@ -20,7 +20,7 @@ new Vue({
     },
 
     mounted() {
-        this.fetchPhotos(1,30);  // 初次加载图片列表
+        this.fetchPhotos(1,10);  // 初次加载图片列表
         // 设置 favicon
         const link = document.createElement('link');
         link.rel = 'icon';

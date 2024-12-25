@@ -6,8 +6,12 @@ import net.fabricmc.loader.api.ModContainer;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+
+import static top.yanhy.Screenshot_uploader.CONFIG_VERSION;
+
 
 public class ConfigHandler {
     private static final String CONFIG_FILE_NAME = "Screenshot_uploader.yml";
@@ -24,9 +28,15 @@ public class ConfigHandler {
                     throw new FileNotFoundException("默认配置文件未找到！");
                 }
             }
-            // 加载配置文件
             try (InputStream input = Files.newInputStream(CONFIG_PATH)) {
                 properties.load(input);
+            }
+            // 检查配置文件版本
+            String configVersion = properties.getProperty("configversion", "0");
+            if(!Objects.equals(configVersion, CONFIG_VERSION)){
+                System.out.println("配置文件版本不匹配，正在更新配置文件...");
+                Files.move(CONFIG_PATH, CONFIG_PATH.resolveSibling(CONFIG_FILE_NAME + ".bak"));
+                Files.copy(Objects.requireNonNull(ConfigHandler.class.getResourceAsStream("/" + CONFIG_FILE_NAME)), CONFIG_PATH);
             }
         } catch (IOException e) {
             throw new RuntimeException("配置文件初始化失败: " + e.getMessage());
@@ -49,5 +59,8 @@ public class ConfigHandler {
     }
     public static String getServerHttp() {
         return properties.getProperty("serverhttp", "https");
+    }
+    public static String getWebUrl() {
+        return properties.getProperty("weburl", "");
     }
 }
