@@ -1,24 +1,24 @@
 import os
 from PIL import Image
-from io import BytesIO
 import requests
-import re
 from app import db
 from app.models import Photo, Album, User
 from flask import request, jsonify, send_file, redirect
-from werkzeug.utils import secure_filename
 from app.utils import generate_uuid_filename, get_project_root
 from datetime import datetime
 from app.config import Config
-from flask_cors import CORS
+from math import ceil
+
 # 获取照片列表（公开）
 def get_photo_list():
     current_page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    per_page = request.args.get('perpage', 10, type=int)
     query = Photo.query
     pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
     photos = pagination.items
     photo_list = []
+    total_photos = pagination.total
+    total_pages = ceil(total_photos / per_page)
     for photo in photos:
         username = User.query.filter_by(userid=photo.userid).first().username
         photo_list.append({
@@ -32,8 +32,9 @@ def get_photo_list():
         "code": 200,
         "message": "success",
         "data": {
-            "total": pagination.total,
-            "per_page": per_page, 
+            "tatolPhotos": total_photos,
+            "totalPages": total_pages,
+            "per_page": per_page,
             "current_page": current_page,
             "photos": photo_list 
         }
@@ -47,11 +48,13 @@ def get_photolist(usertoken):
     if user.permissions < 1:
         return jsonify({"code": 403, "message": "permission denied"}), 403
     current_page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    per_page = request.args.get('perpage', 10, type=int)
     query = Photo.query
     pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
     photos = pagination.items
     photo_list = []
+    total_photos = pagination.total
+    total_pages = ceil(total_photos / per_page)
     for photo in photos:
         album = Album.query.filter_by(albumid=photo.albumid).first()
         photo_list.append({
@@ -70,14 +73,15 @@ def get_photolist(usertoken):
         "code": 200,
         "message": "success",
         "data": {
-            "total": pagination.total,
+            "tatolPhotos": total_photos,
+            "totalPages": total_pages,
             "per_page": per_page,
             "current_page": current_page,
             "photos": photo_list
         }
     })
 
-# 创建本地缩略图并上传
+# 创建本地缩略图
 def create_thumbnail(image_path):
     with Image.open(image_path) as img:
         if img.mode == 'RGBA':
@@ -86,29 +90,26 @@ def create_thumbnail(image_path):
         thumbnail_path_dir = os.path.join("uploads/.thumbnails")
         if not os.path.exists(thumbnail_path_dir):
             os.makedirs(thumbnail_path_dir)
-        thumbnail_path = f"{thumbnail_path_dir}/{generate_uuid_filename()}"
+        thumbnail_path = f"{thumbnail_path_dir}/{generate_uuid_filename()}.jpg"
         img.save(thumbnail_path, format="JPEG")
+        return thumbnail_path
+        # if not Config.SUPERBED_TOKEN == "false":
+        #     #使用聚合图床API,后期可替换为其他图床API或者做兼容处理
+        #     url = "https://api.superbed.cn/upload"
+        #     with open(thumbnail_path, "rb") as f:
+        #         resp = requests.post(url, data={"token": Config.SUPERBED_TOKEN}, files={"file": f})
+        #     if resp.status_code == 200:
+        #         os.remove(thumbnail_path)
+        #         return resp.json().get("url")
+        # else:#不使用聚合图床API，本地存储缩略图
+        #     return thumbnail_path
 
-        if not Config.SUPERBED_TOKEN == "false":
-            #使用聚合图床API,后期可替换为其他图床API或者做兼容处理
-            url = "https://api.superbed.cn/upload"
-            with open(thumbnail_path, "rb") as f:
-                resp = requests.post(url, data={"token": Config.SUPERBED_TOKEN}, files={"file": f})
-            if resp.status_code == 200:
-                os.remove(thumbnail_path)
-                return resp.json().get("url")
-        else:#不使用聚合图床API，本地存储缩略图
-            return thumbnail_path
-        return None
-
-# 删除缩略图(云端有bug，暂时不使用云端删除)
+# 删除缩略图
 def del_thumbnail(photo_id):
     photo = Photo.query.filter_by(photoid=photo_id).first()
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
-    
     thumbnail_url = photo.thumbnail
-    # 删除本地缩略图
     if Config.SUPERBED_TOKEN == "false" and thumbnail_url.startswith("uploads/.thumbnails/"):
         os.remove(thumbnail_url)
         return jsonify({"code": 200, "message": "Thumbnail deleted"}), 200
@@ -145,13 +146,9 @@ def upload_new_photo(usertoken):
     file_path = os.path.join(upload_dir, filename)
     file.save(file_path)
     try:
-
-        # 生成缩略图并上传
         thumbnail_url = create_thumbnail(file_path)
-        # 保存图片信息到数据库
         album = Album.query.filter_by(name=album_name, userid=user.userid).first()
         if not album:
-            # 如果相册不存在，创建新相册
             album = Album(name=album_name, userid=user.userid)
             db.session.add(album)
             db.session.commit()
@@ -220,23 +217,22 @@ def delete_photo(usertoken):
 # 下载照片（通过photo_id获取文件；如果thumbnail为true，则获取缩略图）
 def get_photo_file(photo_id, thumbnail=1):
     photo = Photo.query.filter_by(photoid=photo_id).first()
+    isattachment = False
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
 
     # 获取文件路径
     if thumbnail==1:
-        if "http" in photo.thumbnail:
-            return redirect(photo.thumbnail)  # 重定向到缩略图URL
-        else:
-            file_path = os.path.join(photo.thumbnail)
+        file_path = os.path.join(get_project_root(), photo.thumbnail)
     else:
         file_path = os.path.join(get_project_root(), photo.photo_url)
+        isattachment = True
 
     if not os.path.exists(file_path):
         return jsonify({"code": 404, "message": "File not found"}), 404
 
     try:
-        return send_file(file_path, as_attachment=True)
+        return send_file(file_path, as_attachment=isattachment)
     except Exception as e:
         return jsonify({"code": 500, "message": f"Error reading file: {str(e)}"}), 500
 

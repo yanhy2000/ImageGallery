@@ -2,6 +2,7 @@ from flask import jsonify, request
 from app import db
 from app.models import User
 from app.utils import generate_user_uuid
+from math import ceil
 
 def get_all_users(usertoken):
     user = User.query.filter_by(usertoken=usertoken).first()
@@ -9,7 +10,16 @@ def get_all_users(usertoken):
         return jsonify({"code": 401, "message": "Token is invalid"}), 401
     if user.permissions < 1:
         return jsonify({"code": 403, "message": "Permissions denied"}), 403
-    users = User.query.all()
+    
+    current_page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('perpage', 10, type=int)
+    print(current_page, per_page)
+    query = User.query
+    pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
+    users = pagination.items
+    user_list = []
+    total_users = pagination.total
+    total_pages = ceil(total_users / per_page)
     user_list = []
     for u in users:
         user_list.append({
@@ -22,7 +32,11 @@ def get_all_users(usertoken):
         "code": 200,
         "message": "success",
         "data": {
-            "users": user_list
+            "users": user_list,
+            "per_page": per_page,
+            "current_page": current_page,
+            "totalUsers": total_users,
+            "totalPages": total_pages
         }
     })
 

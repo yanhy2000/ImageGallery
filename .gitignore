@@ -8,7 +8,8 @@ instance/
 uploads/
 .vscode/
 .DS_Store
-
+ImageGallery_Web_bak/
+tmp
 # gradle
 .github/
 .gradle/

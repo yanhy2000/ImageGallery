@@ -23,9 +23,9 @@
           <tr v-for="photo in photos" :key="photo.photoid">
             <td>{{ photo.photoid }}</td>
             <td>{{ photo.name }}</td>
-            <td><button @click="_showModifyDescModal(photo)">修改</button> {{ photo.desc }} </td>
+            <td><button @click="PershowModifyDescModal(photo)">修改</button> {{ photo.desc }} </td>
             <td>{{ photo.upload_time }}</td>
-            <td><img :src="photo.thumbnail" :alt="photo.name" class="thumbnail"></td>
+            <td><img :src="photo.thumbnailUrl" :alt="photo.name" class="thumbnail"></td>
             <td>
               <button @click="downloadImage(photo.photoid)">下载原图</button>
             </td>
@@ -33,7 +33,7 @@
             <td>{{ photo.albumid }}</td>
             <td>{{ photo.userid }}</td>
             <td>{{ photo.username }}</td>
-            <td><button @click="_showDeletePhotoModal(photo)">删除</button></td>
+            <td><button @click="PershowDeletePhotoModal(photo)">删除</button></td>
           </tr>
         </tbody>
       </table>
@@ -56,7 +56,19 @@
       </div>
       </div>
     </div>
-    
+    <div class="pagination">
+      <button @click="changePage('first')" :disabled="currentPage <= 1">首页</button>
+      <button @click="changePage('prev')" :disabled="currentPage <= 1">上一页</button>
+      <span>第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
+      <button @click="changePage('next')" :disabled="currentPage >= totalPages">下一页</button>
+      <button @click="changePage('last')" :disabled="currentPage >= totalPages">尾页</button>
+    </div>
+    <div class="per-page-selector">
+      <label for="perPageSelect">每页展示数量：</label>
+      <select id="perPageSelect" v-model="perPage" @change="fetchImages">
+        <option v-for="option in perPageOptions" :key="option" :value="option">{{ option }}</option>
+      </select>
+    </div>
   </div>
 </template>
 
@@ -75,12 +87,29 @@ export default {
     const showModifyDescModal = ref(false);
     const showDeletePhotoModal = ref(false);
 
-    
+    const currentPage = ref(1);
+    const perPage = ref(10);
+    const perPageOptions = [5, 10, 20, 50];
+    const totalPhotos = ref(0);
+    const totalPages = ref(0);
+    const thumbnailUrl = ref(null);
+
+    const changePage = (action) => {
+      if (action === 'first') {
+        currentPage.value = 1;
+      } else if (action === 'prev' && currentPage.value > 1) {
+        currentPage.value--;
+      } else if (action === 'next' && currentPage.value < totalPages.value) {
+        currentPage.value++;
+      } else if (action === 'last') {
+        currentPage.value = totalPages.value;
+      }
+      fetchImages();
+    };
+
     const fetchImages = async () => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/photolist`, {
-          page: 1,
-          perpage: 10
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/photolist?page=${currentPage.value}&perpage=${perPage.value}`, {
         }, {
           headers: {
             'Content-Type': 'application/json',
@@ -96,11 +125,37 @@ export default {
 
         if (data.code === 200) {
           photos.value = data.data.photos;
+          totalPhotos.value = data.data.totalPhotos;
+          totalPages.value = data.data.totalPages;
+          await fetchAllThumbnails();
         } else {
           error.value = data.message;
         }
       } catch (e) {
         error.value = e.message;
+      }
+    };
+    const fetchThumbnail = async (photoid) => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/getphoto?photoid=${photoid}`);
+        if (response.ok) {
+          return URL.createObjectURL(await response.blob());
+        } else {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+      } catch (e) {
+        console.error('Failed to fetch thumbnail:', e);
+        return '';
+      }
+    }
+
+    const fetchAllThumbnails = async () => {
+      for (let i = 0; i < photos.value.length; i++) {
+        const photo = photos.value[i];
+        const thumbnailUrl = await fetchThumbnail(photo.photoid);
+        if (thumbnailUrl) {
+          photos.value[i] = { ...photo, thumbnailUrl };
+        }
       }
     };
 
@@ -162,12 +217,12 @@ export default {
       }
     };
 
-    const _showModifyDescModal = (photo) => {
+    const PershowModifyDescModal = (photo) => {
       selectedPhoto.value = photo;
       showModifyDescModal.value = true;
     };
 
-    const _showDeletePhotoModal = (photo) => {
+    const PershowDeletePhotoModal = (photo) => {
       selectedPhoto.value = photo;
       showDeletePhotoModal.value = true;
     };
@@ -181,24 +236,32 @@ export default {
 
 
     onMounted(fetchImages);
-
     return { 
       photos, 
       error,
       selectedPhoto,
       showModifyDescModal,
       showDeletePhotoModal,
-      _showModifyDescModal,
-      _showDeletePhotoModal,
+      PershowModifyDescModal,
+      PershowDeletePhotoModal,
       closeModal,
       ModifyDesc,
-      DeletePhoto
+      DeletePhoto,
+      changePage,
+      currentPage,
+      perPage,
+      perPageOptions,
+      totalPhotos,
+      totalPages,
+      fetchImages,
+      fetchThumbnail,
+      thumbnailUrl
      };
   },
   methods: {
     downloadImage(photoid) {
       console.log(photoid);
-      const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}/api/getphoto?photoid=${photoid}&thumbnail=1`;
+      const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}/api/getphoto?photoid=${photoid}&thumbnail=0`;
       window.location.href = downloadUrl;
     }
   }

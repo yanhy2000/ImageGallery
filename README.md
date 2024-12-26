@@ -30,7 +30,7 @@
 # 开发进展
 - [x] 下载图片（Get /api/getphoto）
 - [x] 上传图片（Post /api/upload）
-- [x] 删除图片（Get /api/delphoto）
+- [x] 删除图片（Get /api/delphoto）(图床接入异常，暂时不提供删除图床图片功能)
 - [x] 获取图片信息（Get /api/getphotoinfo_all）
 - [x] 获取图片公开信息（Get /api/getphotoinfo）
 - [x] 获取图片列表（Get /api/photos_list）
@@ -40,23 +40,17 @@
 - [x] 删除用户（Post /api/deluser）
 - [x] 修改用户（Post /api/setuser）
 - [x] 不使用图床时切换本地缩略图存储
-- [ ] 后台Web管理系统
-- [ ] 后台Web管理接口-图片管理
-- [x] 后台Web管理接口-用户管理(Post /api/userlist)
-- [x] 后台Web管理接口-相册管理(Post /api/albumlist)
-- [ ] 创建相册（Post /api/createalbum）
-- [ ] 更新相册（PUT /api/setalbum）
-- [ ] 获取相册信息（GET /api/getalbuminfo）
-- [ ] 获取用户相册列表（GET /api/getalbums）
-- [ ] 删除相册（DELETE /api/album）
-- [ ] 获取用户相册列表（GET /api/getalbums）
-- [ ] 获取相册中的图片列表（GET /api/getphotosbyalbum）
+- [x] 后台Web管理系统
+- [x] 后台Web管理接口-图片管理
+- [x] 后台Web管理接口-用户管理
+- [x] 后台Web管理接口-相册管理
+- [x] 创建相册（Post /api/createalbum）
+- [x] 更新相册（PUT /api/setalbum）
+- [x] 删除相册（DELETE /api/album）
 - [ ] 图片管理客户端
 - [ ] 点赞like系统
 - [ ] 评论系统
-- [ ] 账号登录系统
-- [ ] 图片管理系统
-- [ ] 接入mc模组截图快捷上传
+- [x] 接入mc模组截图快捷上传
 
 # 数据库设计
 ## 数据库结构设计

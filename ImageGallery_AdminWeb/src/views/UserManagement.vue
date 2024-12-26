@@ -19,7 +19,7 @@
           <td>{{ permissionText(user.permissions) }}</td>
           <td>{{ user.usertoken }}</td>
           
-          <td v-if="index !== 0">
+          <td v-if="user.userid!==1">
             <button @click="prepareRegenToken(user)">重新生成token</button>
             <button @click="prepareBanUser(user)">封禁/解禁用户</button>
             <button @click="showDeleteUserModal(user)">删除用户</button>
@@ -61,12 +61,26 @@
         <button @click="closeModal">取消</button>
       </div>
     </div>
+    <div class="pagination">
+      <button @click="changePage('first')" :disabled="currentPage <= 1">首页</button>
+      <button @click="changePage('prev')" :disabled="currentPage <= 1">上一页</button>
+      <span>第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
+      <button @click="changePage('next')" :disabled="currentPage >= totalPages">下一页</button>
+      <button @click="changePage('last')" :disabled="currentPage >= totalPages">尾页</button>
+    </div>
+    <div class="per-page-selector">
+      <label for="perPageSelect">每页展示数量：</label>
+      <select id="perPageSelect" v-model="perPage" @change="fetchUsers">
+        <option v-for="option in perPageOptions" :key="option" :value="option">{{ option }}</option>
+      </select>
+    </div>
+
   </div>
 </template>
 
 
 <script>
-import { ref } from 'vue';
+import { ref  } from 'vue';
 import axios from 'axios';
 
 export default {
@@ -80,11 +94,28 @@ export default {
     const showBanModal = ref(false);
     const showRegenTokenModal = ref(false);
 
+    const currentPage = ref(1);
+    const perPage = ref(10);
+    const perPageOptions = [5, 10, 20, 50];
+    const totalUsers = ref(0);
+    const totalPages = ref(0);
+
+    const changePage = (action) => {
+      if (action === 'first') {
+        currentPage.value = 1;
+      } else if (action === 'prev' && currentPage.value > 1) {
+        currentPage.value--;
+      } else if (action === 'next' && currentPage.value < totalPages.value) {
+        currentPage.value++;
+      } else if (action === 'last') {
+        currentPage.value = totalPages.value;
+      }
+      fetchUsers();
+    };
+
     const fetchUsers = async () => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/userlist`, {
-          page: 1,
-          perpage: 10
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/userlist?page=${currentPage.value}&perpage=${perPage.value}`, {
         }, {
           headers: {
             'Content-Type': 'application/json',
@@ -98,6 +129,8 @@ export default {
         const data = response.data;
         if (data.code === 200) {
           users.value = data.data.users;
+          totalUsers.value = data.data.totalUsers;
+          totalPages.value = data.data.totalPages;
         } else {
           error.value = data.message;
         }
@@ -105,6 +138,7 @@ export default {
         error.value = e.message;
       }
     };
+
     const showAddUserModal = () => {
       modalType.value = 'add';
       showModal.value = true;
@@ -289,7 +323,14 @@ export default {
       regentoken,
       prepareRegenToken,
       closeRegenTokenModal,
-      showRegenTokenModal
+      showRegenTokenModal,
+      currentPage,
+      perPage,
+      perPageOptions,
+      totalUsers,
+      totalPages,
+      changePage,
+      fetchUsers
     };
   }
 };

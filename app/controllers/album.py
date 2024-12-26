@@ -3,6 +3,7 @@ from app.models import Album
 from app.models import Photo, Album, User
 from app import db
 import os
+from math import ceil
 
 def get_all_albums(usertoken):
     user = User.query.filter_by(usertoken=usertoken).first()
@@ -11,8 +12,14 @@ def get_all_albums(usertoken):
     if user.permissions < 1:
         return jsonify({"code": 403, "message": "permission denied"}), 403
     
-    albums = Album.query.all()
+    current_page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('perpage', 10, type=int)
+    query = Album.query
+    pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
+    albums = pagination.items
     album_list = []
+    total_albums = pagination.total
+    total_pages = ceil(total_albums / per_page)
     for album in albums:
         album_list.append({
             'albumid': album.albumid,
@@ -24,6 +31,10 @@ def get_all_albums(usertoken):
             "code": 200,
             "message": "success",
             "data": {
+                "tatolAlbums": total_albums,
+                "totalPages": total_pages,
+                "per_page": per_page,
+                "current_page": current_page,
                 "albums": album_list
             }
         })
