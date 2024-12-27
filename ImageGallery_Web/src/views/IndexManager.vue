@@ -9,18 +9,13 @@
 
         <!-- 图片展示区域 -->
         <div class="image-gallery">
-            <div v-for="photo in photos" :key="photo.photoid" class="image-card" @mouseover="hoverImage(photo.photoid)"
-                @mouseleave="hoverImage(photo.photoid)" :style="imageStyle" @click="getPhotoInfo(photo.photoid)">
+            <div v-for="photo in photos" :key="photo.photoid" class="image-card" @click="getPhotoInfo(photo.photoid)">
                 <img :src="photo.thumbnailUrl" :alt="photo.desc">
                 <div class="overlay">
                     <div class="overlay-content">
                         <p>{{ photo.upload_user }}</p>
                         <p>{{ photo.upload_time }}</p>
                         <p>{{ photo.desc }}</p>
-                        <button @click.stop="downloadImage(photo.photoid)"
-                            :style="isHovered(photo.photoid) ? { transform: 'scale(0.8)' } : {}">
-                            下载原图
-                        </button>
                     </div>
                 </div>
             </div>
@@ -43,16 +38,12 @@
         <!-- 图片查看模态框 -->
         <div v-if="imageModalVisible" class="image-modal" @click="toggleImageSize">
             <div class="modal-content">
-                <span @click="closeModal" class="close-btn">×</span>
-                <!-- 左右切换按钮 -->
-                <button class="prev-btn" @click="prevImage">&lt;</button>
-                <button class="next-btn" @click="nextImage">&gt;</button>
                 <img :src="currentImage ? currentImage.thumbnailUrl : ''" alt="Current Image" class="modal-image">
                 <div class="image-info">
-                    <p>{{ currentImage ? currentImage.name : '' }}</p>
-                    <p>{{ currentImage ? currentImage.desc : '' }}</p>
-                    <p>{{ currentImage ? currentImage.upload_time : '' }}</p>
-                    <p>{{ currentImage ? currentImage.uploader : '' }}</p>
+                    <p>描述：{{ currentImage ? currentImage.desc : '' }}</p>
+                    <p>上传时间：{{ currentImage ? currentImage.upload_time : '' }}</p>
+                    <p>上传者：{{ currentImage ? currentImage.uploader : '' }}</p>
+                    <p>相册: {{ currentImage ? currentImage.albumname : '' }}</p>
                 </div>
             </div>
         </div>
@@ -83,22 +74,6 @@ export default {
         const perPageOptions = [10, 20, 30, 40, 50];
         const error = ref(null);
 
-        const imageStyle = computed(() => {
-            const totalImages = photos.value.length;
-            const baseSize = 250;
-            let scale = 1;
-
-            if (totalImages <= 5) {
-                scale = 1.2;
-            } else if (totalImages > 15) {
-                scale = 0.8;
-            }
-
-            return {
-                width: `${baseSize * scale}px`,
-                height: `auto`,
-            };
-        });
 
         const changePage = (action) => {
             if (action === 'first') {
@@ -166,6 +141,8 @@ export default {
 
         // 获取单张图片信息
         const getPhotoInfo = async (photoid) => {
+            hoveredPhotoId.value = photoid;
+            console.log(hoveredPhotoId.value);
             try {
                 const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/getphotoinfo?photoid=${photoid}`);
                 if (response.data.code === 200) {
@@ -175,8 +152,6 @@ export default {
                         currentImage.value= { ...currentImage, thumbnailUrl };
                     }
                     imageModalVisible.value = true;
-                    await nextTick();
-                    document.querySelector('.modal-image').classList.add('zoomed');
                 } else {
                     alert('Failed to load photo info');
                 }
@@ -185,31 +160,15 @@ export default {
             }
         };
 
-        // 下载图片
-        const downloadImage = (photoid) => {
-            const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}/api/getphoto?photoid=${photoid}`;
-            window.location.href = downloadUrl;
-        };
-
-        // 关闭模态框
         const closeModal = () => {
             imageModalVisible.value = false;
-            document.querySelector('.modal-image').classList.remove('zoomed');
+            hoveredPhotoId.value = null;
+            currentImage.value = null;
+            // document.querySelector('.modal-image').classList.remove('zoomed');
         };
 
-        // 图片点击放大，切换图片
         const toggleImageSize = () => {
             imageModalVisible.value = !imageModalVisible.value;
-        };
-
-        // 鼠标悬停在图片上时
-        const hoverImage = (photoid) => {
-            hoveredPhotoId.value = photoid;
-        };
-
-        // 判断图片是否被悬停
-        const isHovered = (photoid) => {
-            return hoveredPhotoId.value === photoid;
         };
 
         // 切换白天/夜间模式
@@ -250,15 +209,12 @@ export default {
             isNightMode,
             totalPhotos,
             error,
-            imageStyle,
             changePage,
             fetchPhotos,
             getPhotoInfo,
-            downloadImage,
             closeModal,
             toggleImageSize,
             toggleMode,
-            isHovered,
         };
     },
 };
@@ -443,11 +399,12 @@ button:hover {
     text-align: center;
 }
 
-.modal-image:not(.zoomed):hover {
-    transform: scale(1.05);
+/* 分页按钮 */
+.pagination {
+    text-align: center;
 }
-
-.modal-image.zoomed {
-    transform: scale(1);
+/* 每页展示数量 */
+.per-page-selector {
+    text-align: center;
 }
 </style>

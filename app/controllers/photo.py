@@ -246,7 +246,7 @@ def get_photo_info_all(photo_id, usertoken):
         return jsonify({"code": 404, "message": "Photo not found"}), 404
     if photo.userid != user.userid and user.permissions < 0:
         return jsonify({"code": 403, "message": "permission denied"}), 403
-
+    albumname = Album.query.filter_by(albumid=photo.albumid).first().name
     return jsonify({
         "code": 200,
         "message": "success",
@@ -257,7 +257,7 @@ def get_photo_info_all(photo_id, usertoken):
             "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
             "thumbnail": photo.thumbnail,
             "photo_url": photo.photo_url,
-            "albumid": photo.albumid,
+            "albumname": albumname,
             "userid": photo.userid
         }
     })
