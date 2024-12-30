@@ -268,6 +268,7 @@ def get_photo_info(photo_id):
     username = User.query.filter_by(userid=photo.userid).first().username
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
+    albumname = Album.query.filter_by(albumid=photo.albumid).first().name
     return jsonify({
         "code": 200,
         "message": "success",
@@ -279,6 +280,7 @@ def get_photo_info(photo_id):
             "uploader": username,
             "thumbnail": photo.thumbnail,
             "photo_url": photo.photo_url,
+            "albumname": albumname,
             "userid": photo.userid
         }
     })

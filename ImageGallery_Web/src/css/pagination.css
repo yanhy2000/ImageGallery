@@ -1,0 +1,20 @@
+/* 分页按钮 */
+.pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    margin: 0 5px;
+    /* Add some space between buttons */
+}
+
+.page-info {
+    margin: 0 10px;
+    /* Separate page info from buttons */
+}
+
+/* 每页展示数量 */
+.per-page-selector {
+    text-align: center;
+}

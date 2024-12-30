@@ -3,14 +3,13 @@
         <header class="header">
             <h1>{{ title }}</h1>
             <h2>{{ subtitle }}</h2>
-            <!-- 白天/夜间模式按钮 -->
-            <button class="mode-toggle-btn" @click="toggleMode">🌙</button>
+            <button class="mode-toggle-btn" @click="toggleDarkMode">
+                <i :class="DarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i> </button>
         </header>
 
-        <!-- 图片展示区域 -->
-        <div class="image-gallery">
+        <main class="image-gallery">
             <div v-for="photo in photos" :key="photo.photoid" class="image-card" @click="getPhotoInfo(photo.photoid)">
-                <img :src="photo.thumbnailUrl" :alt="photo.desc">
+                <img :src="photo.thumbnailUrl" :alt="photo.desc" loading="lazy">
                 <div class="overlay">
                     <div class="overlay-content">
                         <p>{{ photo.upload_user }}</p>
@@ -19,15 +18,24 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
 
         <div class="pagination">
-            <button @click="changePage('first')" :disabled="currentPage <= 1">首页</button>
-            <button @click="changePage('prev')" :disabled="currentPage <= 1">上一页</button>
-            <span>第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
-            <button @click="changePage('next')" :disabled="currentPage >= totalPages">下一页</button>
-            <button @click="changePage('last')" :disabled="currentPage >= totalPages">尾页</button>
+            <button @click="changePage('first')" :disabled="currentPage <= 1" title="首页">
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
+            <button @click="changePage('prev')" :disabled="currentPage <= 1" title="上一页">
+                <i class="fa-solid fa-angle-left"></i>
+            </button>
+            <span class="page-info">第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+            <button @click="changePage('next')" :disabled="currentPage >= totalPages" title="下一页">
+                <i class="fa-solid fa-angle-right"></i>
+            </button>
+            <button @click="changePage('last')" :disabled="currentPage >= totalPages" title="尾页">
+                <i class="fa-solid fa-angles-right"></i>
+            </button>
         </div>
+
         <div class="per-page-selector">
             <label for="perPageSelect">每页展示数量：</label>
             <select id="perPageSelect" v-model="perPage" @change="fetchImages">
@@ -35,16 +43,19 @@
             </select>
         </div>
 
-        <!-- 图片查看模态框 -->
-        <div v-if="imageModalVisible" class="image-modal" @click="toggleImageSize">
-            <div class="modal-content">
-                <img :src="currentImage ? currentImage.thumbnailUrl : ''" alt="Current Image" class="modal-image">
+        <div v-if="imageModalVisible" class="image-modal" @click="handleModalBackgroundClick">
+            <div class="modal-content" @click.stop>
+                <img :src="currentThumbnailUrl ? currentThumbnailUrl : ''" :alt="currentImage ? currentImage.desc : ''"
+                    class="modal-image">
                 <div class="image-info">
-                    <p>描述：{{ currentImage ? currentImage.desc : '' }}</p>
-                    <p>上传时间：{{ currentImage ? currentImage.upload_time : '' }}</p>
-                    <p>上传者：{{ currentImage ? currentImage.uploader : '' }}</p>
-                    <p>相册: {{ currentImage ? currentImage.albumname : '' }}</p>
+                    <p>描述：{{ currentImage.desc }}</p>
+                    <p>上传时间：{{ currentImage.upload_time }}</p>
+                    <p>上传者：{{ currentImage.uploader }}</p>
+                    <p>相册：{{ currentImage.albumname }}</p>
                 </div>
+                <button @click="closeImageModal" class="close-button" title="关闭">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
         </div>
 
@@ -52,7 +63,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 
 export default {
@@ -66,13 +77,12 @@ export default {
         const totalPages = ref(1);
         const perPage = ref(10);
         const currentImage = ref(null);
-        const currentIndex = ref(0);
+        const currentThumbnailUrl = ref(null);
         const imageModalVisible = ref(false);
-        const hoveredPhotoId = ref(null);
-        const isNightMode = ref(false);
         const totalPhotos = ref(0);
         const perPageOptions = [10, 20, 30, 40, 50];
         const error = ref(null);
+        const DarkMode = ref(false);
 
 
         const changePage = (action) => {
@@ -139,18 +149,13 @@ export default {
             }
         };
 
-        // 获取单张图片信息
         const getPhotoInfo = async (photoid) => {
-            hoveredPhotoId.value = photoid;
-            console.log(hoveredPhotoId.value);
             try {
                 const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/getphotoinfo?photoid=${photoid}`);
                 if (response.data.code === 200) {
                     currentImage.value = response.data.data;
-                    const thumbnailUrl = await fetchThumbnail(photoid);
-                    if (thumbnailUrl) {
-                        currentImage.value= { ...currentImage, thumbnailUrl };
-                    }
+                    currentThumbnailUrl.value = await fetchThumbnail(photoid);
+                    console.log(currentThumbnailUrl.value);
                     imageModalVisible.value = true;
                 } else {
                     alert('Failed to load photo info');
@@ -160,37 +165,64 @@ export default {
             }
         };
 
-        const closeModal = () => {
+        const closeImageModal = () => {
             imageModalVisible.value = false;
-            hoveredPhotoId.value = null;
             currentImage.value = null;
-            // document.querySelector('.modal-image').classList.remove('zoomed');
+            currentThumbnailUrl.value = null;
         };
 
-        const toggleImageSize = () => {
-            imageModalVisible.value = !imageModalVisible.value;
+        const openImageModal = () => {
+            imageModalVisible.value = true;
         };
 
-        // 切换白天/夜间模式
-        const toggleMode = () => {
-            isNightMode.value = !isNightMode.value;
-            if (isNightMode.value) {
-                document.body.classList.add('night-mode');
-            } else {
-                document.body.classList.remove('night-mode');
+        const handleEscKey = (event) => {
+            if (event.key === 'Escape' && imageModalVisible.value) {
+                imageModalVisible.value = false;
             }
         };
 
+        const handleModalBackgroundClick = (event) => {
+            if (event.target === event.currentTarget) {
+                imageModalVisible.value = false;
+            }
+        };
+
+        const toggleDarkMode = () => {
+            DarkMode.value = !DarkMode.value;
+            if (DarkMode.value) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        };
+
+        const checkDarkMode = () => {
+            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+                if (prefersDarkMode.matches) {
+                    DarkMode.value = true;
+                    document.body.classList.add('dark-mode');
+                } else {
+                    DarkMode.value = false;
+                    document.body.classList.remove('dark-mode');
+                }
+            prefersDarkMode.addEventListener('change', () => {});
+        }
+
         onMounted(() => {
             fetchPhotos();
+            checkDarkMode();
             const link = document.createElement('link');
             link.rel = 'icon';
             link.href = 'img/favicon.ico';
             document.head.appendChild(link);
+            document.addEventListener('keydown', handleEscKey);
+
+
         });
 
         onBeforeUnmount(() => {
-            // 清理逻辑
+            document.removeEventListener('keydown', handleEscKey);
+            prefersDarkMode.removeEventListener('change', listener);
         });
 
         return {
@@ -203,208 +235,27 @@ export default {
             perPage,
             perPageOptions,
             currentImage,
-            currentIndex,
+            currentThumbnailUrl,
             imageModalVisible,
-            hoveredPhotoId,
-            isNightMode,
             totalPhotos,
             error,
             changePage,
             fetchPhotos,
             getPhotoInfo,
-            closeModal,
-            toggleImageSize,
-            toggleMode,
+            closeImageModal,
+            openImageModal,
+            toggleDarkMode,
+            DarkMode,
+            handleModalBackgroundClick,
         };
     },
 };
 </script>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f5f5f5;
-    color: #33333373;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body.night-mode {
-    background-color: #2c2c2c;
-    color: #96fff6;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-body.night-mode .header h1 {
-    color: #ddd !important;
-}
-
-body.night-mode .header h2 {
-    color: #fff !important;
-}
-
-.mode-toggle-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 10px 10px;
-    background-color: #2fe4eb81;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 18px;
-    transition: background-color 0.3s;
-}
-
-.mode-toggle-btn:hover {
-    background-color: #3e86f157;
-}
-
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('img/background.png') no-repeat center center/cover;
-    z-index: -1;
-    filter: blur(8px);
-}
-
-.container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 10px;
-}
-
-.header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.header h1 {
-    font-size: 36px;
-    color: #333;
-}
-
-.header h2 {
-    font-size: 18px;
-    color: #555;
-}
-
-.image-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-.image-card {
-    position: relative;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.image-card:hover {
-    transform: scale(1.05);
-}
-
-.image-card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-    transition: transform 0.3s ease;
-}
-
-.image-card .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 8px;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.image-card .overlay-content {
-    text-align: center;
-    padding: 10px;
-}
-
-.image-card:hover .overlay {
-    opacity: 1;
-}
-
-button {
-    background-color: #ff6600;
-    border: none;
-    color: white;
-    padding: 8px 16px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
-    transform: scale(1);
-}
-
-button:hover {
-    background-color: #e65c00;
-}
-
-.image-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 90%;
-    max-height: 80%;
-    overflow-y: auto;
-}
-
-.modal-image {
-    max-width: 100%;
-    height: auto;
-    transition: transform 0.3s ease;
-}
-
-.image-info {
-    margin-top: 20px;
-    text-align: center;
-}
-
-/* 分页按钮 */
-.pagination {
-    text-align: center;
-}
-/* 每页展示数量 */
-.per-page-selector {
-    text-align: center;
-}
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+@import '@/css/index.css';
+@import '@/css/modal.css';
+@import '@/css/pagination.css';
+@import '@/css/btn.css';
 </style>
