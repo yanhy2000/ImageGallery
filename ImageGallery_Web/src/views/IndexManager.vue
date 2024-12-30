@@ -38,9 +38,11 @@
 
         <div class="per-page-selector">
             <label for="perPageSelect">每页展示数量：</label>
-            <select id="perPageSelect" v-model="perPage" @change="fetchImages">
-                <option v-for="option in perPageOptions" :key="option" :value="option">{{ option }}</option>
-            </select>
+            <div class="custom-select-wrapper">
+                <select id="perPageSelect" v-model="perPage" @change="fetchPhotos" class="custom-select">
+                    <option v-for="option in perPageOptions" :key="option" :value="option">{{ option }}</option>
+                </select>
+            </div>
         </div>
 
         <div v-if="imageModalVisible" class="image-modal" @click="handleModalBackgroundClick">
@@ -198,14 +200,14 @@ export default {
 
         const checkDarkMode = () => {
             const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
-                if (prefersDarkMode.matches) {
-                    DarkMode.value = true;
-                    document.body.classList.add('dark-mode');
-                } else {
-                    DarkMode.value = false;
-                    document.body.classList.remove('dark-mode');
-                }
-            prefersDarkMode.addEventListener('change', () => {});
+            if (prefersDarkMode.matches) {
+                DarkMode.value = true;
+                document.body.classList.add('dark-mode');
+            } else {
+                DarkMode.value = false;
+                document.body.classList.remove('dark-mode');
+            }
+            prefersDarkMode.addEventListener('change', () => { });
         }
 
         onMounted(() => {
