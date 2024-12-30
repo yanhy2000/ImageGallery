@@ -67,6 +67,7 @@
 <script>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
+import { cachePhoto, getCachedPhoto, cleanExpiredPhotos } from '@/services/cacheService';
 
 export default {
     name: 'IndexManager',
@@ -114,7 +115,13 @@ export default {
                     photos.value = data.data.photos;
                     totalPhotos.value = data.data.totalPhotos;
                     totalPages.value = data.data.totalPages;
-                    await fetchAllThumbnails();
+                    for (let i = 0; i < photos.value.length; i++) {
+                        const photo = photos.value[i];
+                        const thumbnailUrl = await fetchThumbnail(photo.photoid);
+                        if (thumbnailUrl) {
+                            photos.value[i] = { ...photo, thumbnailUrl };
+                        }
+                    }
                 }
                 else {
                     error.value = data.message;
@@ -127,29 +134,38 @@ export default {
                 error.value = e.message;
             }
         };
-        const fetchThumbnail = async (photoid) => {
+        const fetchThumbnail = async (photoId) => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/getphoto?photoid=${photoid}`);
+                const cachedPhoto = await getCachedPhoto(photoId);
+
+                if (cachedPhoto) {
+                    console.log(`Using cached thumbnail for photo ${photoId}`);
+
+                    if (cachedPhoto.blob) {
+                        return URL.createObjectURL(cachedPhoto.blob);
+                    }
+
+                    return cachedPhoto.thumbnailUrl;
+                }
+
+                console.log(`Fetching thumbnail for photo ${photoId} from network...`);
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/getphoto?photoid=${photoId}`);
                 if (response.ok) {
-                    return URL.createObjectURL(await response.blob());
+                    const thumbnailBlob = await response.blob();
+                    const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
+
+                    await cachePhoto(photoId, thumbnailUrl, thumbnailBlob);
+
+                    return thumbnailUrl;
                 } else {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
             } catch (e) {
-                console.error('Failed to fetch thumbnail:', e);
+                console.error(`Failed to fetch thumbnail for photo ${photoId}:`, e);
                 return '';
             }
-        }
-
-        const fetchAllThumbnails = async () => {
-            for (let i = 0; i < photos.value.length; i++) {
-                const photo = photos.value[i];
-                const thumbnailUrl = await fetchThumbnail(photo.photoid);
-                if (thumbnailUrl) {
-                    photos.value[i] = { ...photo, thumbnailUrl };
-                }
-            }
         };
+
 
         const getPhotoInfo = async (photoid) => {
             try {
@@ -157,7 +173,6 @@ export default {
                 if (response.data.code === 200) {
                     currentImage.value = response.data.data;
                     currentThumbnailUrl.value = await fetchThumbnail(photoid);
-                    console.log(currentThumbnailUrl.value);
                     imageModalVisible.value = true;
                 } else {
                     alert('Failed to load photo info');
@@ -210,9 +225,11 @@ export default {
             prefersDarkMode.addEventListener('change', () => { });
         }
 
-        onMounted(() => {
-            fetchPhotos();
+        onMounted(async () => {
+            await fetchPhotos();
             checkDarkMode();
+            await cleanExpiredPhotos();
+            await fetchPhotos();
             const link = document.createElement('link');
             link.rel = 'icon';
             link.href = 'img/favicon.ico';
