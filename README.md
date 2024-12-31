@@ -28,7 +28,7 @@
 
 # 开发相关
 
-后端API文档已转移至[开发文档](./ImageGallery_Web/docs/development.md)
+后端API文档已转移至[开发文档](./ImageGallery_Server/docs/development.md)
 打包编译可参考各个子项目的readme.md
 
 ## **Todo**
