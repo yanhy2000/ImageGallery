@@ -26,6 +26,15 @@ body.night-mode .header h2 {
     color: #fff !important;
 }
 
+label {
+    color: inherit; 
+    transition: color 0.1s ease;
+}
+
+body.dark-mode label {
+    color: inherit;
+}
+
 main {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
