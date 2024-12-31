@@ -1,6 +1,6 @@
 # 项目介绍
 
-ImageGallery AdminWeb 是一个基于 Vue.js 的管理后台，用于管理ImageGallery的图片。需配合ImageGallery后端服务使用。
+ImageGallery Web 是一款基于 Vue.js 的图片画廊应用，它提供了图片展示功能。需配合ImageGallery后端服务使用。
 
 主要编写环境：
 
@@ -35,7 +35,7 @@ ImageGallery AdminWeb 是一个基于 Vue.js 的管理后台，用于管理Image
 2. **导航到项目目录**：
    使用 `cd` 命令进入项目根目录，例如：
    ```bash
-   cd /path/to/ImageGallery_AdminWeb
+   cd /path/to/ImageGallery_Web
    ```
 
 3. **安装依赖**：
