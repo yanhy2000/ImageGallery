@@ -4,13 +4,15 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #f5f5f5;
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 999;
     backdrop-filter: blur(5px);
-    transition: background-color 0.3s ease;
+    opacity: 0;
+    /* pointer-events: none; */
+    animation: fadeIn 0.3s forwards;
 }
 
 body.dark-mode .image-modal {
@@ -19,14 +21,57 @@ body.dark-mode .image-modal {
 
 .modal-content {
     background-color: #fff;
-    color: #333; 
+    color: #333;
     padding: 20px;
     border-radius: 8px;
     max-width: 90%;
     max-height: 80%;
     overflow-y: auto;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transform: scale(0.8);
+    opacity: 0; 
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
+
+.image-modal .modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.image-modal.fade-leave-active {
+    animation: fadeOut 0.3s forwards;
+}
+
+.image-modal.fade-leave-active .modal-content {
+    transform: scale(0.8);
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.modal-fade-enter-active, .modal-fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from, .modal-fade-leave-to {
+    opacity: 0;
+}
+
 
 body.dark-mode .modal-content {
     background-color: #2c2c2c; 

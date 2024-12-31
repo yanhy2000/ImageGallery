@@ -7,8 +7,9 @@
                 <i :class="DarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i> </button>
         </header>
 
-        <main class="image-gallery">
-            <div v-for="photo in photos" :key="photo.photoid" class="image-card" @click="getPhotoInfo(photo.photoid)">
+        <main class="image-gallery" :style="gridStyle">
+            <div v-for="photo in photos" :key="photo.photoid" class="image-card" :style="imageCardStyle"
+                @click="getPhotoInfo(photo.photoid)">
                 <img :src="photo.thumbnailUrl" :alt="photo.desc" loading="lazy">
                 <div class="overlay">
                     <div class="overlay-content">
@@ -43,31 +44,34 @@
                     <option v-for="option in perPageOptions" :key="option" :value="option">{{ option }}</option>
                 </select>
             </div>
+            <div><button class="refresh-cache-button" @click="refreshCache">刷新缓存</button></div>
         </div>
 
-        <div v-if="imageModalVisible" class="image-modal" @click="handleModalBackgroundClick">
-            <div class="modal-content" @click.stop>
-                <img :src="currentThumbnailUrl ? currentThumbnailUrl : ''" :alt="currentImage ? currentImage.desc : ''"
-                    class="modal-image">
-                <div class="image-info">
-                    <p>描述：{{ currentImage.desc }}</p>
-                    <p>上传时间：{{ currentImage.upload_time }}</p>
-                    <p>上传者：{{ currentImage.uploader }}</p>
-                    <p>相册：{{ currentImage.albumname }}</p>
+        <transition name="fade">
+            <div v-if="imageModalVisible" class="image-modal" @click="handleModalBackgroundClick">
+                <div class="modal-content" @click.stop>
+                    <img :src="currentThumbnailUrl ? currentThumbnailUrl : ''"
+                        :alt="currentImage ? currentImage.desc : ''" class="modal-image">
+                    <div class="image-info">
+                        <p>描述：{{ currentImage.desc }}</p>
+                        <p>上传时间：{{ currentImage.upload_time }}</p>
+                        <p>上传者：{{ currentImage.uploader }}</p>
+                        <p>相册：{{ currentImage.albumname }}</p>
+                    </div>
+                    <button @click="closeImageModal" class="close-button" title="关闭">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <button @click="closeImageModal" class="close-button" title="关闭">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
             </div>
-        </div>
+        </transition>
 
     </div>
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue';
 import axios from 'axios';
-import { cachePhoto, getCachedPhoto, cleanExpiredPhotos } from '@/services/cacheService';
+import { cachePhoto, getCachedPhoto, cleanExpiredPhotos, refreshCache } from '@/services/cacheService';
 
 export default {
     name: 'IndexManager',
@@ -78,12 +82,12 @@ export default {
         const photos = ref([]);
         const currentPage = ref(1);
         const totalPages = ref(1);
-        const perPage = ref(10);
+        const perPage = ref(9);
         const currentImage = ref(null);
         const currentThumbnailUrl = ref(null);
         const imageModalVisible = ref(false);
         const totalPhotos = ref(0);
-        const perPageOptions = [10, 20, 30, 40, 50];
+        const perPageOptions = [6, 9, 15, 20, 25, 30];
         const error = ref(null);
         const DarkMode = ref(false);
 
@@ -99,6 +103,49 @@ export default {
                 currentPage.value = totalPages.value;
             }
             fetchPhotos();
+        };
+
+        const imageCardStyle = computed(() => {
+            const { imageSizeScale } = calculateGrid(perPage.value);
+
+            return {
+                transform: `scale(${imageSizeScale})`,
+            };
+        });
+
+        const gridStyle = computed(() => {
+            const { columns, gap } = calculateGrid(perPage.value);
+
+            return {
+                gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                gap,
+            };
+        });
+
+        const calculateGrid = (numberOfPhotos) => {
+            let columns = Math.min(5, Math.ceil(Math.sqrt(numberOfPhotos)));
+            let rows = Math.ceil(numberOfPhotos / columns);
+
+            let imageSizeScale = 1;
+            let gap = '80px';
+
+            if (numberOfPhotos <= 6) {
+                imageSizeScale = 1.2;
+                gap = '80px';
+            } else if (numberOfPhotos > 6 && numberOfPhotos <= 15) {
+                imageSizeScale = 1;
+                gap = '40px';
+            }
+            else if (numberOfPhotos > 15 && numberOfPhotos <= 30) {
+                imageSizeScale = 0.9;
+                gap = '30px';
+            }
+            else if (numberOfPhotos > 30) {
+                imageSizeScale = 0.8;
+                gap = '10px';
+            }
+
+            return { columns, rows, imageSizeScale, gap };
         };
 
         const fetchPhotos = async () => {
@@ -266,6 +313,9 @@ export default {
             toggleDarkMode,
             DarkMode,
             handleModalBackgroundClick,
+            imageCardStyle,
+            gridStyle,
+            refreshCache,
         };
     },
 };

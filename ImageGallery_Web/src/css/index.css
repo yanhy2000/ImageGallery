@@ -68,15 +68,14 @@ body::before {
 
 .image-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-.image-card {
+    padding: 20px;
+  }
+  
+  .image-card {
     position: relative;
     cursor: pointer;
-    transition: transform 0.3s ease;
-}
+    transition: transform 0.3s ease, gap 0.3s ease;
+  }
 
 .image-card:hover {
     transform: scale(1.05);
@@ -119,4 +118,3 @@ body::before {
     margin-top: 20px;
     text-align: center;
 }
-

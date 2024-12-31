@@ -5,15 +5,29 @@
     right: 20px;
     aspect-ratio: 1 / 1;
     background-color: #2fe4eb81;
-    color: white;
+    color: gray;
     border: none;
     border-radius: 50%;
     cursor: pointer;
     font-size: 15px;
     transition: background-color 0.3s;
 }
+
 .mode-toggle-btn i {
     pointer-events: none;
+}
+
+.mode-toggle-btn:hover {
+    background-color: #c4c4c4;
+}
+
+body.dark-mode .mode-toggle-btn {
+    background-color: #858585;
+    color: white;
+}
+
+body.dark-mode .mode-toggle-btn:hover {
+    background-color: #2fe4eb81;
 }
 
 
@@ -29,25 +43,64 @@ button {
     transition: background-color 0.3s ease;
     transform: scale(1);
 }
+
 button:hover {
+    background-color: #3486e2;
+}
+
+body.dark-mode button {
+    background-color: #858585;
+    color: white;
+}
+
+body.dark-mode button:hover {
     background-color: #3486e2;
 }
 
 /* 关闭按钮 */
 .close-button {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
+    top: 0px;
+    right: 0px;
+    aspect-ratio: 1 / 1;
+    background: #2fe4eb81;
     border: none;
-    color: #fff;
+    color: gray;
+    border: none;
+    border-radius: 50%;
     font-size: 20px;
     cursor: pointer;
-    padding: 5px;
     border-radius: 50%;
     transition: background-color 0.3s;
 }
+
 .close-button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(92, 92, 92, 0.2);
 }
 
+body.dark-mode .close-button {
+    background-color: #858585;
+    color: white;
+}
+
+body.dark-mode .close-button:hover {
+    background-color: #2fe4eb81;
+}
+
+.refresh-cache-button {
+    position: relative;
+    left: 10px;
+    display: inline-block;
+    background-color: #f0f0f0;
+    color: #888;
+    border: 1px solid #ccc;
+    padding: 2px 5px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.refresh-cache-button:hover {
+    background-color: #e0e0e0;
+    color: #555;
+}
