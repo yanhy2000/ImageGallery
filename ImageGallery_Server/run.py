@@ -12,4 +12,4 @@ if __name__ == '__main__':
     except Exception as e:
         print(f'数据库不存在或连接失败，请检查数据库配置:{e}')
         exit()
-    app.run(debug=True)
+    app.run(debug=Config.DEBUG, host=Config.HOST, port=Config.PORT)

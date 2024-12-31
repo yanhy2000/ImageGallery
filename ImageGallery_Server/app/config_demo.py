@@ -4,3 +4,6 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f'sqlite:///{SQLALCHEMY_DATABASE_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SUPERBED_TOKEN = 'false'
+    DEBUG = False
+    HOST = '0.0.0.0'
+    PORT = 5000

@@ -1,4 +1,4 @@
-# 项目介绍
+# ImageGallery AdminWeb
 
 ImageGallery AdminWeb 是一个基于 Vue.js 的管理后台，用于管理ImageGallery的图片。需配合ImageGallery后端服务使用。
 

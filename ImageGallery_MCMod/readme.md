@@ -1,4 +1,4 @@
-# 项目名称
+# ImageGallery_MCMod
 
 搭配图片墙使用，适用于minecraft fabric客户端。
 
