@@ -7,7 +7,7 @@ export const openDatabase = () => {
       const db = event.target.result;
       if (!db.objectStoreNames.contains('photos')) {
         const store = db.createObjectStore('photos', { keyPath: 'id' });
-        store.createIndex('timestamp', 'timestamp', { unique: false });
+        store.createIndex('timestamp', 'timestamp', { unique: false }); 
       }
     };
 
@@ -45,7 +45,7 @@ export const getCachedPhoto = async (photoId) => {
   });
 };
 
-export const cleanExpiredPhotos = async (expiryTime = 24 * 60 * 60 * 1000) => {
+export const cleanExpiredPhotos = async (expiryTime = 7 * 24 * 60 * 60 * 1000) => { 
   const db = await openDatabase();
   const transaction = db.transaction('photos', 'readwrite');
   const store = transaction.objectStore('photos');
@@ -62,22 +62,51 @@ export const cleanExpiredPhotos = async (expiryTime = 24 * 60 * 60 * 1000) => {
       cursor.continue();
     }
   };
+  await cleanCacheSize(store, 500 * 1024 * 1024); // 限制总大小为 500MB
 };
 
+const cleanCacheSize = async (store, maxCacheSize) => {
+  const photoSizes = [];
+  let totalSize = 0;
 
-export const refreshCache = async() => {
+  return new Promise((resolve) => {
+    store.openCursor().onsuccess = (event) => {
+      const cursor = event.target.result;
+      if (cursor) {
+        const photo = cursor.value;
+        const blobSize = photo.blob.size || 0; 
+        photoSizes.push({ id: photo.id, size: blobSize, timestamp: photo.timestamp });
+        totalSize += blobSize;
+        cursor.continue();
+      } else {
+        if (totalSize > maxCacheSize) {
+          console.log(`Cache size exceeds ${maxCacheSize} bytes. Cleaning oldest entries.`);
+          photoSizes.sort((a, b) => a.timestamp - b.timestamp); 
+          const itemsToDelete = photoSizes.slice(0, 10); 
+          for (const item of itemsToDelete) {
+            store.delete(item.id);
+            console.log(`Deleted photo ${item.id} to free up space.`);
+          }
+        }
+        resolve();
+      }
+    };
+  });
+};
+
+export const refreshCache = async () => {
   const db = await openDatabase();
   const transaction = db.transaction('photos', 'readwrite');
   const store = transaction.objectStore('photos');
   store.clear();
-  console.log('storeCache cleared.');
-  if ("caches" in window) {
+  console.log('IndexedDB cache cleared.');
+  if ('caches' in window) {
     caches.keys().then((cacheNames) => {
       cacheNames.forEach((cacheName) => {
         caches.delete(cacheName);
       });
     });
   }
-  console.log('Cache cleared.');
+  console.log('Browser cache cleared.');
   window.location.reload();
 };
