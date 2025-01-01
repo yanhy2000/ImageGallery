@@ -2,6 +2,7 @@ from flask import jsonify, request
 from app.models import Album
 from app.models import Photo, Album, User
 from app import db
+from app.utils import utc_to_local,get_utc_time
 import os
 from math import ceil
 
@@ -25,7 +26,7 @@ def get_all_albums(usertoken):
             'albumid': album.albumid,
             'name': album.name,
             'userid': album.userid,
-            'create_time': album.create_time
+            'create_time': album.create_time.strftime("%Y-%m-%d %H:%M:%S")
         })
     return jsonify({
             "code": 200,
@@ -51,7 +52,7 @@ def create_album(usertoken):
     if not name:
         return jsonify({"code": 400, "message": "name is required"}), 400
     
-    album = Album(name=name, userid=user.userid)
+    album = Album(name=name, userid=user.userid,create_time=get_utc_time())
     db.session.add(album)
     db.session.commit()
     

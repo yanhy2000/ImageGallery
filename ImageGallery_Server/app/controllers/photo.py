@@ -1,19 +1,19 @@
 import os
 from PIL import Image
-import requests
 from app import db
 from app.models import Photo, Album, User
-from flask import request, jsonify, send_file, redirect
-from app.utils import generate_uuid_filename, get_project_root
+from flask import request, jsonify, send_file
+from app.utils import generate_uuid_filename, get_project_root, get_utc_time,utc_to_local
 from datetime import datetime
 from app.config import Config
 from math import ceil
+from sqlalchemy import desc
 
 # 获取照片列表（公开）
 def get_photo_list():
     current_page = request.args.get('page', 1, type=int)
     per_page = request.args.get('perpage', 10, type=int)
-    query = Photo.query
+    query = Photo.query.order_by(desc(Photo.upload_time))
     pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
     photos = pagination.items
     photo_list = []
@@ -133,11 +133,12 @@ def upload_new_photo(usertoken):
     if not file:
         return jsonify({"code": 404, "message": "need file"}), 404
 
-    today = datetime.utcnow()
+    today = get_utc_time()
+    year = today.year
     month = today.month
     day = today.day
 
-    upload_dir = os.path.join('uploads', str(month).zfill(2), str(day).zfill(2))
+    upload_dir = os.path.join('uploads', str(year).zfill(2), str(month).zfill(2), str(day).zfill(2))
     if not os.path.exists(upload_dir):
         os.makedirs(upload_dir)
 
@@ -156,7 +157,7 @@ def upload_new_photo(usertoken):
         new_photo = Photo(
             name=name or file.filename,
             desc=desc,
-            upload_time=datetime.utcnow(),
+            upload_time=get_utc_time(),
             thumbnail=thumbnail_url,
             photo_url=file_path,
             albumid=album.albumid,
