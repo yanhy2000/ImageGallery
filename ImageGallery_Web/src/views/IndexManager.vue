@@ -53,10 +53,12 @@
                     <img :src="currentThumbnailUrl ? currentThumbnailUrl : ''"
                         :alt="currentImage ? currentImage.desc : ''" class="modal-image">
                     <div class="image-info">
-                        <p>描述：{{ currentImage.desc }}</p>
-                        <p>上传时间：{{ currentImage.upload_time }}</p>
-                        <p>上传者：{{ currentImage.uploader }}</p>
-                        <p>相册：{{ currentImage.albumname }}</p>
+                        <p>{{ currentImage.desc }}</p>
+                        <p>
+                            <span>上传时间：{{ currentImage.upload_time }}</span>
+                            <span>上传者：{{ currentImage.uploader }}</span>
+                            <span>相册：{{ currentImage.albumname }}</span>
+                        </p>
                     </div>
                     <button @click="closeImageModal" class="close-button" title="关闭">
                         <i class="fa-solid fa-xmark"></i>
@@ -64,7 +66,14 @@
                 </div>
             </div>
         </transition>
+        <footer class="custom-footer">
+            <div class="footer-content">
+                <p>Powered by <a href="https://github.com/yanhy2000/ImageGallery" target="_blank">ImageGallery</a></p>
+                <p>{{ displayContent }}</p>
+                <p>Copyright © <span id="footer-year"></span> yanhy2000</p>
 
+            </div>
+        </footer>
     </div>
 </template>
 
@@ -90,7 +99,17 @@ export default {
         const perPageOptions = [6, 9, 15, 20, 25, 30];
         const error = ref(null);
         const DarkMode = ref(false);
-
+        const config = ref({
+            version: '1.0.1',
+            customContent: import.meta.env.VITE_APP_CUSTOM_CONTENT,
+        });
+        const year = new Date().getFullYear();
+        
+        const displayContent = computed(() => {
+            return config.value.customContent
+                ? `${config.value.customContent} V${config.value.version}`
+                : `${title.value}  V${config.value.version}`;
+        });
 
         const changePage = (action) => {
             if (action === 'first') {
@@ -282,6 +301,7 @@ export default {
             link.href = 'img/favicon.ico';
             document.head.appendChild(link);
             document.addEventListener('keydown', handleEscKey);
+            document.getElementById("footer-year").innerText = year;
 
 
         });
@@ -316,6 +336,7 @@ export default {
             imageCardStyle,
             gridStyle,
             refreshCache,
+            displayContent,
         };
     },
 };
