@@ -59,7 +59,7 @@ ImageGallery Server 是一个基于 Flask 的图片墙程序后端，提供图�
    ```bash
    python init_db.py
    ```
-3. **运行服务器**：
+3. **运行测试环境服务器**：
    在项目目录下，运行以下命令以启动服务器：
    ```bash
    python run.py
@@ -68,6 +68,10 @@ ImageGallery Server 是一个基于 Flask 的图片墙程序后端，提供图�
 
 4. **运行调试模式**：
    修改 `config.py`，将其中 `DEBUG` 选项设置为 `True`，然后重新启动服务器。
+
+5. **部署生产环境**：
+   部署生产环境时，可使用第三方包如Gunicorn。
+
 
 ## 许可证
 
