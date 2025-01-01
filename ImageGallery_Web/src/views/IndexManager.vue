@@ -55,6 +55,7 @@
                     <div class="image-info">
                         <p>{{ currentImage.desc }}</p>
                         <p>
+                            <span>图片ID：{{ currentImage.photoid }}</span>
                             <span>上传时间：{{ currentImage.upload_time }}</span>
                             <span>上传者：{{ currentImage.uploader }}</span>
                             <span>相册：{{ currentImage.albumname }}</span>

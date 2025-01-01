@@ -10,7 +10,6 @@
             <th>名称</th>
             <th>描述</th>
             <th>上传时间</th>
-            <th>缩略图</th>
             <th>图片链接</th>
             <th>相册名称</th>
             <th>相册ID</th>
@@ -25,7 +24,6 @@
             <td>{{ photo.name }}</td>
             <td><button @click="PershowModifyDescModal(photo)">修改</button> {{ photo.desc }} </td>
             <td>{{ photo.upload_time }}</td>
-            <td><img :src="photo.thumbnailUrl" :alt="photo.name" class="thumbnail"></td>
             <td>
               <button @click="downloadImage(photo.photoid)">下载原图</button>
             </td>
@@ -127,7 +125,6 @@ export default {
           photos.value = data.data.photos;
           totalPhotos.value = data.data.totalPhotos;
           totalPages.value = data.data.totalPages;
-          await fetchAllThumbnails();
         } else {
           error.value = data.message;
         }
@@ -135,30 +132,6 @@ export default {
         error.value = e.message;
       }
     };
-    const fetchThumbnail = async (photoid) => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/getphoto?photoid=${photoid}`);
-        if (response.ok) {
-          return URL.createObjectURL(await response.blob());
-        } else {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-      } catch (e) {
-        console.error('Failed to fetch thumbnail:', e);
-        return '';
-      }
-    }
-
-    const fetchAllThumbnails = async () => {
-      for (let i = 0; i < photos.value.length; i++) {
-        const photo = photos.value[i];
-        const thumbnailUrl = await fetchThumbnail(photo.photoid);
-        if (thumbnailUrl) {
-          photos.value[i] = { ...photo, thumbnailUrl };
-        }
-      }
-    };
-
     const ModifyDesc = async (photo) => {
       try {
         const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/updatephoto`, {
@@ -254,7 +227,6 @@ export default {
       totalPhotos,
       totalPages,
       fetchImages,
-      fetchThumbnail,
       thumbnailUrl
      };
   },
