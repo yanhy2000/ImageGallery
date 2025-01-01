@@ -26,6 +26,8 @@ ImageGallery Web 是一款基于 Vue.js 的图片画廊应用，它提供了图�
 - [Node.js](https://nodejs.org/)（建议使用 LTS 版本）
 - [npm](https://www.npmjs.com/)（Node.js 安装时会自动安装）
 
+**编译或者运行前，请先将目录下的`copy.env`文件复制为`.env`，并根据实际情况修改`.env`文件中的配置。**
+
 ## 项目安装
 
 1. **打开命令行工具**：

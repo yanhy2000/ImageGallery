@@ -9,6 +9,7 @@ ImageGallery AdminWeb 是一个基于 Vue.js 的管理后台，用于管理Image
 - Vite = 6.0.3
 - Axios = 1.7.9
 
+**编译或者运行前，请先将目录下的`copy.env`文件复制为`.env`，并根据实际情况修改`.env`文件中的配置。**
 
 ## 目录
 
