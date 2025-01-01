@@ -6,7 +6,6 @@ if __name__ == '__main__':
     # 初始化数据库
     try:
         if not os.path.exists(f"./instance/{Config.SQLALCHEMY_DATABASE_NAME}"):
-            print({Config.SQLALCHEMY_DATABASE_NAME})
             print('数据库不存在，请手动运行 python init_db.py')
             exit()
     except Exception as e:
