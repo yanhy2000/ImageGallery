@@ -1,80 +1,107 @@
 /* 分页按钮 */
 .pagination {
-    text-align: center;
-    margin-top: 20px;
+  text-align: center;
+  margin-top: 20px;
 }
 
 .pagination button {
-    margin: 0 5px;
+  margin: 0 5px;
+  padding: 5px 10px; /* 按钮内边距 */
+  font-size: 14px; /* 调整字体大小 */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination button:disabled {
+  background-color: #e9e9e9;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #eee;
+  border-color: #888;
 }
 
 .page-info {
-    margin: 0 10px;
+  margin: 0 10px;
+  font-size: 14px; 
 }
 
 .per-page-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  margin: 10px 0;
+  gap: 10px; 
+}
+
+.per-page-selector label {
+  font-size: 14px;
+  color: #555;
+}
+
+.custom-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  width: 50px; 
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .pagination {
     display: flex;
+    flex-wrap: nowrap; 
     align-items: center;
     justify-content: center;
-    font-family: Arial, sans-serif;
-    margin: 5px 0;
+    gap: 5px; 
   }
-  
+
+  .pagination button {
+    padding: 4px 8px; 
+    font-size: 12px;
+    margin: 0 2px; 
+  }
+
+  .page-info {
+    font-size: 12px; 
+    margin: 0 5px;
+  }
+
+  .per-page-selector {
+    align-items: center;
+  }
+
   .per-page-selector label {
-    font-size: 14px;
-    margin-right: 10px;
-    color: #555;
+    font-size: 12px; 
   }
-  
-  .custom-select-wrapper {
-    position: relative;
-    display: inline-block;
-  }
-  
+
   .custom-select {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 2px 3px;
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-    outline: none;
-    transition: all 0.3s ease;
-    width: 50px;
-    text-align: center;
+    width: 100%; 
+    font-size: 12px; 
   }
-  
-  .custom-select:hover {
-    border-color: #888;
+
+  .custom-select-wrapper {
+    width: 10%;
   }
-  
-  .custom-select::after {
-    content: '';
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    width: 0;
-    height: 0;
-    border: 6px solid transparent;
-    border-top-color: #333;
-    transform: translateY(-50%);
-    pointer-events: none;
+
+  .refresh-cache-button {
+    padding: 4px 8px; 
+    font-size: 12px; 
   }
-  
-  .custom-select:focus {
-    border-color: #0066ff;
-    box-shadow: 0px 0px 5px rgba(0, 102, 255, 0.5);
-  }
-  
-  .custom-select::-ms-expand {
-    display: none;
-  }
-  
-  .custom-select option {
-    background: #fff;
-    color: #333;
-  }
+}

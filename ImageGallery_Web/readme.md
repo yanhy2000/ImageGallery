@@ -1,6 +1,7 @@
 # ImageGallery Web
 
 ImageGallery Web 是一款基于 Vue.js 的图片画廊应用，它提供了图片展示功能。需配合ImageGallery后端服务使用。
+为便于定制化，template部分代码存在使用说明定制文本，请自行修改。
 
 主要编写环境：
 

@@ -7,6 +7,24 @@
                 <i :class="DarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i> </button>
         </header>
 
+        <div class="UserGuide" @mouseenter="showTooltip" @mouseleave="hideTooltip" @click="toggleTooltip">
+            <h3>网站使用说明</h3>
+            <div v-show="isTooltipVisible" class="tooltip">
+                网站使用说明：
+                <br> 点击图片可放大查看，点击右上角按钮切换黑白模式。
+                <br> 鼠标悬停在图片上可查看图片信息。
+                <br> 点击刷新缓存按钮可清除浏览器缓存，并重新加载页面。
+                <br> 点击每页展示数量下拉框可调整每页展示数量。
+                <br> 网站会占用浏览器缓存以提高访问速度，缓存过期时间为7天。如缓存过大可手动清理浏览器缓存。
+                <br>
+                <br> 上传图片：
+                <br> 目前不支持直接网页上传，需配合MC模组截图上传，模组可在群文件下载“[图片墙辅助]screenshot_uploader-1.0.0”。
+                <br> 每个人有一个专属token，在模组加载后修改配置文件时需要提供，申请token可联系yanhy2000。
+                <br> 上传图片后，暂无修改、删除入口，可找管理员后台修改。
+
+            </div>
+        </div>
+
         <main class="image-gallery" :style="gridStyle">
             <div v-for="photo in photos" :key="photo.photoid" class="image-card" :style="imageCardStyle"
                 @click="getPhotoInfo(photo.photoid)">
@@ -20,6 +38,8 @@
                 </div>
             </div>
         </main>
+
+
 
         <div class="pagination">
             <button @click="changePage('first')" :disabled="currentPage <= 1" title="首页">
@@ -67,6 +87,8 @@
                 </div>
             </div>
         </transition>
+        <br>
+        <br>
         <footer class="custom-footer">
             <div class="footer-content">
                 <p>Powered by <a href="https://github.com/yanhy2000/ImageGallery" target="_blank">ImageGallery</a></p>
@@ -100,12 +122,13 @@ export default {
         const perPageOptions = [6, 9, 15, 20, 25, 30];
         const error = ref(null);
         const DarkMode = ref(false);
+        const isTooltipVisible = ref(false);
         const config = ref({
             version: '1.0.1',
             customContent: import.meta.env.VITE_APP_CUSTOM_CONTENT,
         });
         const year = new Date().getFullYear();
-        
+
         const displayContent = computed(() => {
             return config.value.customContent
                 ? `${config.value.customContent} V${config.value.version}`
@@ -143,30 +166,52 @@ export default {
         });
 
         const calculateGrid = (numberOfPhotos) => {
-            let columns = Math.min(5, Math.ceil(Math.sqrt(numberOfPhotos)));
+            const isMobile = window.innerWidth <= 768; 
+
+            let columns = isMobile ? 2 : Math.min(5, Math.ceil(Math.sqrt(numberOfPhotos)));
             let rows = Math.ceil(numberOfPhotos / columns);
 
-            let imageSizeScale = 1;
+            let imageSizeScale = isMobile ? 1.1 : 1; 
             let gap = '80px';
 
-            if (numberOfPhotos <= 6) {
-                imageSizeScale = 1.2;
-                gap = '80px';
-            } else if (numberOfPhotos > 6 && numberOfPhotos <= 15) {
-                imageSizeScale = 1;
-                gap = '40px';
-            }
-            else if (numberOfPhotos > 15 && numberOfPhotos <= 30) {
-                imageSizeScale = 0.9;
-                gap = '30px';
-            }
-            else if (numberOfPhotos > 30) {
-                imageSizeScale = 0.8;
-                gap = '10px';
+            if (!isMobile) {
+                if (numberOfPhotos <= 6) {
+                    imageSizeScale = 1.2;
+                    gap = '80px';
+                } else if (numberOfPhotos > 6 && numberOfPhotos <= 15) {
+                    imageSizeScale = 1;
+                    gap = '40px';
+                } else if (numberOfPhotos > 15) {
+                    imageSizeScale = 0.9;
+                    gap = '30px';
+                }
+            }else {
+                if (numberOfPhotos <= 6) {
+                    imageSizeScale = 1;
+                    gap = '30px';
+                } else if (numberOfPhotos > 6 && numberOfPhotos <= 15) {
+                    imageSizeScale = 1;
+                    gap = '20px';
+                } else if (numberOfPhotos > 15) {
+                    imageSizeScale = 0.9;
+                    gap = '10px';
+                }
             }
 
             return { columns, rows, imageSizeScale, gap };
         };
+
+        const updateGrid = () => {
+            const { columns, gap, imageSizeScale } = calculateGrid(perPage.value);
+            gridStyle.value = {
+                gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                gap,
+            };
+            imageCardStyle.value = {
+                transform: `scale(${imageSizeScale})`,
+            };
+        };
+
 
         const fetchPhotos = async () => {
             try {
@@ -292,11 +337,29 @@ export default {
             prefersDarkMode.addEventListener('change', () => { });
         }
 
+        const showTooltip = () => {
+            isTooltipVisible.value = true;
+        };
+
+        const hideTooltip = () => {
+            isTooltipVisible.value = false;
+        };
+
+        const toggleTooltip = () => {
+            isTooltipVisible.value = !isTooltipVisible.value;
+        };
+
         onMounted(async () => {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                perPage.value = 6;
+            }
             await fetchPhotos();
             checkDarkMode();
             await cleanExpiredPhotos();
             await fetchPhotos();
+            updateGrid(); 
+            window.addEventListener('resize', updateGrid); 
             const link = document.createElement('link');
             link.rel = 'icon';
             link.href = 'img/favicon.ico';
@@ -310,6 +373,8 @@ export default {
         onBeforeUnmount(() => {
             document.removeEventListener('keydown', handleEscKey);
             prefersDarkMode.removeEventListener('change', listener);
+            window.removeEventListener('resize', updateGrid); 
+
         });
 
         return {
@@ -338,6 +403,10 @@ export default {
             gridStyle,
             refreshCache,
             displayContent,
+            isTooltipVisible,
+            hideTooltip,
+            showTooltip,
+            toggleTooltip,
         };
     },
 };

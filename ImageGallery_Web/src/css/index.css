@@ -1,78 +1,78 @@
 .header {
-    text-align: center;
-    margin-bottom: 30px;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f5f5f5;
-    color: #33333373;
-    transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #33333373;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body.dark-mode {
-    background-color: #2c2c2c;
-    color: #96fff6;
-    transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: #2c2c2c;
+  color: #96fff6;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body.dark-mode .header h1 {
-    color: #ddd !important;
+  color: #ddd !important;
 }
 
 body.night-mode .header h2 {
-    color: #fff !important;
+  color: #fff !important;
 }
 
 label {
-    color: inherit; 
-    transition: color 0.1s ease;
+  color: inherit;
+  transition: color 0.1s ease;
 }
 
 body.dark-mode label {
-    color: inherit;
+  color: inherit;
 }
 
 main {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
 }
 
 body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('img/background.png') no-repeat center center/cover;
-    z-index: -1;
-    filter: blur(8px);
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("img/background.png") no-repeat center center/cover;
+  z-index: -1;
+  filter: blur(8px);
 }
 
 .container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 10px;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 10px;
 }
 
 .header {
-    text-align: center;
-    margin-bottom: 30px;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
 .header h1 {
-    font-size: 36px;
-    color: #333;
+  font-size: 36px;
+  color: #333;
 }
 
 .header h2 {
-    font-size: 18px;
-    color: #555;
+  font-size: 18px;
+  color: #555;
 }
 
 .image-gallery {
@@ -84,72 +84,162 @@ body::before {
     position: relative;
     cursor: pointer;
     transition: transform 0.3s ease, gap 0.3s ease;
-  }
-
-.image-card:hover {
-    transform: scale(1.05);
-}
-
-.image-card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-    transition: transform 0.3s ease;
-}
-
-.image-card .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 8px;
-    color: white;
+  
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden; 
+    aspect-ratio: 4 / 3; 
+  }
+  
+  .image-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .image-card img {
+    max-width: 100%;
+    max-height: 100%; 
+    object-fit: contain; 
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+  
+    display: block;
+    margin: 0 auto;
+  }
+.image-card .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 8px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .image-card .overlay-content {
-    text-align: center;
-    padding: 10px;
+  text-align: center;
+  padding: 10px;
 }
 
 .image-card:hover .overlay {
-    opacity: 1;
+  opacity: 1;
 }
 
 .image-info {
-    margin-top: 20px;
-    text-align: center;
+  margin-top: 20px;
+  text-align: center;
 }
 
 .custom-footer {
-    position: fixed; 
-    bottom: 10px;
-    right: 10px;
-    background-color: rgba(177, 232, 248, 0.7);
-    color: #555; 
-    font-size: 14px; 
-    padding: 5px 10px; 
-    border-radius: 5px; 
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000; 
-  }
-  
-  .custom-footer .footer-content {
-    display: flex; 
-    justify-content: flex-end; 
-    align-items: center; 
-    gap: 10px; 
-  }
-  .footer-content p {
-    margin: 5px 0; /* 设置每段上下间距 */
-    font-size: 12px; /* 比较小的文字大小 */
-    color: #aaa; /* 字体颜色较浅 */
-    text-align: center; /* 居中对齐 */
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(177, 232, 248, 0.7);
+  color: #555;
+  font-size: 14px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
+
+.custom-footer .footer-content {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+.footer-content p {
+  margin: 5px 0;
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+}
+
+.UserGuide {
+  position: relative;
+  cursor: pointer;
+  max-width: 8%;
+  margin: 20px auto;
+  color: white;
+  border-radius: 5px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.UserGuide h3 {
+  text-align: center;
+  color: #a0a0a0;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.tooltip {
+  display: block;
+  position: absolute;
+  top: 150%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(196, 196, 196, 0.877);
+  color: rgb(0, 0, 0);
+  text-align: center;
+  padding: 10px;
+  border-radius: 5px;
+  z-index: 1000;
+  white-space: nowrap;
+  font-size: 14px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.tooltip::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent rgba(196, 196, 196, 0.8) transparent;
+}
+
+body.dark-mode .tooltip {
+  background-color: #333333da;
+  color: #ffffff;
+}
+body.dark-mode .tooltip::before {
+  border-color: transparent transparent rgba(255, 0.8) transparent;
+}
+
+.UserGuide:hover .tooltip {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .image-gallery {
+      padding: 2px; 
+    }
+  
+    .image-card {
+      transition: transform 0.3s ease;
+    }
+  
+    .image-card img {
+      border-radius: 6px; 
+    }
+  
+    .image-card .overlay {
+      border-radius: 6px; 
+      font-size: 12px;
+    }
+    .UserGuide {
+        max-width: 30%;
+      }
+  }
