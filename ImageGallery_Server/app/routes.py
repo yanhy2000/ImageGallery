@@ -1,6 +1,7 @@
 from app import app
 from flask import request, jsonify
-from app.controllers import photo, album, user
+from app.controllers import photo, album, user, like, comment
+from app.models import Photo, Album, User
 
 # 拆分token
 def split_token(request):
@@ -19,6 +20,23 @@ def split_token(request):
 @app.route('/', methods=['GET'])
 def index():
     return jsonify({"code": 200, "message": "Welcome to ImageGallery API"})
+
+# [ok]获取用户权限状态，是否允许登录
+@app.route('/api/checktoken', methods=['GET'])
+def check_token():
+    username = request.args.get('username')
+    usertoken = request.args.get('usertoken')
+    if usertoken and username:
+        user = User.query.filter_by(usertoken=usertoken).first()
+        if user and user.username == username:
+            if user.permissions >= 0:
+                return jsonify({"code": 200, "message": "success", "data": {"allowlogin": True}}), 200
+            elif user.permissions == -1:
+                return jsonify({"code": 200, "message": "success", "data": {"allowlogin": False}}), 200
+        else:
+            return jsonify({"code": 401, "message": "usertoken is invalid"}), 401
+    else:
+        return jsonify({"code": 400, "message": "usertoken and username is required"}), 400
 
 # [ok]获取公开照片列表
 @app.route('/api/photos_list', methods=['GET'])
@@ -41,7 +59,6 @@ def get_albums():
         return album.get_all_albums(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
     
-
 # [ok]获取所有用户列表
 @app.route('/api/userlist', methods=['POST'])
 def get_users():
@@ -168,3 +185,76 @@ def set_album():
         return album.modify_album(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
+# 点赞图片
+@app.route('/api/likephoto', methods=['POST'])
+def like_photo():
+    usertoken = split_token(request)
+    if usertoken:
+        return like.like_photo(usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# 取消点赞图片
+@app.route('/api/unlikephoto', methods=['POST'])
+def unlike_photo():
+    usertoken = split_token(request)
+    if usertoken:
+        return like.unlike_photo(usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# 获取图片总点赞数
+@app.route('/api/getphotolikecount', methods=['GET'])
+def get_photo_like_count():
+    photo_id = request.args.get('photoid')
+    if photo_id:
+        return like.get_photo_like_count(photo_id)
+    return jsonify({"code": 400, "message": "photoid is required"}), 400
+
+# 发表评论
+@app.route('/api/commentphoto', methods=['POST'])
+def comment_photo():
+    usertoken = split_token(request)
+    if usertoken:
+        return comment.comment_photo(usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# 删除评论
+@app.route('/api/deletecomment', methods=['POST'])
+def delete_comment():
+    usertoken = split_token(request)
+    if usertoken:
+        return comment.delete_comment(usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# 获取评论列表
+@app.route('/api/getcomments', methods=['GET'])
+def get_comments():
+    usertoken = split_token(request)
+    photo_id = request.args.get('photoid')
+    if usertoken and photo_id:
+        return comment.get_comments(photo_id, usertoken)
+    return jsonify({"code": 400, "message": "usertoken and photoid are required"}), 400
+
+# 点赞评论
+@app.route('/api/likecomment', methods=['POST'])
+def like_comment():
+    usertoken = split_token(request)
+    if usertoken:
+        return like.like_comment(usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# 取消点赞评论
+@app.route('/api/unlikecomment', methods=['POST'])
+def unlike_comment():
+    usertoken = split_token(request)
+    if usertoken:
+        return like.unlike_comment(usertoken)
+    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+
+# 获取评论总点赞数
+@app.route('/api/getcommentlikecount', methods=['GET'])
+def get_comment_like_count():
+    comment_id = request.args.get('commentid')
+    if comment_id:
+        return like.get_comment_like_count(comment_id)
+    return jsonify({"code": 400, "message": "commentid is required"}), 400

@@ -1,4 +1,5 @@
-from app import app
+from app import app, db, utils
+from app.controllers import user
 from app.config import Config
 import os
 
@@ -6,8 +7,19 @@ if __name__ == '__main__':
     # 初始化数据库
     try:
         if not os.path.exists(f"./instance/{Config.SQLALCHEMY_DATABASE_NAME}"):
-            print('数据库不存在, 请手动运行 python init_db.py')
-            exit()
+            db_path = os.path.join(".")
+            if not os.path.exists(db_path):
+                os.makedirs(db_path)
+            with app.app_context():
+                db.create_all()
+
+                # 创建初始管理员
+                adminName = "admin"
+                uuid = utils.generate_user_uuid()
+                print(f"管理员用户初始化完毕！请保存初始登录信息：用户名{adminName}, token: {uuid}")
+                new_user = user.User(username=adminName, usertoken=uuid, permissions=1)
+                db.session.add(new_user)
+                db.session.commit()
     except Exception as e:
         print(f'数据库不存在或连接失败, 请检查数据库配置:{e}')
         exit()

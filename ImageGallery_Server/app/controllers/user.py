@@ -41,7 +41,6 @@ def get_all_users(usertoken):
     })
 
 def add_new_user(usertoken):
-    print(usertoken)
     data = request.get_json()
     username = data.get('name')
     if not username:

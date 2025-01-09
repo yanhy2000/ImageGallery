@@ -30,3 +30,26 @@ class Photo(db.Model):
     albumid = db.Column(db.Integer, db.ForeignKey('album.albumid'), nullable=False)
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'), nullable=False)
 
+# 评论表
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    commentid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    content = db.Column(db.String(500), nullable=False)
+    create_time = db.Column(db.DateTime)
+    userid = db.Column(db.Integer, db.ForeignKey('user.userid'), nullable=False)
+    photoid = db.Column(db.Integer, db.ForeignKey('photos.photoid'), nullable=False)
+
+# 点赞表
+class Like(db.Model):
+    __tablename__ = 'likes'
+    likeid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    userid = db.Column(db.Integer, db.ForeignKey('user.userid'), nullable=False)
+    photoid = db.Column(db.Integer, db.ForeignKey('photos.photoid'), nullable=False)
+
+# 评论点赞表
+class CommentLike(db.Model):
+    __tablename__ = 'comment_likes'
+    commentlikeid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    userid = db.Column(db.Integer, db.ForeignKey('user.userid'), nullable=False)
+    commentid = db.Column(db.Integer, db.ForeignKey('comments.commentid'), nullable=False)
+

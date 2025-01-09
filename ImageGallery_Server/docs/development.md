@@ -820,3 +820,38 @@ Content-Disposition: form-data; name="album"
   ]
 }
 ```
+
+---
+
+### 获取用户权限状态（GET /api/checktoken）
+
+**描述**：返回该用户的权限状态，可以用于判断能否登录。
+
+**请求**：
+
+* **URL**：`/api/checktoken`
+* **方法**：`GET`
+
+**参数**：
+
+* **查询参数**：
+
+  * `username`: 用户名（必填）
+  * `usertoken`: 用户token（必填）
+
+**返回**：
+
+* **格式**：`application/json`
+* **示例**：
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+      "allowlogin": True
+    }
+}
+```
+
+# 待更新

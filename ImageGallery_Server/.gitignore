@@ -1,4 +1,6 @@
 tmp/
+ssl/
+start.bat
 test.jpg
 package-lock.json
 app/config.py
@@ -6,6 +8,7 @@ config.py
 __pycache__/
 app/__pycache__/
 instance/
+gallery.db
 uploads/
 .vscode/
 .DS_Store
