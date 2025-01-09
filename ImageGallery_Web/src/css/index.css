@@ -155,11 +155,27 @@ body::before {
   align-items: center;
   gap: 10px;
 }
+
 .footer-content p {
   margin: 5px 0;
   font-size: 12px;
   color: #aaa;
   text-align: center;
+}
+
+.custom-footer a {
+  text-decoration: none;
+  color: #5eade9; 
+  transition: color 0.3s ease, text-decoration 0.3s ease; 
+}
+
+.custom-footer a:hover {
+  color: #0056a4; 
+}
+
+body.dark-mode .custom-footer {
+  background-color: #333333da;
+  color: #ffffff;
 }
 
 .UserGuide {

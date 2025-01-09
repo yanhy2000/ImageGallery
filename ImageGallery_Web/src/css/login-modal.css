@@ -1,4 +1,4 @@
-.image-modal {
+.login-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -14,7 +14,7 @@
     animation: fadeIn 0.3s forwards;
 }
 
-body.dark-mode .image-modal {
+body.dark-mode .login-modal {
     background-color: #1c1c1c;
 }
 
@@ -37,16 +37,16 @@ body.dark-mode .image-modal {
     transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.image-modal .modal-content {
+.login-modal .modal-content {
     transform: scale(1);
     opacity: 1;
 }
 
-.image-modal.fade-leave-active {
+.login-modal.fade-leave-active {
     animation: fadeOut 0.3s forwards;
 }
 
-.image-modal.fade-leave-active .modal-content {
+.login-modal.fade-leave-active .modal-content {
     transform: scale(0.8);
     opacity: 0;
 }
@@ -83,7 +83,7 @@ body.dark-mode .modal-content {
     color: #96fff6;
 }
 
-.modal-image {
+.modal-login {
     max-width: 100%;
     max-height: calc(100vh - 150px); 
     object-fit: contain;
@@ -96,7 +96,7 @@ body.dark-mode .modal-content {
 }
 
 /* 信息区样式 */
-.image-info {
+.login-info {
     max-height: calc(100vh - 200px);
     width: 100%; 
     max-height: 200px;
@@ -104,12 +104,12 @@ body.dark-mode .modal-content {
     line-height: 1.6;
 }
 
-.image-info p span {
+.login-info p span {
     margin-right: 20px; 
     display: inline-block;
     color: #777;
 }
-.image-info p:first-child {
+.login-info p:first-child {
     font-size: 24px; 
     font-weight: bold;
     margin: 0 auto;
@@ -121,11 +121,25 @@ body.dark-mode .modal-content {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.image-info p:not(:first-child) {
+.login-info p:not(:first-child) {
     font-size: 14px;
     color: #777;
     margin-bottom: 6px;
 }
+
+body.dark-mode .login-info p:first-child {
+    background-color: #2c2c2c;
+    color: #ffffff;
+}
+
+body.dark-mode .login-info p:not(:first-child) {
+    color: #ffffff;
+}
+
+/* .login-info p span {
+    color: #ffffff;
+} */
+
 
 @media (max-width: 768px) {
     .modal-content {
@@ -138,11 +152,11 @@ body.dark-mode .modal-content {
         font-size: 18px;
         margin-bottom: 5px;
     }
-    .image-info p:not(:first-child) {
+    .login-info p:not(:first-child) {
         font-size: 12px;
         margin-bottom: 3px;
     }
-    .modal-image {
+    .modal-login {
         max-height: calc(100vh - 200px); 
       }
 }

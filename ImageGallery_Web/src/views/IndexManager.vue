@@ -3,6 +3,7 @@
         <header class="header">
             <h1>{{ title }}</h1>
             <h2>{{ subtitle }}</h2>
+            <button class="login-button" @click="showLoginModal">登录</button>
             <button class="mode-toggle-btn" @click="toggleDarkMode">
                 <i :class="DarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i> </button>
         </header>
@@ -68,7 +69,7 @@
         </div>
 
         <transition name="fade">
-            <div v-if="imageModalVisible" class="image-modal" @click="handleModalBackgroundClick">
+            <div v-if="imageModalVisible" class="image-modal" @click="imageModalClick">
                 <div class="modal-content" @click.stop>
                     <img :src="currentThumbnailUrl ? currentThumbnailUrl : ''"
                         :alt="currentImage ? currentImage.desc : ''" class="modal-image">
@@ -82,6 +83,17 @@
                         </p>
                     </div>
                     <button @click="closeImageModal" class="close-button" title="关闭">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        </transition>
+
+        <transition name="fade">
+            <div v-if="LoginModalVisible" class="login-modal" @click="loginModalClick">
+                <div class="modal-content" @click.stop>
+                    <p>请登录</p>
+                    <button @click="closeLoginModal" class="close-button" title="关闭">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
@@ -118,6 +130,7 @@ export default {
         const currentImage = ref(null);
         const currentThumbnailUrl = ref(null);
         const imageModalVisible = ref(false);
+        const LoginModalVisible = ref(false);
         const totalPhotos = ref(0);
         const perPageOptions = [6, 9, 15, 20, 25, 30];
         const error = ref(null);
@@ -200,18 +213,6 @@ export default {
 
             return { columns, rows, imageSizeScale, gap };
         };
-
-        const updateGrid = () => {
-            const { columns, gap, imageSizeScale } = calculateGrid(perPage.value);
-            gridStyle.value = {
-                gridTemplateColumns: `repeat(${columns}, 1fr)`,
-                gap,
-            };
-            imageCardStyle.value = {
-                transform: `scale(${imageSizeScale})`,
-            };
-        };
-
 
         const fetchPhotos = async () => {
             try {
@@ -300,20 +301,30 @@ export default {
             currentThumbnailUrl.value = null;
         };
 
-        const openImageModal = () => {
-            imageModalVisible.value = true;
-        };
-
         const handleEscKey = (event) => {
             if (event.key === 'Escape' && imageModalVisible.value) {
                 imageModalVisible.value = false;
             }
         };
 
-        const handleModalBackgroundClick = (event) => {
+        const imageModalClick = (event) => {
             if (event.target === event.currentTarget) {
                 imageModalVisible.value = false;
             }
+        };
+
+        const showLoginModal = () => {
+            LoginModalVisible.value = true;
+        };
+
+        const loginModalClick = (event) => {
+            if (event.target === event.currentTarget) {
+                LoginModalVisible.value = false;
+            }
+        };
+
+        const closeLoginModal = () => {
+            LoginModalVisible.value = false;
         };
 
         const toggleDarkMode = () => {
@@ -358,8 +369,6 @@ export default {
             checkDarkMode();
             await cleanExpiredPhotos();
             await fetchPhotos();
-            updateGrid(); 
-            window.addEventListener('resize', updateGrid); 
             const link = document.createElement('link');
             link.rel = 'icon';
             link.href = 'img/favicon.ico';
@@ -372,8 +381,6 @@ export default {
 
         onBeforeUnmount(() => {
             document.removeEventListener('keydown', handleEscKey);
-            prefersDarkMode.removeEventListener('change', listener);
-            window.removeEventListener('resize', updateGrid); 
 
         });
 
@@ -395,10 +402,13 @@ export default {
             fetchPhotos,
             getPhotoInfo,
             closeImageModal,
-            openImageModal,
+            closeLoginModal,
+            LoginModalVisible,
+            loginModalClick,
+            showLoginModal,
             toggleDarkMode,
             DarkMode,
-            handleModalBackgroundClick,
+            imageModalClick,
             imageCardStyle,
             gridStyle,
             refreshCache,
@@ -415,7 +425,8 @@ export default {
 <style>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 @import '@/css/index.css';
-@import '@/css/modal.css';
+@import '@/css/image-modal.css';
+@import '@/css/login-modal.css';
 @import '@/css/pagination.css';
 @import '@/css/btn.css';
 </style>

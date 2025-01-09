@@ -1,0 +1,162 @@
+.image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+}
+
+body.dark-mode .image-modal {
+    background-color: #1c1c1c;
+}
+
+.modal-content {
+    background-color: #fff;
+    color: #333;
+    padding: 20px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    width: 90%;
+    max-width: 1100px;
+    height: auto;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.image-modal .modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.image-modal.fade-leave-active {
+    animation: fadeOut 0.3s forwards;
+}
+
+.image-modal.fade-leave-active .modal-content {
+    transform: scale(0.8);
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.modal-fade-enter-active, .modal-fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from, .modal-fade-leave-to {
+    opacity: 0;
+}
+
+
+body.dark-mode .modal-content {
+    background-color: #2c2c2c; 
+    color: #96fff6;
+}
+
+.modal-image {
+    max-width: 100%;
+    max-height: calc(100vh - 150px); 
+    object-fit: contain;
+    margin-bottom: 20px;
+    height: auto; 
+    display: block; 
+    margin: 0 auto; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 信息区样式 */
+.image-info {
+    max-height: calc(100vh - 200px);
+    width: 100%; 
+    max-height: 200px;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+
+.image-info p span {
+    margin-right: 20px; 
+    display: inline-block;
+    color: #777;
+}
+.image-info p:first-child {
+    font-size: 24px; 
+    font-weight: bold;
+    margin: 0 auto;
+    color: #333; 
+    margin-bottom: 10px; 
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.image-info p:not(:first-child) {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 6px;
+}
+
+body.dark-mode .image-info p:first-child {
+    background-color: #2c2c2c;
+    color: #ffffff;
+}
+
+body.dark-mode .image-info p:not(:first-child) {
+    color: #ffffff;
+}
+
+/* .image-info p span {
+    color: #ffffff;
+} */
+
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-width: 600px;
+        max-height: calc(100vh - 20px);
+        padding: 15px;
+    }
+    .mnodal-info p:first-child {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+    .image-info p:not(:first-child) {
+        font-size: 12px;
+        margin-bottom: 3px;
+    }
+    .modal-image {
+        max-height: calc(100vh - 200px); 
+      }
+}
