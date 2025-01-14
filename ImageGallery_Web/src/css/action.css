@@ -5,7 +5,7 @@
   right: 10px;
   display: flex;
   align-items: center;
-  gap: 10px; /* 评论和点赞按钮之间的间距 */
+  gap: 10px; 
 }
 
 /* 评论按钮样式 */
@@ -15,26 +15,26 @@
   justify-content: center;
   width: 35px;
   height: 35px;
-  background: rgba(255, 255, 255, 0.8); /* 半透明背景 */
-  border-radius: 50%; /* 圆形按钮 */
+  background: rgba(255, 255, 255, 0.8); 
+  border-radius: 50%; 
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* 添加阴影 */
-  transition: background 0.3s, transform 0.2s; /* 动画效果 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s, transform 0.2s;
 }
 
 .comment-section:hover {
-  background: rgba(100, 150, 255, 0.9); /* 鼠标悬浮时背景变为浅蓝色 */
-  transform: scale(1.1); /* 悬浮时轻微放大 */
+  background: rgba(100, 150, 255, 0.9); 
+  transform: scale(1.1);
 }
 
 .comment-section i {
-  font-size: 18px; /* 图标大小 */
-  color: #555; /* 默认颜色 */
-  transition: color 0.3s, transform 0.2s ease; /* 图标颜色和缩放的过渡 */
+  font-size: 18px;
+  color: #555; 
+  transition: color 0.3s, transform 0.2s ease;
 }
 
 .comment-section:active {
-  transform: scale(0.95); /* 点击时轻微缩小 */
+  transform: scale(0.95); 
 }
 /* 夜间模式 */
 body.dark-mode .comment-section {

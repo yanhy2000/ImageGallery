@@ -3,9 +3,22 @@
         <header class="header">
             <h1>{{ title }}</h1>
             <h2>{{ subtitle }}</h2>
-            <button class="login-button" @click="showLoginModal">登录</button>
-            <button class="mode-toggle-btn" @click="toggleDarkMode">
-                <i :class="DarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i> </button>
+
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <!-- 用户名显示 -->
+                <span v-if="isLoggedIn" class="username">{{ username }}</span>
+
+                <!-- 登录按钮 -->
+                <button class="status-button login-button" @click="showLoginModal">
+                    登录
+                </button>
+
+                <!-- 模式切换按钮 -->
+                <button class="status-button mode-toggle-btn" @click="toggleDarkMode">
+                    <i :class="DarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>
+                </button>
+            </div>
         </header>
 
         <div class="UserGuide" @mouseenter="showTooltip" @mouseleave="hideTooltip" @click="toggleTooltip">
@@ -81,10 +94,13 @@
         </div>
 
         <transition name="fade">
-            <div v-if="isCommentModalOpen" class="modal">
+            <div v-if="CommentModalVisible" class="comment-modal">
                 <div class="modal-content">
-                    <span class="close-button" @click="closeCommentModal">&times;</span>
                     <p>评论框（内容设计待定）</p>
+
+                    <button @click="closeCommentModal" class="close-button" title="关闭">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
             </div>
         </transition>
@@ -111,7 +127,7 @@
         </transition>
 
         <transition name="fade">
-            <div v-if="LoginModalVisible" class="login-modal" @click="loginModalClick">
+            <div v-if="LoginModalVisible" class="login-modal">
                 <div class="modal-content" @click.stop>
                     <p>请登录</p>
                     <button @click="closeLoginModal" class="close-button" title="关闭">
@@ -151,7 +167,10 @@ export default {
         const currentImage = ref(null);
         const currentThumbnailUrl = ref(null);
         const imageModalVisible = ref(false);
+
         const LoginModalVisible = ref(false);
+        const isLoggedIn = ref(false);
+        const userNames = ref("username");
         const CommentModalVisible = ref(false);
         const totalPhotos = ref(0);
         const perPageOptions = [6, 9, 15, 20, 25, 30];
@@ -315,7 +334,6 @@ export default {
             }
         };
 
-
         const getPhotoInfo = async (photoid) => {
             try {
                 const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/getphotoinfo?photoid=${photoid}`);
@@ -338,8 +356,10 @@ export default {
         };
 
         const handleEscKey = (event) => {
-            if (event.key === 'Escape' && imageModalVisible.value) {
+            if (event.key === 'Escape' && (imageModalVisible.value || LoginModalVisible.value || CommentModalVisible.value)) {
                 imageModalVisible.value = false;
+                LoginModalVisible.value = false;
+                CommentModalVisible.value = false;
             }
         };
 
@@ -356,8 +376,12 @@ export default {
         const closeCommentModal = () => {
             CommentModalVisible.value = false;
         };
-            
+
         const showLoginModal = () => {
+            if (!isLoggedIn.value) {
+                isLoggedIn.value = true;
+                userNames.value = "admintest";
+            }
             LoginModalVisible.value = true;
         };
 
@@ -446,8 +470,12 @@ export default {
             fetchPhotos,
             getPhotoInfo,
             closeImageModal,
+
+            isLoggedIn,
             closeLoginModal,
+
             closeCommentModal,
+            CommentModalVisible,
             LoginModalVisible,
             loginModalClick,
             showCommentModal,
@@ -477,4 +505,6 @@ export default {
 @import '@/css/pagination.css';
 @import '@/css/btn.css';
 @import '@/css/action.css';
+@import '@/css/status-bar.css';
+@import '@/css/action-modal.css';
 </style>

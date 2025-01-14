@@ -1,34 +1,4 @@
-/* 夜间模式按钮 */
-.mode-toggle-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    aspect-ratio: 1 / 1;
-    background-color: #2fe4eb81;
-    color: gray;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 15px;
-    transition: background-color 0.3s;
-}
 
-.mode-toggle-btn i {
-    pointer-events: none;
-}
-
-.mode-toggle-btn:hover {
-    background-color: #c4c4c4;
-}
-
-body.dark-mode .mode-toggle-btn {
-    background-color: #858585;
-    color: white;
-}
-
-body.dark-mode .mode-toggle-btn:hover {
-    background-color: #2fe4eb81;
-}
 
 
 /* 全局按钮 */
