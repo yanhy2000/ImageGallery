@@ -30,9 +30,9 @@ public class EditConfigScreen extends Screen {
         this.userTokenField.setMaxLength(100);
         this.addSelectableChild(this.userTokenField);
         this.userTokenField.setFocusUnlocked(true);
-        this.userTokenField.setChangedListener(_ -> this.userTokenField.setSuggestion(null));
+        this.userTokenField.setChangedListener(text -> this.userTokenField.setSuggestion(null));
 
-        ButtonWidget buttonConfirm = ButtonWidget.builder(Text.of("确认"), (_) -> {
+        ButtonWidget buttonConfirm = ButtonWidget.builder(Text.of("确认"), (btn) -> {
             if (this.client != null) {
                 try {
                     handleConfirm(this.userTokenField.getText());
@@ -42,7 +42,7 @@ public class EditConfigScreen extends Screen {
             }
         }).dimensions(this.width / 2 - 110, this.height / 2 + 20, 100, 20).build();
 
-        ButtonWidget buttonClose = ButtonWidget.builder(Text.of("取消"), (_) -> {
+        ButtonWidget buttonClose = ButtonWidget.builder(Text.of("取消"), (btn) -> {
             if (this.client != null) {
                 close();
             }

@@ -14,8 +14,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 
 import static top.yanhy.Screenshot_uploader.*;
 
@@ -49,11 +47,7 @@ public class UploadScreenshotScreen extends Screen {
 
         ButtonWidget buttonUpload = ButtonWidget.builder(Text.of("上传"), (btn) -> {
             if (this.client != null) {
-                try {
-                    handleUpload(this.filename, this.descriptionField.getText(), this.albumField.getText());
-                } catch (IOException | URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
+                handleUpload(this.filename, this.descriptionField.getText(), this.albumField.getText());
                 this.client.getToastManager().add(
                         SystemToast.create(this.client, SystemToast.Type.NARRATOR_TOGGLE, Text.of("上传中..."), Text.of("开始上传图片墙"))
                 );
@@ -79,66 +73,81 @@ public class UploadScreenshotScreen extends Screen {
 
     }
 
-    private void handleUpload(String filename, String description, String album) throws IOException, URISyntaxException {
+    private void handleUpload(String filename, String description, String album) {
         File mcDirectory = MinecraftClient.getInstance().runDirectory;
-        String filepath = String.valueOf(new File(mcDirectory, "screenshots/"+filename).getAbsoluteFile());
+        String filepath = String.valueOf(new File(mcDirectory, "screenshots/" + filename).getAbsoluteFile());
         if (description.isEmpty()) {
             description = "这个人很懒，什么都没写";
         }
         LOGGER.info("上传截图: 文件路径={}, 描述={}, 相册={}", filepath, description, album);
-            try {
-                UploadHttpApi uploadHttpApi = new UploadHttpApi();
-                UploadHttpApi.UploadResponse uploadClass = uploadHttpApi.uploadImage(USERTOKEN, filepath, filename, description, album, SERVERHOST, SERVERPORT, SERVERHTTP);
-                LOGGER.info("上传结果 Code={}, Message={}, Data={}", uploadClass.getCode(), uploadClass.getMessage(), uploadClass.getData());
-                    if (uploadClass.getCode() == 200) {
-                        LOGGER.info("上传成功. Photo ID: {}", uploadClass.getData());
 
-                        Text openWebUrlButton = Text.literal(" [打开图片墙网站] ")
-                                .setStyle(Style.EMPTY
-                                        .withColor(0x00FF00)
-                                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, WEBURL))
-                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击打开图片墙网站。")))
-                                );
-                        Text message = Text.literal(MOD_NAME + "上传成功! ID: "+ uploadClass.getData())
-                                .append(openWebUrlButton);
+        UploadHttpApi uploadHttpApi = Screenshot_uploader.getUploadHttpApi();
+        // 调用异步上传方法
+        uploadHttpApi.uploadImageAsync(USERTOKEN, filepath, filename, description, album, SERVERHOST, SERVERPORT, SERVERHTTP, new UploadHttpApi.UploadCallback() {
+            @Override
+            public void onSuccess(UploadHttpApi.UploadResponse uploadClass) {
+                LOGGER.info("上传结果 Code={}, Message={}, Data={}", uploadClass.getCode(), uploadClass.getMessage(), uploadClass.getData());
+                if (uploadClass.getCode() == 200) {
+                    LOGGER.info("上传成功. Photo ID: {}", uploadClass.getData());
+
+                    Text openWebUrlButton = Text.literal(" [打开图片墙网站] ")
+                            .setStyle(Style.EMPTY
+                                    .withColor(0x00FF00)
+                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, WEBURL))
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击打开图片墙网站。")))
+                            );
+                    Text message = Text.literal(MOD_NAME + "上传成功!")
+                            .append(openWebUrlButton);
+
+                    MinecraftClient.getInstance().execute(() -> {
                         if (MinecraftClient.getInstance().player != null) {
                             MinecraftClient.getInstance().player.sendMessage(message, false);
                         }
-                    } else if (uploadClass.getCode() == 401) {
-                        LOGGER.error("上传失败,Token失效. Message: {}", uploadClass.getMessage());
+                    });
+                } else if (uploadClass.getCode() == 401) {
+                    LOGGER.error("上传失败,Token失效. Message: {}", uploadClass.getMessage());
+                    MinecraftClient.getInstance().execute(() -> {
                         if (MinecraftClient.getInstance().player != null) {
-                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败, 请检查用户Token信息！"), false);
+                            MinecraftClient.getInstance().player.sendMessage(Text.literal(MOD_NAME +"上传失败, 请检查用户Token信息！"), false);
                         }
-                    }
-                    else if (uploadClass.getCode() == 403){
-                        LOGGER.error("上传失败,账号无权限. Message: {}", uploadClass.getMessage());
+                    });
+                } else if (uploadClass.getCode() == 403) {
+                    LOGGER.error("上传失败,账号无权限. Message: {}", uploadClass.getMessage());
+                    MinecraftClient.getInstance().execute(() -> {
                         if (MinecraftClient.getInstance().player != null) {
-                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败, 账号无权限！"), false);
+                            MinecraftClient.getInstance().player.sendMessage(Text.literal(MOD_NAME +"上传失败, 账号无权限！"), false);
                         }
-                    }
-                    else if (uploadClass.getCode() == 500) {
-                        LOGGER.error("上传失败,服务器响应错误. Message: {}", uploadClass.getMessage());
+                    });
+                } else if (uploadClass.getCode() == 500) {
+                    LOGGER.error("上传失败,服务器响应错误. Message: {}", uploadClass.getMessage());
+                    MinecraftClient.getInstance().execute(() -> {
                         if (MinecraftClient.getInstance().player != null) {
-                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败, 服务器响应错误！请检查服务器通讯是否正常。"), false);
+                            MinecraftClient.getInstance().player.sendMessage(Text.literal(MOD_NAME +"上传失败, 服务器响应错误！请检查服务器通讯是否正常。"), false);
                         }
-                    }
-                    else {
-                        LOGGER.error("上传失败. Message: {}", uploadClass.getMessage());
+                    });
+                } else {
+                    LOGGER.error("上传失败. Message: {}", uploadClass.getMessage());
+                    MinecraftClient.getInstance().execute(() -> {
                         if (MinecraftClient.getInstance().player != null) {
-                            MinecraftClient.getInstance().player.sendMessage(Text.literal("上传失败！"), false);
+                            MinecraftClient.getInstance().player.sendMessage(Text.literal(MOD_NAME +"上传失败！"), false);
                         }
-                    }
-            } catch (Exception e) {
-                LOGGER.error("上传时发生异常. Message: {}", e.getMessage());
-                if (MinecraftClient.getInstance().player != null) {
-                    MinecraftClient.getInstance().player.sendMessage(Text.literal("上传时发生异常！请检查日志或尝试重新上传。"), false);
+                    });
                 }
             }
 
+            @Override
+            public void onFailure(Exception e) {
+                LOGGER.error("上传时发生异常. Message: {}", e.getMessage());
+                MinecraftClient.getInstance().execute(() -> {
+                    if (MinecraftClient.getInstance().player != null) {
+                        MinecraftClient.getInstance().player.sendMessage(Text.literal(MOD_NAME +"上传未成功."), false);
+                    }
+                });
+            }
+        });
 
         this.close();
     }
-
     @Override
     public void close() {
         MinecraftClient.getInstance().setScreen(null);

@@ -7,6 +7,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
@@ -46,6 +47,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 	public static String SERVERHTTP = "";
 	public static String WEBURL = "";
 
+	private static UploadHttpApi uploadHttpApi;
 
 	@Override
 	public void onInitializeClient() {
@@ -59,7 +61,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 		LOGGER.info("加载配置文件成功");
 
 		KeyBinding screenshotKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("截图快捷键", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_Z, "截图上传快捷键"));
-		ClientTickEvents.END_CLIENT_TICK.register(_ -> {
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (screenshotKey.wasPressed()) {
 				screenshot();
 			}
@@ -81,20 +83,34 @@ public class Screenshot_uploader implements ClientModInitializer {
 			return ActionResult.PASS;
 		});
 		LOGGER.info("注册物品成功");
+
+		uploadHttpApi = UploadHttpApi.getInstance();
+		// 注册客户端停止事件
+		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+			if (uploadHttpApi != null) {
+				uploadHttpApi.shutdown();
+				LOGGER.info("UploadHttpApi 线程池已关闭。");
+			}
+		});
 	}
+
+	public static UploadHttpApi getUploadHttpApi() {
+		return uploadHttpApi;
+	}
+
 	public void registerClientCommands() {
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, res) -> dispatcher.register(
                 LiteralArgumentBuilder.<FabricClientCommandSource>literal("uploadScreenshot")
                         .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("filename", StringArgumentType.string())
                                 .executes(context -> executeUploadCommandwithargs(context.getSource(), StringArgumentType.getString(context, "filename"))))
                         .executes(context -> executeUploadCommand(context.getSource()))
                         .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("reloadConfig")
-                                .executes(_ -> {
+                                .executes(res1 -> {
                                     reloadConfig();
                                     return Command.SINGLE_SUCCESS;
                                 }))
                         .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("settoken")
-                                .executes(_ -> {
+                                .executes(res2 -> {
                                     setUserToken();
                                     return Command.SINGLE_SUCCESS;
                                 }))
