@@ -81,11 +81,25 @@ export function usePhotoManager() {
             const response = await axios.get(`${API_BASE_URL}/api/getphotoinfo?photoid=${photoid}`);
             if (response.data.code === 200) {
                 return response.data.data;
+                openImageModal()
             } else {
                 alert('Failed to load photo info');
             }
         } catch (error) {
             console.error('Error fetching photo info:', error);
+        }
+    };
+
+    const fetchAllLikes = async (photoid) => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/getphotolikecount?photoid=${photoid}`);
+            if (response.data.code === 200) {
+                return response.data.data;
+            } else {
+                alert('Failed to load likes');
+            }
+        } catch (error) {
+            console.error('Error fetching likes:', error);
         }
     };
 

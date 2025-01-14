@@ -111,6 +111,17 @@ public class Screenshot_uploader implements ClientModInitializer {
                                 }))
                         .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("settoken")
                                 .executes(res2 -> {
+                                    if (MinecraftClient.getInstance().player != null) {
+                                        Text configButton = Text.literal("[开启窗口]")
+                                                .setStyle(Style.EMPTY
+                                                        .withColor(0x00FF00)
+                                                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uploadScreenshot settoken"))
+                                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击打开配置页面。")))
+                                                );
+                                        Text message = Text.literal(MOD_NAME + "正在打开配置窗口,如未打开,尝试" )
+                                                .append(configButton);
+                                        MinecraftClient.getInstance().player.sendMessage(message, false);
+                                    }
                                     setUserToken();
                                     return Command.SINGLE_SUCCESS;
                                 }))

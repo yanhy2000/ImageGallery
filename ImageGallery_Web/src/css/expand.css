@@ -1,0 +1,98 @@
+/* 放大按钮样式 */
+.expand-button {
+    position: absolute;
+    top: 10px; /* 调整位置 */
+    right: 10px;
+    background: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+    padding: 5px;
+    border-radius: 50%; /* 圆形按钮 */
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* 阴影效果 */
+    transition: transform 0.3s, background 0.3s; /* 动画效果 */
+  }
+  
+  .expand-button:hover {
+    background: rgba(255, 100, 100, 0.9); /* 鼠标悬浮时变为浅红色 */
+    transform: scale(1.1); /* 放大效果 */
+  }
+  
+  .expand-button i {
+    font-size: 16px; /* 图标大小 */
+    color: #333; /* 默认颜色 */
+  }
+  
+  /* Modal 背景样式 */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8); /* 半透明黑色遮罩 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  /* Modal 内容样式 */
+  .modal-content {
+    position: relative;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 90%; /* 最大宽度 */
+    max-height: 90%; /* 最大高度 */
+    text-align: center;
+    overflow: hidden;
+  }
+  
+  /* 关闭按钮 */
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 18px;
+    color: #333;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+  
+  .close-button:hover {
+    transform: scale(1.2); /* 悬浮时放大 */
+  }
+  
+  /* Modal 图片样式 */
+  .modal-image {
+    max-width: 100%; /* 图片宽度自适应 */
+    max-height: 80vh; /* 最大高度限制 */
+    margin-bottom: 10px;
+  }
+  
+  /* Modal 描述样式 */
+  .modal-description {
+    font-size: 16px;
+    color: #555;
+  }
+  
+  /* 响应式处理：移动端优化 */
+  @media (max-width: 768px) {
+    .expand-button {
+      top: 5px; /* 调整位置 */
+      right: 5px;
+      padding: 4px;
+    }
+  
+    .expand-button i {
+      font-size: 14px; /* 缩小图标 */
+    }
+  
+    .modal-content {
+      padding: 15px;
+    }
+  
+    .modal-description {
+      font-size: 14px; /* 缩小描述字体 */
+    }
+  }
+  

@@ -1,7 +1,8 @@
 import os
 from PIL import Image
 from app import db
-from app.models import Photo, Album, User
+from app.models import Photo, Album, User, Like, Comment
+from app.controllers import photo, album, user, like, comment
 from flask import request, jsonify, send_file
 from app.utils import generate_uuid_filename, get_project_root, get_utc_time,utc_to_local
 from datetime import datetime
@@ -26,7 +27,8 @@ def get_photo_list():
             "desc": photo.desc if photo.desc else "无描述",
             "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
             "upload_user": username, 
-            "thumbnail": photo.thumbnail,  
+            "thumbnail": photo.thumbnail,
+            "likes": like.get_comment_like_count(photo.photoid),
         })
     return jsonify({
         "code": 200,

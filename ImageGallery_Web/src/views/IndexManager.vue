@@ -22,7 +22,6 @@
                 <br> 目前不支持直接网页上传，需配合MC模组截图上传，模组可在群文件下载“[图片墙辅助]screenshot_uploader-1.0.0”。
                 <br> 每个人有一个专属token，在模组加载后修改配置文件时需要提供，申请token可联系yanhy2000。
                 <br> 上传图片后，暂无修改、删除入口，可找管理员后台修改。
-
             </div>
         </div>
 
@@ -36,6 +35,15 @@
                         <p>{{ photo.upload_time }}</p>
                         <p>{{ photo.desc }}</p>
                     </div>
+                </div>
+                <!-- 放大按钮 -->
+                <div class="expand-button" @click.stop="openModal(photo)">
+                    <i class="fa-solid fa-expand"></i>
+                </div>
+                <!-- 点赞区域 -->
+                <div class="like-section" @click.stop="toggleLike(photo.photoid)">
+                    <i class="fa-regular fa-heart" :class="{ 'fa-solid': photo.isLiked, 'liked': photo.isLiked }"></i>
+                    <span class="like-count">{{ photo.likes }}</span>
                 </div>
             </div>
         </main>
@@ -104,7 +112,6 @@
                 <p>Powered by <a href="https://github.com/yanhy2000/ImageGallery" target="_blank">ImageGallery</a></p>
                 <p>{{ displayContent }}</p>
                 <p>Copyright © <span id="footer-year"></span> yanhy2000</p>
-
             </div>
         </footer>
     </div>
@@ -174,6 +181,20 @@ export default {
             fetchPhotos();
         };
 
+        const toggleLike = (photoid) => {
+
+            const photo = photos.value.find((photo) => photo.photoid === photoid);
+            if (photo) {
+                photo.isLiked = !photo.isLiked; // 切换点赞状态
+                photo.likes += photo.isLiked ? 1 : -1; // 点赞数增减
+            }
+
+            // const photo = photos.value.find((photo) => photo.photoid === photoid);
+            // if (photo) {
+            //     photo.isLiked = !photo.isLiked;
+            //     fetchPhotos();
+            // }
+        };
         const imageCardStyle = computed(() => {
             const { imageSizeScale } = calculateGrid(perPage.value);
 
@@ -192,12 +213,12 @@ export default {
         });
 
         const calculateGrid = (numberOfPhotos) => {
-            const isMobile = window.innerWidth <= 768; 
+            const isMobile = window.innerWidth <= 768;
 
             let columns = isMobile ? 2 : Math.min(5, Math.ceil(Math.sqrt(numberOfPhotos)));
             let rows = Math.ceil(numberOfPhotos / columns);
 
-            let imageSizeScale = isMobile ? 1.1 : 1; 
+            let imageSizeScale = isMobile ? 1.1 : 1;
             let gap = '80px';
 
             if (!isMobile) {
@@ -233,11 +254,24 @@ export default {
             }
         };
 
+        const checkDarkMode = () => {
+            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+            if (prefersDarkMode.matches) {
+                DarkMode.value = true;
+                document.body.classList.add('dark-mode');
+            } else {
+                DarkMode.value = false;
+                document.body.classList.remove('dark-mode');
+            }
+            prefersDarkMode.addEventListener('change', () => { });
+        }
+
         onMounted(async () => {
             const isMobile = window.innerWidth <= 768;
             if (isMobile) {
                 perPage.value = 6;
             }
+            checkDarkMode();
             await fetchPhotos();
             await cleanExpiredPhotos();
             await fetchPhotos();
@@ -285,6 +319,7 @@ export default {
             hideTooltip,
             showTooltip,
             toggleTooltip,
+            toggleLike,
         };
     },
 };
@@ -297,4 +332,6 @@ export default {
 @import '@/css/login-modal.css';
 @import '@/css/pagination.css';
 @import '@/css/btn.css';
+@import '@/css/like.css';
+@import '@/css/expand.css';
 </style>

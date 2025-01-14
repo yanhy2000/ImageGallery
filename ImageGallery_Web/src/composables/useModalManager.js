@@ -6,6 +6,10 @@ export function useModalManager() {
     const currentImage = ref(null);
     const currentThumbnailUrl = ref(null);
 
+    const openImageModal = () => {
+        imageModalVisible.value = true;
+    };
+
     const closeImageModal = () => {
         imageModalVisible.value = false;
         currentImage.value = null;
@@ -37,6 +41,7 @@ export function useModalManager() {
         LoginModalVisible,
         currentImage,
         currentThumbnailUrl,
+        openImageModal,
         closeImageModal,
         showLoginModal,
         closeLoginModal,
