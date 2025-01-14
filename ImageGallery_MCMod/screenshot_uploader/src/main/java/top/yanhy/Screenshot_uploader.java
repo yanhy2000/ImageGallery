@@ -22,12 +22,10 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 
-
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -61,7 +59,7 @@ public class Screenshot_uploader implements ClientModInitializer {
 		LOGGER.info("加载配置文件成功");
 
 		KeyBinding screenshotKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("截图快捷键", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_Z, "截图上传快捷键"));
-		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+		ClientTickEvents.END_CLIENT_TICK.register(_ -> {
 			if (screenshotKey.wasPressed()) {
 				screenshot();
 			}
@@ -85,28 +83,34 @@ public class Screenshot_uploader implements ClientModInitializer {
 		LOGGER.info("注册物品成功");
 	}
 	public void registerClientCommands() {
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-			dispatcher.register(
-					LiteralArgumentBuilder.<FabricClientCommandSource>literal("uploadScreenshot")
-							.then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("filename", StringArgumentType.string())
-									.executes(context -> executeUploadCommandwithargs(context.getSource(), StringArgumentType.getString(context, "filename"))))
-							.executes(context -> executeUploadCommand(context.getSource()))
-			);
-		});
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(
+                LiteralArgumentBuilder.<FabricClientCommandSource>literal("uploadScreenshot")
+                        .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("filename", StringArgumentType.string())
+                                .executes(context -> executeUploadCommandwithargs(context.getSource(), StringArgumentType.getString(context, "filename"))))
+                        .executes(context -> executeUploadCommand(context.getSource()))
+                        .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("reloadConfig")
+                                .executes(_ -> {
+                                    reloadConfig();
+                                    return Command.SINGLE_SUCCESS;
+                                }))
+                        .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("settoken")
+                                .executes(_ -> {
+                                    setUserToken();
+                                    return Command.SINGLE_SUCCESS;
+                                }))
+        ));
 	}
 
 	private void screenshot() {
 		if (Objects.equals(USERTOKEN, "token" ) || Objects.equals(SERVERHOST, "example.com")){
-			File mcDirectory = MinecraftClient.getInstance().runDirectory;
-			File configFile = new File(mcDirectory, "config/screenshot_uploader.yml");
 			if (MinecraftClient.getInstance().player != null) {
-				Text configButton = Text.literal("[打开配置文件]")
+				Text configButton = Text.literal("[修改Token]")
 						.setStyle(Style.EMPTY
 								.withColor(0x00FF00)
-								.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, configFile.getAbsolutePath()))
-								.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击打开配置文件。")))
+								.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uploadScreenshot settoken"))
+								.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("点击打开配置页面。")))
 						);
-				Text message = Text.literal(MOD_NAME + "请先在配置文件中配置用户名和用户Token，保存后请重启游戏。" )
+				Text message = Text.literal(MOD_NAME + "请先设置用户Token。" )
 						.append(configButton);
 				MinecraftClient.getInstance().player.sendMessage(message, false);
 			}
@@ -160,6 +164,24 @@ public class Screenshot_uploader implements ClientModInitializer {
             MinecraftClient.getInstance().player.sendMessage(Text.literal(MOD_NAME + "需要指定参数，请使用 /uploadScreenshot filename"), false);
         }
         return Command.SINGLE_SUCCESS;
+	}
+	public static void reloadConfig() {
+		ConfigHandler.initConfig();
+		USERTOKEN = ConfigHandler.getUserToken();
+		SERVERHOST = ConfigHandler.getServerHost();
+		SERVERPORT = ConfigHandler.getServerPort();
+		SERVERHTTP = ConfigHandler.getServerHttp();
+		WEBURL = ConfigHandler.getWebUrl();
+		LOGGER.info("配置文件重新加载成功");
+		if (MinecraftClient.getInstance().player != null) {
+			MinecraftClient.getInstance().player.sendMessage(Text.literal(MOD_NAME + "配置文件重新加载成功"), false);
+		}
+	}
+	private void setUserToken() {
+		MinecraftClient client = MinecraftClient.getInstance();
+		if (client.player != null) {
+			client.execute(() -> client.setScreen(new EditConfigScreen()));
+		}
 	}
 
 }
