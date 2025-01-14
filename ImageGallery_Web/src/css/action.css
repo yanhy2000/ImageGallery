@@ -1,0 +1,177 @@
+/* 操作（评论和点赞）区域的容器样式 */
+.action-section {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 评论和点赞按钮之间的间距 */
+}
+
+/* 评论按钮样式 */
+.comment-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  background: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+  border-radius: 50%; /* 圆形按钮 */
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* 添加阴影 */
+  transition: background 0.3s, transform 0.2s; /* 动画效果 */
+}
+
+.comment-section:hover {
+  background: rgba(100, 150, 255, 0.9); /* 鼠标悬浮时背景变为浅蓝色 */
+  transform: scale(1.1); /* 悬浮时轻微放大 */
+}
+
+.comment-section i {
+  font-size: 18px; /* 图标大小 */
+  color: #555; /* 默认颜色 */
+  transition: color 0.3s, transform 0.2s ease; /* 图标颜色和缩放的过渡 */
+}
+
+.comment-section:active {
+  transform: scale(0.95); /* 点击时轻微缩小 */
+}
+/* 夜间模式 */
+body.dark-mode .comment-section {
+    background: rgba(50, 50, 50, 0.8);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  }
+  
+  body.dark-mode .comment-section i {
+    color: lightgray;
+  }
+
+/* 点赞区域样式 */
+.like-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px; 
+    border-radius: 20px; /* 圆角 */
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background 0.3s, transform 0.2s;
+  }
+
+/* 鼠标悬浮效果 */
+.like-section:hover {
+  background: rgba(255, 100, 100, 0.9);
+  transform: scale(1.1);
+}
+
+/* 图标样式 */
+.like-section i {
+  font-size: 18px;
+  color: gray;
+  transition: color 0.3s, transform 0.2s ease;
+}
+
+/* 点赞状态时的红心效果 */
+.like-section i.liked {
+  color: red;
+  transform: scale(1.2);
+}
+
+/* 点赞数字样式 */
+.like-section .like-count {
+  font-size: 14px;
+  color: #333;
+  font-weight: bold;
+}
+
+/* 点赞动画触发 */
+.like-section:active {
+  transform: scale(0.95);
+}
+
+/* 夜间模式 */
+body.dark-mode .like-section {
+  background: rgba(50, 50, 50, 0.8);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .like-section i {
+  color: lightgray;
+}
+
+body.dark-mode .like-section i.liked {
+  color: #ff4d4d;
+}
+
+body.dark-mode .like-section .like-count {
+  color: #ccc;
+}
+
+/* Modal 背景样式 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8); /* 半透明黑色遮罩 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal 内容样式 */
+.modal-content {
+  position: relative;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 90%; /* 最大宽度 */
+  max-height: 90%; /* 最大高度 */
+  text-align: center;
+  overflow: hidden;
+}
+
+/* 关闭按钮 */
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 18px;
+  color: #333;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.close-button:hover {
+  transform: scale(1.2); /* 悬浮时放大 */
+}
+
+/* 移动端样式 */
+@media (max-width: 768px) {
+  .like-section {
+    bottom: 5px;
+    right: 5px;
+    padding: 6px 10px;
+    border-radius: 15px;
+  }
+
+  .like-section i {
+    font-size: 16px;
+  }
+
+  .like-section .like-count {
+    font-size: 12px;
+  }
+  .comment-section {
+    width: 30px;
+    height: 30px;
+  }
+
+  .comment-section i {
+    font-size: 16px;
+  }
+}

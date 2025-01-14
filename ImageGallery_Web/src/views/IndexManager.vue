@@ -22,6 +22,7 @@
                 <br> 目前不支持直接网页上传，需配合MC模组截图上传，模组可在群文件下载“[图片墙辅助]screenshot_uploader-1.0.0”。
                 <br> 每个人有一个专属token，在模组加载后修改配置文件时需要提供，申请token可联系yanhy2000。
                 <br> 上传图片后，暂无修改、删除入口，可找管理员后台修改。
+
             </div>
         </div>
 
@@ -36,14 +37,19 @@
                         <p>{{ photo.desc }}</p>
                     </div>
                 </div>
-                <!-- 放大按钮 -->
-                <div class="expand-button" @click.stop="openModal(photo)">
-                    <i class="fa-solid fa-expand"></i>
-                </div>
-                <!-- 点赞区域 -->
-                <div class="like-section" @click.stop="toggleLike(photo.photoid)">
-                    <i class="fa-regular fa-heart" :class="{ 'fa-solid': photo.isLiked, 'liked': photo.isLiked }"></i>
-                    <span class="like-count">{{ photo.likes }}</span>
+                <!-- 评论按钮和点赞按钮区域 -->
+                <div class="action-section">
+                    <!-- 评论按钮 -->
+                    <div class="comment-section" @click.stop="showCommentModal(photo.photoid)">
+                        <i class="fa-regular fa-comment"></i>
+                    </div>
+
+                    <!-- 点赞按钮 -->
+                    <div class="like-section" @click.stop="toggleLike(photo.photoid)">
+                        <i class="fa-regular fa-heart"
+                            :class="{ 'fa-solid': photo.isLiked, 'liked': photo.isLiked }"></i>
+                        <span class="like-count">{{ photo.likes }}</span>
+                    </div>
                 </div>
             </div>
         </main>
@@ -73,6 +79,15 @@
             </div>
             <div><button class="refresh-cache-button" @click="refreshCache">刷新缓存</button></div>
         </div>
+
+        <transition name="fade">
+            <div v-if="isCommentModalOpen" class="modal">
+                <div class="modal-content">
+                    <span class="close-button" @click="closeCommentModal">&times;</span>
+                    <p>评论框（内容设计待定）</p>
+                </div>
+            </div>
+        </transition>
 
         <transition name="fade">
             <div v-if="imageModalVisible" class="image-modal" @click="imageModalClick">
@@ -112,6 +127,7 @@
                 <p>Powered by <a href="https://github.com/yanhy2000/ImageGallery" target="_blank">ImageGallery</a></p>
                 <p>{{ displayContent }}</p>
                 <p>Copyright © <span id="footer-year"></span> yanhy2000</p>
+
             </div>
         </footer>
     </div>
@@ -119,53 +135,39 @@
 
 <script>
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue';
-import { usePhotoManager, useModalManager, useDarkMode, useTooltip } from '@/composables';
-import { refreshCache, cleanExpiredPhotos } from '@/services/cacheService';
+import axios from 'axios';
+import { cachePhoto, getCachedPhoto, cleanExpiredPhotos, refreshCache } from '@/services/cacheService';
 
 export default {
     name: 'IndexManager',
     setup() {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
         const title = import.meta.env.VITE_APP_TITLE;
         const subtitle = import.meta.env.VITE_APP_SUBTITLE;
+        const photos = ref([]);
+        const currentPage = ref(1);
+        const totalPages = ref(1);
+        const perPage = ref(6);
+        const currentImage = ref(null);
+        const currentThumbnailUrl = ref(null);
+        const imageModalVisible = ref(false);
+        const LoginModalVisible = ref(false);
+        const CommentModalVisible = ref(false);
+        const totalPhotos = ref(0);
         const perPageOptions = [6, 9, 15, 20, 25, 30];
-        const year = new Date().getFullYear();
-
-        const {
-            photos,
-            currentPage,
-            totalPages,
-            perPage,
-            totalPhotos,
-            error,
-            fetchPhotos,
-            getPhotoInfo,
-        } = usePhotoManager();
-
-        const {
-            imageModalVisible,
-            LoginModalVisible,
-            currentImage,
-            currentThumbnailUrl,
-            closeImageModal,
-            showLoginModal,
-            closeLoginModal,
-            loginModalClick,
-            imageModalClick,
-        } = useModalManager();
-
-        const { DarkMode, toggleDarkMode } = useDarkMode();
-
-        const { isTooltipVisible, showTooltip, hideTooltip, toggleTooltip } = useTooltip();
-
+        const error = ref(null);
+        const DarkMode = ref(false);
+        const isTooltipVisible = ref(false);
         const config = ref({
             version: '1.0.2',
             customContent: import.meta.env.VITE_APP_CUSTOM_CONTENT,
         });
+        const year = new Date().getFullYear();
 
         const displayContent = computed(() => {
             return config.value.customContent
                 ? `${config.value.customContent} V${config.value.version}`
-                : `${title}  V${config.value.version}`;
+                : `${title.value}  V${config.value.version}`;
         });
 
         const changePage = (action) => {
@@ -248,9 +250,133 @@ export default {
             return { columns, rows, imageSizeScale, gap };
         };
 
+        const fetchPhotos = async () => {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/photos_list?page=${currentPage.value}&perpage=${perPage.value}`);
+
+                if (response.status !== 200) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = response.data;
+
+                if (data.code == 200) {
+                    photos.value = data.data.photos;
+                    totalPhotos.value = data.data.totalPhotos;
+                    totalPages.value = data.data.totalPages;
+                    for (let i = 0; i < photos.value.length; i++) {
+                        const photo = photos.value[i];
+                        const thumbnailUrl = await fetchThumbnail(photo.photoid);
+                        if (thumbnailUrl) {
+                            photos.value[i] = { ...photo, thumbnailUrl };
+                        }
+                    }
+                }
+                else {
+                    error.value = data.message;
+                }
+            } catch (e) {
+                console.error('Failed to fetch photos:', e);
+                if (e.status == 401) {
+                    alert('Token unauthorized!');
+                }
+                error.value = e.message;
+            }
+        };
+        const fetchThumbnail = async (photoId) => {
+            try {
+                const cachedPhoto = await getCachedPhoto(photoId);
+
+                if (cachedPhoto) {
+                    console.log(`Using cached thumbnail for photo ${photoId}`);
+
+                    if (cachedPhoto.blob) {
+                        return URL.createObjectURL(cachedPhoto.blob);
+                    }
+
+                    return cachedPhoto.thumbnailUrl;
+                }
+
+                console.log(`Fetching thumbnail for photo ${photoId} from network...`);
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/getphoto?photoid=${photoId}`);
+                if (response.ok) {
+                    const thumbnailBlob = await response.blob();
+                    const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
+
+                    await cachePhoto(photoId, thumbnailUrl, thumbnailBlob);
+
+                    return thumbnailUrl;
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (e) {
+                console.error(`Failed to fetch thumbnail for photo ${photoId}:`, e);
+                return '';
+            }
+        };
+
+
+        const getPhotoInfo = async (photoid) => {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/getphotoinfo?photoid=${photoid}`);
+                if (response.data.code === 200) {
+                    currentImage.value = response.data.data;
+                    currentThumbnailUrl.value = await fetchThumbnail(photoid);
+                    imageModalVisible.value = true;
+                } else {
+                    alert('Failed to load photo info');
+                }
+            } catch (error) {
+                console.error('Error fetching photo info:', error);
+            }
+        };
+
+        const closeImageModal = () => {
+            imageModalVisible.value = false;
+            currentImage.value = null;
+            currentThumbnailUrl.value = null;
+        };
+
         const handleEscKey = (event) => {
             if (event.key === 'Escape' && imageModalVisible.value) {
                 imageModalVisible.value = false;
+            }
+        };
+
+        const imageModalClick = (event) => {
+            if (event.target === event.currentTarget) {
+                imageModalVisible.value = false;
+            }
+        };
+
+        const showCommentModal = (photoid) => {
+            CommentModalVisible.value = true;
+        };
+
+        const closeCommentModal = () => {
+            CommentModalVisible.value = false;
+        };
+            
+        const showLoginModal = () => {
+            LoginModalVisible.value = true;
+        };
+
+        const loginModalClick = (event) => {
+            if (event.target === event.currentTarget) {
+                LoginModalVisible.value = false;
+            }
+        };
+
+        const closeLoginModal = () => {
+            LoginModalVisible.value = false;
+        };
+
+        const toggleDarkMode = () => {
+            DarkMode.value = !DarkMode.value;
+            if (DarkMode.value) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
             }
         };
 
@@ -266,13 +392,25 @@ export default {
             prefersDarkMode.addEventListener('change', () => { });
         }
 
+        const showTooltip = () => {
+            isTooltipVisible.value = true;
+        };
+
+        const hideTooltip = () => {
+            isTooltipVisible.value = false;
+        };
+
+        const toggleTooltip = () => {
+            isTooltipVisible.value = !isTooltipVisible.value;
+        };
+
         onMounted(async () => {
             const isMobile = window.innerWidth <= 768;
             if (isMobile) {
                 perPage.value = 6;
             }
-            checkDarkMode();
             await fetchPhotos();
+            checkDarkMode();
             await cleanExpiredPhotos();
             await fetchPhotos();
             const link = document.createElement('link');
@@ -281,13 +419,17 @@ export default {
             document.head.appendChild(link);
             document.addEventListener('keydown', handleEscKey);
             document.getElementById("footer-year").innerText = year;
+
+
         });
 
         onBeforeUnmount(() => {
             document.removeEventListener('keydown', handleEscKey);
+
         });
 
         return {
+            API_BASE_URL,
             title,
             subtitle,
             photos,
@@ -305,8 +447,10 @@ export default {
             getPhotoInfo,
             closeImageModal,
             closeLoginModal,
+            closeCommentModal,
             LoginModalVisible,
             loginModalClick,
+            showCommentModal,
             showLoginModal,
             toggleDarkMode,
             DarkMode,
@@ -332,6 +476,5 @@ export default {
 @import '@/css/login-modal.css';
 @import '@/css/pagination.css';
 @import '@/css/btn.css';
-@import '@/css/like.css';
-@import '@/css/expand.css';
+@import '@/css/action.css';
 </style>
