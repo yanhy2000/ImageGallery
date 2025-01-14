@@ -40,8 +40,6 @@
             </div>
         </main>
 
-
-
         <div class="pagination">
             <button @click="changePage('first')" :disabled="currentPage <= 1" title="首页">
                 <i class="fa-solid fa-angles-left"></i>
@@ -114,38 +112,53 @@
 
 <script>
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue';
-import axios from 'axios';
-import { cachePhoto, getCachedPhoto, cleanExpiredPhotos, refreshCache } from '@/services/cacheService';
+import { usePhotoManager, useModalManager, useDarkMode, useTooltip } from '@/composables';
+import { refreshCache, cleanExpiredPhotos } from '@/services/cacheService';
 
 export default {
     name: 'IndexManager',
     setup() {
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
         const title = import.meta.env.VITE_APP_TITLE;
         const subtitle = import.meta.env.VITE_APP_SUBTITLE;
-        const photos = ref([]);
-        const currentPage = ref(1);
-        const totalPages = ref(1);
-        const perPage = ref(9);
-        const currentImage = ref(null);
-        const currentThumbnailUrl = ref(null);
-        const imageModalVisible = ref(false);
-        const LoginModalVisible = ref(false);
-        const totalPhotos = ref(0);
         const perPageOptions = [6, 9, 15, 20, 25, 30];
-        const error = ref(null);
-        const DarkMode = ref(false);
-        const isTooltipVisible = ref(false);
+        const year = new Date().getFullYear();
+
+        const {
+            photos,
+            currentPage,
+            totalPages,
+            perPage,
+            totalPhotos,
+            error,
+            fetchPhotos,
+            getPhotoInfo,
+        } = usePhotoManager();
+
+        const {
+            imageModalVisible,
+            LoginModalVisible,
+            currentImage,
+            currentThumbnailUrl,
+            closeImageModal,
+            showLoginModal,
+            closeLoginModal,
+            loginModalClick,
+            imageModalClick,
+        } = useModalManager();
+
+        const { DarkMode, toggleDarkMode } = useDarkMode();
+
+        const { isTooltipVisible, showTooltip, hideTooltip, toggleTooltip } = useTooltip();
+
         const config = ref({
-            version: '1.0.1',
+            version: '1.0.2',
             customContent: import.meta.env.VITE_APP_CUSTOM_CONTENT,
         });
-        const year = new Date().getFullYear();
 
         const displayContent = computed(() => {
             return config.value.customContent
                 ? `${config.value.customContent} V${config.value.version}`
-                : `${title.value}  V${config.value.version}`;
+                : `${title}  V${config.value.version}`;
         });
 
         const changePage = (action) => {
@@ -198,7 +211,7 @@ export default {
                     imageSizeScale = 0.9;
                     gap = '30px';
                 }
-            }else {
+            } else {
                 if (numberOfPhotos <= 6) {
                     imageSizeScale = 1;
                     gap = '30px';
@@ -214,150 +227,10 @@ export default {
             return { columns, rows, imageSizeScale, gap };
         };
 
-        const fetchPhotos = async () => {
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/photos_list?page=${currentPage.value}&perpage=${perPage.value}`);
-
-                if (response.status !== 200) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = response.data;
-
-                if (data.code == 200) {
-                    photos.value = data.data.photos;
-                    totalPhotos.value = data.data.totalPhotos;
-                    totalPages.value = data.data.totalPages;
-                    for (let i = 0; i < photos.value.length; i++) {
-                        const photo = photos.value[i];
-                        const thumbnailUrl = await fetchThumbnail(photo.photoid);
-                        if (thumbnailUrl) {
-                            photos.value[i] = { ...photo, thumbnailUrl };
-                        }
-                    }
-                }
-                else {
-                    error.value = data.message;
-                }
-            } catch (e) {
-                console.error('Failed to fetch photos:', e);
-                if (e.status == 401) {
-                    alert('Token unauthorized!');
-                }
-                error.value = e.message;
-            }
-        };
-        const fetchThumbnail = async (photoId) => {
-            try {
-                const cachedPhoto = await getCachedPhoto(photoId);
-
-                if (cachedPhoto) {
-                    console.log(`Using cached thumbnail for photo ${photoId}`);
-
-                    if (cachedPhoto.blob) {
-                        return URL.createObjectURL(cachedPhoto.blob);
-                    }
-
-                    return cachedPhoto.thumbnailUrl;
-                }
-
-                console.log(`Fetching thumbnail for photo ${photoId} from network...`);
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/getphoto?photoid=${photoId}`);
-                if (response.ok) {
-                    const thumbnailBlob = await response.blob();
-                    const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
-
-                    await cachePhoto(photoId, thumbnailUrl, thumbnailBlob);
-
-                    return thumbnailUrl;
-                } else {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-            } catch (e) {
-                console.error(`Failed to fetch thumbnail for photo ${photoId}:`, e);
-                return '';
-            }
-        };
-
-
-        const getPhotoInfo = async (photoid) => {
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/getphotoinfo?photoid=${photoid}`);
-                if (response.data.code === 200) {
-                    currentImage.value = response.data.data;
-                    currentThumbnailUrl.value = await fetchThumbnail(photoid);
-                    imageModalVisible.value = true;
-                } else {
-                    alert('Failed to load photo info');
-                }
-            } catch (error) {
-                console.error('Error fetching photo info:', error);
-            }
-        };
-
-        const closeImageModal = () => {
-            imageModalVisible.value = false;
-            currentImage.value = null;
-            currentThumbnailUrl.value = null;
-        };
-
         const handleEscKey = (event) => {
             if (event.key === 'Escape' && imageModalVisible.value) {
                 imageModalVisible.value = false;
             }
-        };
-
-        const imageModalClick = (event) => {
-            if (event.target === event.currentTarget) {
-                imageModalVisible.value = false;
-            }
-        };
-
-        const showLoginModal = () => {
-            LoginModalVisible.value = true;
-        };
-
-        const loginModalClick = (event) => {
-            if (event.target === event.currentTarget) {
-                LoginModalVisible.value = false;
-            }
-        };
-
-        const closeLoginModal = () => {
-            LoginModalVisible.value = false;
-        };
-
-        const toggleDarkMode = () => {
-            DarkMode.value = !DarkMode.value;
-            if (DarkMode.value) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        };
-
-        const checkDarkMode = () => {
-            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
-            if (prefersDarkMode.matches) {
-                DarkMode.value = true;
-                document.body.classList.add('dark-mode');
-            } else {
-                DarkMode.value = false;
-                document.body.classList.remove('dark-mode');
-            }
-            prefersDarkMode.addEventListener('change', () => { });
-        }
-
-        const showTooltip = () => {
-            isTooltipVisible.value = true;
-        };
-
-        const hideTooltip = () => {
-            isTooltipVisible.value = false;
-        };
-
-        const toggleTooltip = () => {
-            isTooltipVisible.value = !isTooltipVisible.value;
         };
 
         onMounted(async () => {
@@ -366,7 +239,6 @@ export default {
                 perPage.value = 6;
             }
             await fetchPhotos();
-            checkDarkMode();
             await cleanExpiredPhotos();
             await fetchPhotos();
             const link = document.createElement('link');
@@ -375,17 +247,13 @@ export default {
             document.head.appendChild(link);
             document.addEventListener('keydown', handleEscKey);
             document.getElementById("footer-year").innerText = year;
-
-
         });
 
         onBeforeUnmount(() => {
             document.removeEventListener('keydown', handleEscKey);
-
         });
 
         return {
-            API_BASE_URL,
             title,
             subtitle,
             photos,
