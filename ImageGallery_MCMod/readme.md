@@ -3,8 +3,8 @@
 搭配图片墙使用，适用于minecraft fabric客户端。
 
 开发版本：
-- Minecraft =1.21.3
-- Fabric Loader >=0.16.9
+- Minecraft =1.21.4
+- Fabric Loader >=0.16.10
 
 
 ## 目录
