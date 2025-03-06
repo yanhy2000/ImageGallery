@@ -218,20 +218,76 @@ export default {
             fetchPhotos();
         };
 
-        const toggleLike = (photoid) => {
-
+        // 点赞功能
+        const toggleLike = async (photoid) => {
             const photo = photos.value.find((photo) => photo.photoid === photoid);
-            if (photo) {
-                photo.isLiked = !photo.isLiked; // 切换点赞状态
-                photo.likes += photo.isLiked ? 1 : -1; // 点赞数增减
-            }
+            if (!photo) return;
 
-            // const photo = photos.value.find((photo) => photo.photoid === photoid);
-            // if (photo) {
-            //     photo.isLiked = !photo.isLiked;
-            //     fetchPhotos();
-            // }
+            try {
+                const storedToken = localStorage.getItem('jwttoken');
+                if (!storedToken) {
+                    alert('请先登录');
+                    return;
+                }
+
+                // 根据当前点赞状态调用不同的接口
+                const endpoint = photo.isLiked ? '/api/unlikephoto' : '/api/likephoto';
+                const response = await axios.post(
+                    `${import.meta.env.VITE_API_BASE_URL}${endpoint}`,
+                    { photoid },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${storedToken}`, 
+                        },
+                    }
+                );
+
+                if (response.data.code === 200) {
+                    // 更新前端的点赞状态和点赞数
+                    photo.isLiked = !photo.isLiked;
+                    photo.likes += photo.isLiked ? 1 : -1;
+                } else {
+                    alert('操作失败，请稍后重试');
+                }
+            } catch (error) {
+                console.error('点赞操作失败', error);
+                alert('点赞操作失败，请稍后重试');
+            }
         };
+
+        const checkUserLikes = async () => {
+            const storedToken = localStorage.getItem('jwttoken');
+            if (!storedToken) return;
+
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_API_BASE_URL}/api/userlikes`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${storedToken}`,
+                        },
+                    }
+                );
+
+                if (response.data.code === 200) {
+                    const likes = response.data.data.likes;
+                    console.log('用户点赞的图片列表:', likes);
+                    console.log(likes[0].photoid)
+                    //循环likes列表，将每个like包含的photoid的isLiked设置为true
+                    for (let i = 0; i < likes.length; i++) {
+                        const photoid = likes[i].photoid;
+                        const photo = photos.value.find((photo) => photo.photoid === photoid);
+                        if (photo) {
+                            photo.isLiked = true;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('checkUserLikes获取用户点赞状态失败', error);
+            }
+        };
+
+
         const imageCardStyle = computed(() => {
             const { imageSizeScale } = calculateGrid(perPage.value);
 
@@ -287,7 +343,9 @@ export default {
 
         const fetchPhotos = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/photos_list?page=${currentPage.value}&perpage=${perPage.value}`);
+                const response = await axios.get(
+                    `${import.meta.env.VITE_API_BASE_URL}/api/photos_list?page=${currentPage.value}&perpage=${perPage.value}`
+                );
 
                 if (response.status !== 200) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -296,18 +354,31 @@ export default {
                 const data = response.data;
 
                 if (data.code == 200) {
+                    // 获取图片列表
                     photos.value = data.data.photos;
                     totalPhotos.value = data.data.totalPhotos;
                     totalPages.value = data.data.totalPages;
+
                     for (let i = 0; i < photos.value.length; i++) {
                         const photo = photos.value[i];
+
+                        const likeResponse = await axios.get(
+                            `${import.meta.env.VITE_API_BASE_URL}/api/getphotolikecount`,
+                            { params: { photoid: photo.photoid } }
+                        );
+
+                        if (likeResponse.data.code === 200) {
+                            photos.value[i].likes = likeResponse.data.data.likes || 0;
+                        } else {
+                            photos.value[i].likes = 0;
+                        }
+
                         const thumbnailUrl = await fetchThumbnail(photo.photoid);
                         if (thumbnailUrl) {
-                            photos.value[i] = { ...photo, thumbnailUrl };
+                            photos.value[i].thumbnailUrl = thumbnailUrl;
                         }
                     }
-                }
-                else {
+                } else {
                     error.value = data.message;
                 }
             } catch (e) {
@@ -318,6 +389,7 @@ export default {
                 error.value = e.message;
             }
         };
+
         const fetchThumbnail = async (photoId) => {
             try {
                 const cachedPhoto = await getCachedPhoto(photoId);
@@ -355,6 +427,18 @@ export default {
                 const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/getphotoinfo?photoid=${photoid}`);
                 if (response.data.code === 200) {
                     currentImage.value = response.data.data;
+
+                    const likeResponse = await axios.get(
+                        `${import.meta.env.VITE_API_BASE_URL}/api/getphotolikecount`,
+                        { params: { photoid } }
+                    );
+
+                    if (likeResponse.data.code === 200) {
+                        currentImage.value.likes = likeResponse.data.data.likes || 0;
+                    } else {
+                        currentImage.value.likes = 0;
+                    }
+
                     currentThumbnailUrl.value = await fetchThumbnail(photoid);
                     imageModalVisible.value = true;
                 } else {
@@ -456,8 +540,8 @@ export default {
                     username.value = loginUsername.value;
                     localStorage.setItem('jwttoken', response.data.data.token);
                     localStorage.setItem('username', loginUsername.value);
-
                     closeLoginModal();
+                    location.reload();
                 } else if (response.data.code === 200 && !response.data.data.allowlogin) {
                     loginError.value = '用户已被封禁，请联系管理员';
                 }
@@ -474,6 +558,7 @@ export default {
             username.value = '';
             localStorage.removeItem('jwttoken');
             localStorage.removeItem('username');
+            location.reload();
         };
 
 
@@ -513,20 +598,16 @@ export default {
                 perPage.value = 6;
             }
             await fetchPhotos();
+            await checkUserLikes();
             checkDarkMode();
             await cleanExpiredPhotos();
-            await fetchPhotos();
             const link = document.createElement('link');
             link.rel = 'icon';
             link.href = 'img/favicon.ico';
 
-
-
             document.head.appendChild(link);
             document.addEventListener('keydown', handleEscKey);
             document.getElementById("footer-year").innerText = year;
-
-
         });
 
         onBeforeUnmount(() => {

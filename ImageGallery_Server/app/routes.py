@@ -217,27 +217,26 @@ def set_album():
 
 # 点赞图片
 @app.route('/api/likephoto', methods=['POST'])
+@jwt_required() 
 def like_photo():
-    usertoken = split_token(request)
-    if usertoken:
-        return like.like_photo(usertoken)
-    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+    return like.like_photo()
 
 # 取消点赞图片
 @app.route('/api/unlikephoto', methods=['POST'])
+@jwt_required() 
 def unlike_photo():
-    usertoken = split_token(request)
-    if usertoken:
-        return like.unlike_photo(usertoken)
-    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+    return like.unlike_photo()
 
 # 获取图片总点赞数
 @app.route('/api/getphotolikecount', methods=['GET'])
 def get_photo_like_count():
-    photo_id = request.args.get('photoid')
-    if photo_id:
-        return like.get_photo_like_count(photo_id)
-    return jsonify({"code": 400, "message": "photoid is required"}), 400
+    return like.get_photo_like_count()
+
+# 获取用户点赞的图片
+@app.route('/api/userlikes', methods=['GET'])
+@jwt_required()
+def user_likes():
+    return like.user_likes()
 
 # 发表评论
 @app.route('/api/commentphoto', methods=['POST'])

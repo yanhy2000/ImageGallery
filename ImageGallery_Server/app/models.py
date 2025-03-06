@@ -45,6 +45,12 @@ class Like(db.Model):
     likeid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'), nullable=False)
     photoid = db.Column(db.Integer, db.ForeignKey('photos.photoid'), nullable=False)
+    def to_dict(self):
+        return {
+            "likeid": self.likeid,
+            "userid": self.userid,
+            "photoid": self.photoid
+        }
 
 # 评论点赞表
 class CommentLike(db.Model):
