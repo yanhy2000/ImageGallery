@@ -9,6 +9,9 @@ class Config:
     # 是否保存原图
     SAVE_ORIGINAL_IMAGE = True
 
+    # JWT配置
+    JWT_SECRET_KEY = "jwt-secret"
+
     # 调试模式
     DEBUG = True
 

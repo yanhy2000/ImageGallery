@@ -16,6 +16,7 @@
 
 body.dark-mode .login-modal {
     background-color: #1c1c1c;
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
@@ -49,6 +50,81 @@ body.dark-mode .login-modal {
 .login-modal.fade-leave-active .modal-content {
     transform: scale(0.8);
     opacity: 0;
+}
+
+
+
+/* 输入框组样式 */
+.input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    width: 80px;
+    font-size: 14px;
+    color: #333;
+}
+
+.input-group input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.error {
+    color: #ff0000;
+    font-size: 14px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+
+.username {
+    cursor: pointer;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+}
+
+.username:hover {
+    background-color: #e0e0e0;
+}
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-button {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.status-button:hover {
+    background-color: #e0e0e0;
+}
+
+body.dark-mode .username {
+    background-color: #858585;
+}
+
+body.dark-mode .username:hover {
+    background-color: #aaaaaa;
 }
 
 @keyframes fadeIn {

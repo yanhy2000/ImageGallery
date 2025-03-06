@@ -7,10 +7,12 @@
             <!-- 状态栏 -->
             <div class="status-bar">
                 <!-- 用户名显示 -->
-                <span v-if="isLoggedIn" class="username">{{ username }}</span>
+                <span v-if="isLoggedIn" class="username" @click="handleLogout">
+                    {{ username }}
+                </span>
 
                 <!-- 登录按钮 -->
-                <button class="status-button login-button" @click="showLoginModal">
+                <button v-else class="status-button login-button" @click="showLoginModal">
                     登录
                 </button>
 
@@ -21,20 +23,12 @@
             </div>
         </header>
 
+
         <div class="UserGuide" @mouseenter="showTooltip" @mouseleave="hideTooltip" @click="toggleTooltip">
-            <h3>网站使用说明</h3>
+            <h3>网站说明</h3>
             <div v-show="isTooltipVisible" class="tooltip">
-                网站使用说明：
-                <br> 点击图片可放大查看，点击右上角按钮切换黑白模式。
-                <br> 鼠标悬停在图片上可查看图片信息。
-                <br> 点击刷新缓存按钮可清除浏览器缓存，并重新加载页面。
-                <br> 点击每页展示数量下拉框可调整每页展示数量。
-                <br> 网站会占用浏览器缓存以提高访问速度，缓存过期时间为7天。如缓存过大可手动清理浏览器缓存。
-                <br>
-                <br> 上传图片：
-                <br> 目前不支持直接网页上传，需配合MC模组截图上传，模组可在群文件下载“[图片墙辅助]screenshot_uploader-1.0.0”。
-                <br> 每个人有一个专属token，在模组加载后修改配置文件时需要提供，申请token可联系yanhy2000。
-                <br> 上传图片后，暂无修改、删除入口，可找管理员后台修改。
+                {{ custom_text }}
+
 
             </div>
         </div>
@@ -129,10 +123,26 @@
         <transition name="fade">
             <div v-if="LoginModalVisible" class="login-modal">
                 <div class="modal-content" @click.stop>
-                    <p>请登录</p>
-                    <button @click="closeLoginModal" class="close-button" title="关闭">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+                    <h2>登录</h2>
+                    <button @click="closeLoginModal" class="close-button" title="关闭"></button>
+
+                    <!-- 用户名输入 -->
+                    <div class="input-group">
+                        <label for="username">用户名</label>
+                        <input id="username" type="text" v-model="loginUsername" placeholder="请输入用户名" />
+                    </div>
+
+                    <!-- 密码输入 -->
+                    <div class="input-group">
+                        <label for="password">密码</label>
+                        <input id="password" type="password" v-model="loginUsertoken" placeholder="请输入密码" />
+                    </div>
+
+                    <!-- 登录按钮 -->
+                    <button @click="handleLogin">登录</button>
+
+                    <!-- 错误提示 -->
+                    <p v-if="loginError" class="error">{{ loginError }}</p>
                 </div>
             </div>
         </transition>
@@ -160,6 +170,7 @@ export default {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
         const title = import.meta.env.VITE_APP_TITLE;
         const subtitle = import.meta.env.VITE_APP_SUBTITLE;
+        const custom_text = import.meta.env.VITE_APP_CUSTOM_CONTENT;
         const photos = ref([]);
         const currentPage = ref(1);
         const totalPages = ref(1);
@@ -168,9 +179,14 @@ export default {
         const currentThumbnailUrl = ref(null);
         const imageModalVisible = ref(false);
 
-        const LoginModalVisible = ref(false);
         const isLoggedIn = ref(false);
-        const userNames = ref("username");
+        const username = ref('');
+        const LoginModalVisible = ref(false);
+        const loginUsername = ref('');
+        const loginUsertoken = ref('');
+        const loginError = ref('');
+
+
         const CommentModalVisible = ref(false);
         const totalPhotos = ref(0);
         const perPageOptions = [6, 9, 15, 20, 25, 30];
@@ -179,7 +195,7 @@ export default {
         const isTooltipVisible = ref(false);
         const config = ref({
             version: '1.0.2',
-            customContent: import.meta.env.VITE_APP_CUSTOM_CONTENT,
+            customContent: import.meta.env.VITE_API_FOOTER_CONTENT,
         });
         const year = new Date().getFullYear();
 
@@ -377,23 +393,6 @@ export default {
             CommentModalVisible.value = false;
         };
 
-        const showLoginModal = () => {
-            if (!isLoggedIn.value) {
-                isLoggedIn.value = true;
-                userNames.value = "admintest";
-            }
-            LoginModalVisible.value = true;
-        };
-
-        const loginModalClick = (event) => {
-            if (event.target === event.currentTarget) {
-                LoginModalVisible.value = false;
-            }
-        };
-
-        const closeLoginModal = () => {
-            LoginModalVisible.value = false;
-        };
 
         const toggleDarkMode = () => {
             DarkMode.value = !DarkMode.value;
@@ -428,7 +427,87 @@ export default {
             isTooltipVisible.value = !isTooltipVisible.value;
         };
 
+
+        const showLoginModal = () => {
+            LoginModalVisible.value = true;
+        };
+
+        const closeLoginModal = () => {
+            LoginModalVisible.value = false;
+            loginError.value = '';
+        };
+
+        const loginModalClick = (event) => {
+            if (event.target === event.currentTarget) {
+                LoginModalVisible.value = false;
+            }
+        };
+
+        // 处理登录
+        const handleLogin = async () => {
+            try {
+                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/checktoken`, {
+                    username: loginUsername.value,
+                    usertoken: loginUsertoken.value,
+                });
+
+                if (response.data.code === 200 && response.data.data.allowlogin) {
+                    isLoggedIn.value = true;
+                    username.value = loginUsername.value;
+                    localStorage.setItem('jwttoken', response.data.data.token);
+                    localStorage.setItem('username', loginUsername.value);
+
+                    closeLoginModal();
+                } else if (response.data.code === 200 && !response.data.data.allowlogin) {
+                    loginError.value = '用户已被封禁，请联系管理员';
+                }
+                else {
+                    loginError.value = '登录失败，请检查用户名和 Token';
+                }
+            } catch (error) {
+                loginError.value = '登录失败，请稍后重试';
+            }
+        };
+
+        const handleLogout = () => {
+            isLoggedIn.value = false;
+            username.value = '';
+            localStorage.removeItem('jwttoken');
+            localStorage.removeItem('username');
+        };
+
+
         onMounted(async () => {
+
+            const storedToken = localStorage.getItem('jwttoken');
+            const storedUsername = localStorage.getItem('username');
+
+            if (storedToken && storedUsername) {
+                try {
+                    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/protected`, {
+                        headers: {
+                            Authorization: `Bearer ${storedToken}`,
+                        },
+                    });
+
+                    if (response.data.code === 200) {
+                        isLoggedIn.value = true;
+                        username.value = storedUsername;
+                    } else if (response.data.code === 403) {
+                        localStorage.removeItem('jwttoken');
+                        localStorage.removeItem('username');
+                        alert('用户已被封禁，请重新登录');
+                    } else {
+                        localStorage.removeItem('jwttoken');
+                        localStorage.removeItem('username');
+                    }
+                } catch (error) {
+                    alert('自动登录失败, Token 无效或过期', error);
+                    localStorage.removeItem('jwttoken');
+                    localStorage.removeItem('username');
+                }
+            }
+
             const isMobile = window.innerWidth <= 768;
             if (isMobile) {
                 perPage.value = 6;
@@ -440,6 +519,9 @@ export default {
             const link = document.createElement('link');
             link.rel = 'icon';
             link.href = 'img/favicon.ico';
+
+
+
             document.head.appendChild(link);
             document.addEventListener('keydown', handleEscKey);
             document.getElementById("footer-year").innerText = year;
@@ -456,6 +538,7 @@ export default {
             API_BASE_URL,
             title,
             subtitle,
+            custom_text,
             photos,
             currentPage,
             totalPages,
@@ -472,7 +555,15 @@ export default {
             closeImageModal,
 
             isLoggedIn,
+            username,
+            LoginModalVisible,
+            loginUsername,
+            loginUsertoken,
+            loginError,
+            showLoginModal,
             closeLoginModal,
+            handleLogin,
+            handleLogout,
 
             closeCommentModal,
             CommentModalVisible,
