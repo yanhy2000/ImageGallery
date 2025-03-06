@@ -94,17 +94,10 @@ def create_thumbnail(image_path):
             os.makedirs(thumbnail_path_dir)
         thumbnail_path = f"{thumbnail_path_dir}/{generate_uuid_filename()}.jpg"
         img.save(thumbnail_path, format="JPEG")
+
+        if not Config.SAVE_ORIGINAL_IMAGE:
+            os.remove(image_path)
         return thumbnail_path
-        # if not Config.SUPERBED_TOKEN == "false":
-        #     #使用聚合图床API,后期可替换为其他图床API或者做兼容处理
-        #     url = "https://api.superbed.cn/upload"
-        #     with open(thumbnail_path, "rb") as f:
-        #         resp = requests.post(url, data={"token": Config.SUPERBED_TOKEN}, files={"file": f})
-        #     if resp.status_code == 200:
-        #         os.remove(thumbnail_path)
-        #         return resp.json().get("url")
-        # else:#不使用聚合图床API，本地存储缩略图
-        #     return thumbnail_path
 
 # 删除缩略图
 def del_thumbnail(photo_id):
@@ -112,7 +105,7 @@ def del_thumbnail(photo_id):
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
     thumbnail_url = photo.thumbnail
-    if Config.SUPERBED_TOKEN == "false" and thumbnail_url.startswith("uploads/.thumbnails/"):
+    if thumbnail_url.startswith("uploads/.thumbnails/"):
         os.remove(thumbnail_url)
         return jsonify({"code": 200, "message": "Thumbnail deleted"}), 200
     return jsonify({"code": 200, "message": "success"}), 200
@@ -217,7 +210,7 @@ def delete_photo(usertoken):
 
     return jsonify({"code": 200, "message": "Photo deleted successfully"}), 200
 
-# 下载照片（通过photo_id获取文件；如果thumbnail为true，则获取缩略图）
+# 下载照片（通过photo_id获取文件；如果thumbnail为1，则获取缩略图）
 def get_photo_file(photo_id, thumbnail=1):
     photo = Photo.query.filter_by(photoid=photo_id).first()
     isattachment = False
@@ -228,7 +221,10 @@ def get_photo_file(photo_id, thumbnail=1):
     if thumbnail==1:
         file_path = os.path.join(get_project_root(), photo.thumbnail)
     else:
-        file_path = os.path.join(get_project_root(), photo.photo_url)
+        if Config.SAVE_ORIGINAL_IMAGE: 
+            file_path = os.path.join(get_project_root(), photo.photo_url)
+        else: # 如果不保存原图，则返回缩略图，供后台使用
+            file_path = os.path.join(get_project_root(), photo.thumbnail)
         isattachment = True
 
     if not os.path.exists(file_path):

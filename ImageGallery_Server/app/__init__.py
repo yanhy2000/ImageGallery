@@ -18,6 +18,11 @@ except ImportError:
     print('配置文件不存在，请修改config_demo.py为config.py以启用配置文件')
     exit()
 
+if app.config['SAVE_ORIGINAL_IMAGE']:
+    print('保存原始图片已启用,用户上传后将同时保留原始图片和缩略图')
+else:
+    print('!!!保存原始图片未启用,用户上传后仅保留缩略图!!!')
+
 db = SQLAlchemy(app)
 # 导入路由和控制器
 from app import routes
