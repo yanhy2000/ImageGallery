@@ -3,20 +3,13 @@
         <header class="header">
             <h1>{{ title }}</h1>
             <h2>{{ subtitle }}</h2>
-
-            <!-- 状态栏 -->
             <div class="status-bar">
-                <!-- 用户名显示 -->
                 <span v-if="isLoggedIn" class="username" @click="handleLogout">
                     {{ username }}
                 </span>
-
-                <!-- 登录按钮 -->
                 <button v-else class="status-button login-button" @click="showLoginModal">
                     登录
                 </button>
-
-                <!-- 模式切换按钮 -->
                 <button class="status-button mode-toggle-btn" @click="toggleDarkMode">
                     <i :class="DarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>
                 </button>
@@ -26,11 +19,7 @@
 
         <div class="UserGuide" @mouseenter="showTooltip" @mouseleave="hideTooltip" @click="toggleTooltip">
             <h3>网站说明</h3>
-            <div v-show="isTooltipVisible" class="tooltip">
-                {{ custom_text }}
-
-
-            </div>
+            <div v-show="isTooltipVisible" class="tooltip" v-html="custom_text"></div>
         </div>
 
         <main class="image-gallery" :style="gridStyle">
@@ -44,14 +33,10 @@
                         <p>{{ photo.desc }}</p>
                     </div>
                 </div>
-                <!-- 评论按钮和点赞按钮区域 -->
                 <div class="action-section">
-                    <!-- 评论按钮 -->
-                    <div class="comment-section" @click.stop="showCommentModal(photo.photoid)">
+                    <!-- <div class="comment-section" @click.stop="showCommentModal(photo.photoid)">
                         <i class="fa-regular fa-comment"></i>
-                    </div>
-
-                    <!-- 点赞按钮 -->
+                    </div> -->
                     <div class="like-section" @click.stop="toggleLike(photo.photoid)">
                         <i class="fa-regular fa-heart"
                             :class="{ 'fa-solid': photo.isLiked, 'liked': photo.isLiked }"></i>
@@ -90,11 +75,41 @@
         <transition name="fade">
             <div v-if="CommentModalVisible" class="comment-modal">
                 <div class="modal-content">
-                    <p>评论框（内容设计待定）</p>
-
                     <button @click="closeCommentModal" class="close-button" title="关闭">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
+
+                    <div class="comment-list">
+                        <div v-for="comment in comments" :key="comment.commentid" class="comment-item">
+
+                            <div class="comment-content">
+                                <div class="comment-info">
+                                    <span class="comment-username">{{ comment.username }}:</span>
+                                    <span class="comment-text">{{ comment.content }}</span>
+                                </div>
+                                <div class="comment-actions">
+                                    <button @click="toggleCommentLike(comment.commentid)" class="like-button">
+                                        <i class="fa-regular fa-heart" :class="{ 'fa-solid': comment.isLiked }"></i>
+                                        <span class="like-count">{{ comment.likes }}</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div v-if="comment.replies.length > 0" class="reply-list">
+                                <div v-for="reply in comment.replies" :key="reply.commentid" class="reply-item">
+                                    <div class="comment-info">
+                                        <span class="comment-username"> {{ reply.username }}:</span>
+                                        <span class="comment-text">{{ reply.content }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="login-prompt">
+                        <p>评论系统暂未开放</p>
+                    </div>
                 </div>
             </div>
         </transition>
@@ -124,24 +139,16 @@
             <div v-if="LoginModalVisible" class="login-modal">
                 <div class="modal-content" @click.stop>
                     <h2>登录</h2>
-                    <button @click="closeLoginModal" class="close-button" title="关闭"></button>
-
-                    <!-- 用户名输入 -->
+                    <button @click="closeLoginModal" class="close-button" title="关闭"><i class="fa-solid fa-xmark"></i></button>
                     <div class="input-group">
                         <label for="username">用户名</label>
                         <input id="username" type="text" v-model="loginUsername" placeholder="请输入用户名" />
                     </div>
-
-                    <!-- 密码输入 -->
                     <div class="input-group">
                         <label for="password">密码</label>
-                        <input id="password" type="password" v-model="loginUsertoken" placeholder="请输入密码" />
+                        <input id="password" type="password" v-model="loginUsertoken" placeholder="请输入Token" />
                     </div>
-
-                    <!-- 登录按钮 -->
                     <button @click="handleLogin">登录</button>
-
-                    <!-- 错误提示 -->
                     <p v-if="loginError" class="error">{{ loginError }}</p>
                 </div>
             </div>
@@ -170,7 +177,7 @@ export default {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
         const title = import.meta.env.VITE_APP_TITLE;
         const subtitle = import.meta.env.VITE_APP_SUBTITLE;
-        const custom_text = import.meta.env.VITE_APP_CUSTOM_CONTENT;
+        const custom_text = import.meta.env.VITE_APP_CUSTOM_CONTENT.replace(/\n/g, '<br>');
         const photos = ref([]);
         const currentPage = ref(1);
         const totalPages = ref(1);
@@ -186,6 +193,8 @@ export default {
         const loginUsertoken = ref('');
         const loginError = ref('');
 
+        const newComment = ref('');
+        const replyText = ref('');
 
         const CommentModalVisible = ref(false);
         const totalPhotos = ref(0);
@@ -194,7 +203,7 @@ export default {
         const DarkMode = ref(false);
         const isTooltipVisible = ref(false);
         const config = ref({
-            version: '1.0.2',
+            version: '1.0.4',
             customContent: import.meta.env.VITE_API_FOOTER_CONTENT,
         });
         const year = new Date().getFullYear();
@@ -216,7 +225,91 @@ export default {
                 currentPage.value = totalPages.value;
             }
             fetchPhotos();
+            checkUserLikes();
         };
+
+        const submitComment = () => {
+            if (newComment.value.trim()) {
+                comments.value.push({
+                    commentid: comments.value.length + 1,
+                    content: newComment.value,
+                    create_time: new Date().toLocaleString(),
+                    userid: props.currentUser.userid,
+                    username: props.currentUser.username,
+                    likes: 0,
+                    isLiked: false,
+                    replies: [],
+                });
+                newComment.value = '';
+            }
+        };
+
+        const submitReply = (commentid) => {
+            if (replyText.value.trim()) {
+                const comment = comments.value.find((c) => c.commentid === commentid);
+                if (comment) {
+                    comment.replies.push({
+                        commentid: comment.replies.length + 1,
+                        content: replyText.value,
+                        create_time: new Date().toLocaleString(),
+                        userid: props.currentUser.userid,
+                        username: props.currentUser.username,
+                    });
+                    replyText.value = '';
+                }
+            }
+        };
+
+        const toggleCommentLike = (commentid) => {
+            const comment = comments.value.find((c) => c.commentid === commentid);
+            if (comment) {
+                comment.isLiked = !comment.isLiked;
+                comment.likes += comment.isLiked ? 1 : -1;
+            }
+        };
+
+        const deleteComment = (commentid) => {
+            comments.value = comments.value.filter((c) => c.commentid !== commentid);
+        };
+
+        const showCommentModal = (photoid) => {
+            CommentModalVisible.value = true;
+        };
+
+        const closeCommentModal = () => {
+            CommentModalVisible.value = false;
+        };
+
+        const comments = ref([
+            {
+                commentid: 1,
+                content: '这是一条示例评论。',
+                create_time: '2023-10-01 12:00',
+                userid: 1,
+                username: '用户A',
+                likes: 11,
+                isLiked: false,
+                replies: [
+                    {
+                        commentid: 2,
+                        content: '这是一条回复评论。',
+                        create_time: '2023-10-01 12:05',
+                        userid: 2,
+                        username: '用户B',
+                    }
+                ],
+            },
+            {
+                commentid: 3,
+                content: '这是另一条示例评论。',
+                create_time: '2023-10-01 12:10',
+                userid: 3,
+                username: '用户C',
+                likes: 5,
+                isLiked: false,
+                replies: [],
+            },
+        ]);
 
         // 点赞功能
         const toggleLike = async (photoid) => {
@@ -229,21 +322,18 @@ export default {
                     alert('请先登录');
                     return;
                 }
-
-                // 根据当前点赞状态调用不同的接口
                 const endpoint = photo.isLiked ? '/api/unlikephoto' : '/api/likephoto';
                 const response = await axios.post(
                     `${import.meta.env.VITE_API_BASE_URL}${endpoint}`,
                     { photoid },
                     {
                         headers: {
-                            Authorization: `Bearer ${storedToken}`, 
+                            Authorization: `Bearer ${storedToken}`,
                         },
                     }
                 );
 
                 if (response.data.code === 200) {
-                    // 更新前端的点赞状态和点赞数
                     photo.isLiked = !photo.isLiked;
                     photo.likes += photo.isLiked ? 1 : -1;
                 } else {
@@ -271,9 +361,6 @@ export default {
 
                 if (response.data.code === 200) {
                     const likes = response.data.data.likes;
-                    console.log('用户点赞的图片列表:', likes);
-                    console.log(likes[0].photoid)
-                    //循环likes列表，将每个like包含的photoid的isLiked设置为true
                     for (let i = 0; i < likes.length; i++) {
                         const photoid = likes[i].photoid;
                         const photo = photos.value.find((photo) => photo.photoid === photoid);
@@ -354,7 +441,6 @@ export default {
                 const data = response.data;
 
                 if (data.code == 200) {
-                    // 获取图片列表
                     photos.value = data.data.photos;
                     totalPhotos.value = data.data.totalPhotos;
                     totalPages.value = data.data.totalPages;
@@ -468,15 +554,6 @@ export default {
                 imageModalVisible.value = false;
             }
         };
-
-        const showCommentModal = (photoid) => {
-            CommentModalVisible.value = true;
-        };
-
-        const closeCommentModal = () => {
-            CommentModalVisible.value = false;
-        };
-
 
         const toggleDarkMode = () => {
             DarkMode.value = !DarkMode.value;
@@ -646,11 +723,19 @@ export default {
             handleLogin,
             handleLogout,
 
+            comments,
+            newComment,
+            replyText,
+            submitComment,
+            submitReply,
+            toggleCommentLike,
+            deleteComment,
+            showCommentModal,
             closeCommentModal,
             CommentModalVisible,
+
             LoginModalVisible,
             loginModalClick,
-            showCommentModal,
             showLoginModal,
             toggleDarkMode,
             DarkMode,
@@ -679,4 +764,5 @@ export default {
 @import '@/css/action.css';
 @import '@/css/status-bar.css';
 @import '@/css/action-modal.css';
+@import '@/css/comment.css';
 </style>

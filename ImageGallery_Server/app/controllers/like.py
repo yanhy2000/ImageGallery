@@ -7,11 +7,10 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 def like_photo():
     data = request.get_json()
     photo_id = data.get("photoid")
-
     if not photo_id:
         return jsonify({"code": 400, "message": "photoid is required"}), 400
-    current_user = get_jwt_identity()
 
+    current_user = get_jwt_identity()
     user = User.query.filter_by(username=current_user).first()
     if not user:
         return jsonify({"code": 401, "message": "User not found"}), 401

@@ -95,31 +95,6 @@ body.dark-mode .modal-content {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 信息区样式 */
-.comment-info {
-    max-height: calc(100vh - 200px);
-    width: 100%; 
-    max-height: 200px;
-    overflow-y: auto;
-    line-height: 1.6;
-}
-
-.comment-info p span {
-    margin-right: 20px; 
-    display: inline-block;
-    color: #777;
-}
-.comment-info p:first-child {
-    font-size: 24px; 
-    font-weight: bold;
-    margin: 0 auto;
-    color: #333; 
-    margin-bottom: 10px; 
-    background-color: #f9f9f9;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
 
 .comment-info p:not(:first-child) {
     font-size: 14px;
@@ -135,10 +110,6 @@ body.dark-mode .comment-info p:first-child {
 body.dark-mode .comment-info p:not(:first-child) {
     color: #ffffff;
 }
-
-/* .comment-info p span {
-    color: #ffffff;
-} */
 
 
 @media (max-width: 768px) {

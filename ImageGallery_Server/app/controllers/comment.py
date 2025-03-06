@@ -4,11 +4,12 @@ from flask import request, jsonify
 from app.utils import get_utc_time
 
 # 发表评论
-def post_comment(usertoken):
+def comment_photo():
     data = request.get_json()
-    user = User.query.filter_by(usertoken=usertoken).first()
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(username=current_user).first()
     if not user:
-        return jsonify({"code": 401, "message": "Token is invalid"}), 401
+        return jsonify({"code": 401, "message": "User not found"}), 401
     if user.permissions < 0:
         return jsonify({"code": 403, "message": "Permissions denied"}), 403
     
@@ -29,10 +30,11 @@ def post_comment(usertoken):
     return jsonify({"code": 200, "message": "Comment posted successfully", "comment": comment.to_dict()}), 200
 
 # 删除评论
-def delete_comment(usertoken):
+def delete_comment():
     data = request.get_json()
 
-    user = User.query.filter_by(usertoken=usertoken).first()
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(username=current_user).first()
     if not user:
         return jsonify({"code": 401, "message": "Token is invalid"}), 401
     if user.permissions < 0:

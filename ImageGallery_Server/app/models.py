@@ -38,6 +38,7 @@ class Comment(db.Model):
     create_time = db.Column(db.DateTime)
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'), nullable=False)
     photoid = db.Column(db.Integer, db.ForeignKey('photos.photoid'), nullable=False)
+    replyid = db.Column(db.Integer, nullable=False)
 
 # 点赞表
 class Like(db.Model):

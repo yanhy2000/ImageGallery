@@ -240,19 +240,15 @@ def user_likes():
 
 # 发表评论
 @app.route('/api/commentphoto', methods=['POST'])
+@jwt_required()
 def comment_photo():
-    usertoken = split_token(request)
-    if usertoken:
-        return comment.comment_photo(usertoken)
-    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+    return comment.comment_photo()
 
 # 删除评论
 @app.route('/api/deletecomment', methods=['POST'])
+@jwt_required()
 def delete_comment():
-    usertoken = split_token(request)
-    if usertoken:
-        return comment.delete_comment(usertoken)
-    return jsonify({"code": 400, "message": "usertoken is required"}), 400
+    return comment.delete_comment()
 
 # 获取评论列表
 @app.route('/api/getcomments', methods=['GET'])
