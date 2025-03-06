@@ -217,16 +217,16 @@ def get_photo_file(photo_id, thumbnail=1):
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
 
-    # 获取文件路径
-    if thumbnail==1:
-        file_path = os.path.join(get_project_root(), photo.thumbnail)
-    else:
-        if Config.SAVE_ORIGINAL_IMAGE: 
-            file_path = os.path.join(get_project_root(), photo.photo_url)
-        else: # 如果不保存原图，则返回缩略图，供后台使用
-            file_path = os.path.join(get_project_root(), photo.thumbnail)
-        isattachment = True
-
+    # # 获取文件路径
+    # if thumbnail==1:
+        
+    # else:
+    #     if Config.SAVE_ORIGINAL_IMAGE: 
+    #         file_path = os.path.join(get_project_root(), photo.photo_url)
+    #     else: # 如果不保存原图，则返回缩略图，供后台使用
+    #         file_path = os.path.join(get_project_root(), photo.thumbnail)
+    #     isattachment = True
+    file_path = os.path.join(get_project_root(), photo.thumbnail)
     if not os.path.exists(file_path):
         return jsonify({"code": 404, "message": "File not found"}), 404
 
