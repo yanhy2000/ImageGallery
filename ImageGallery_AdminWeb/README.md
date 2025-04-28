@@ -24,8 +24,7 @@ ImageGallery AdminWeb 是一个基于 Vue.js 的管理后台，用于管理Image
 
 在运行或打包项目之前，请确保安装了以下软件：
 
-- [Node.js](https://nodejs.org/)（建议使用 LTS 版本）
-- [npm](https://www.npmjs.com/)（Node.js 安装时会自动安装）
+- [Node.js](https://nodejs.org/)（建议使用 21 LTS 版本）
 
 ## 项目安装
 
@@ -55,6 +54,7 @@ npm run dev
 
 ## 打包项目
 
+**打包项目前请务必先设置好`.env`文件**
 要将项目打包为生产环境文件，您可以运行以下命令：
 ```bash
 npm run build

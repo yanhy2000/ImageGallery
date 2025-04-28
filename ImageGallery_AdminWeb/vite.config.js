@@ -12,7 +12,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': "D:/pic/ImageGallery/ImageGallery_AdminWeb/src"
+      '@': "./src"
     },
   },
 })

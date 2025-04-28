@@ -1,6 +1,6 @@
 # ImageGallery Server
 
-ImageGallery Server 是一个基于 Flask 的图片墙程序后端，提供图片的存储、转换、上传、下载等接口。
+ImageGallery Server 是一个基于 Flask 的图片墙程序后端，提供图片的存储、转换、上传、下载与用户管理等接口。
 
 ## 目录
 
@@ -13,8 +13,7 @@ ImageGallery Server 是一个基于 Flask 的图片墙程序后端，提供图�
 
 在运行或打包项目之前，请确保安装了以下软件：
 
-- [Python 3.10.10](https://www.python.org/downloads/)
-- [pip](https://pip.pypa.io/en/stable/installation/)（Python 通常会自动安装）
+- [推荐Python 3.10.10](https://www.python.org/downloads/)
 
 ## 项目安装
 
@@ -49,7 +48,7 @@ ImageGallery Server 是一个基于 Flask 的图片墙程序后端，提供图�
    pip install -r requirements.txt
    ```
 
-## 部署方式
+## 运行项目
 
 1. **释放配置文件**：
    进入 `./app` 目录，复制 `config.example.py` 到 `config.py`，并根据实际情况修改配置。
@@ -61,11 +60,12 @@ ImageGallery Server 是一个基于 Flask 的图片墙程序后端，提供图�
    ```
    服务器默认运行在 `http://localhost:5000`。
 
-3. **运行调试模式**：
+3. **运行调试模式(可选)**：
    修改 `config.py`，将其中 `DEBUG` 选项设置为 `True`，然后重新启动服务器。
 
 4. **部署生产环境**：
    部署生产环境时，可使用第三方包如Gunicorn。
+   也可以手动打包项目到云服务器等，安装Python、创建虚拟环境(可选)、安装依赖库、运行服务器。
 
 
 ## 许可证

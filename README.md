@@ -2,7 +2,7 @@
 照片墙，前后端分离，使用flask框架编写后端提供接口，前端可接入网页、客户端及各种插件
 
 # 设计思路
-一开始是为了自己的mc游戏服务器能快捷分享图片，营造一个更好分享和交流的社区，因此开发了这个项目。
+一开始是为了自己的mc游戏服务器能快捷分享图片，营造一个更好分享和交流的社区，因此开发了这个项目。这是我自己已经搭建好的基于最新代码的页面 - [萤火相册集](https://image.yanhy.top/)
 
 数据库存储图片链接，分缩略图和原图，客户端浏览器自动缓存缩略图，加快网站访问速度。
 
@@ -19,7 +19,7 @@
 - [ImageGallery-Server](./ImageGallery_Server/readme.md)：后端flask服务器，提供api接口，数据库存储图片信息，图片上传、删除、获取等功能
 - [ImageGallery-Web](./ImageGallery_Web/readme.md)：前端vue客户端，接入后端api接口，提供图片展示功能
 - [ImageGallery-AdminWeb](./ImageGallery_AdminWeb/readme.md)：后台管理系统，提供图片管理、用户管理、相册管理功能
-- [ImageGallery-MCMod](./ImageGallery_MCMod/readme.md)：mc模组，提供快捷上传截图功能，自动上传到服务器并生成缩略图
+- [ImageGallery-UploadDemo](./ImageGallery_UploadDemo/readme.md)：上传照片实例脚本，可通过指引快速熟悉简单上传图片流程
 
 # 开发相关
 
