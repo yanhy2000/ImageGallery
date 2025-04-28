@@ -20,6 +20,7 @@
 - [ImageGallery-Web](./ImageGallery_Web/readme.md)：前端vue客户端，接入后端api接口，提供图片展示功能
 - [ImageGallery-AdminWeb](./ImageGallery_AdminWeb/readme.md)：后台管理系统，提供图片管理、用户管理、相册管理功能
 - [ImageGallery-UploadDemo](./ImageGallery_UploadDemo/readme.md)：上传照片实例脚本，可通过指引快速熟悉简单上传图片流程
+- [ImageGallery-MCMod](https://github.com/yanhy2000/ImageGallery_MCMod)：mc模组（已分离为独立项目），提供快捷上传截图功能，自动上传到服务器并生成缩略图，提供照片管理、自定义上传等功能
 
 # 开发相关
 
