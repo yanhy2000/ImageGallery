@@ -1,6 +1,34 @@
 <template>
     <div class="container">
-        <Header />
+        <header class="header">
+            <h1>{{ title }}</h1>
+            <h2>{{ subtitle }}</h2>
+            <div class="status-bar">
+                <div v-if="isLoggedIn" class="user-menu-container">
+                    <span class="username" @click="AccountManager">
+                        {{ username }}
+                        <i class="fa-solid fa-caret-down"></i>
+                    </span>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item" @click="UploadManager">
+                        <i class="fa-solid fa-upload"></i> 上传照片
+                        </button>
+                        <button class="dropdown-item" @click="AccountManager">
+                        <i class="fa-solid fa-user-gear"></i> 账户管理
+                        </button>
+                        <button class="dropdown-item" @click="handleLogout">
+                        <i class="fa-solid fa-right-from-bracket"></i> 注销
+                        </button>
+                    </div>
+                </div>
+                <button v-else class="status-button login-button" @click="showLoginModal">
+                    登录
+                </button>
+                <button class="status-button mode-toggle-btn" @click="toggleDarkMode">
+                    <i :class="DarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>
+                </button>
+            </div>
+        </header>
 
         <div class="UserGuide" @mouseenter="showTooltip" @mouseleave="hideTooltip" @click="toggleTooltip">
             <h3>网站说明</h3>
@@ -123,9 +151,82 @@
             </div>
         </transition>
 
-        
+        <transition name="fade">
+            <div v-if="LoginModalVisible" class="login-modal">
+                <div class="modal-content" @click.stop>
+                    <h2>登录</h2>
+                    <button @click="closeLoginModal" class="close-button" title="关闭">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="input-group">
+                        <label for="username">用户名</label>
+                        <input id="username" type="text" v-model="loginUsername" placeholder="请输入用户名" />
+                    </div>
+                    <div class="input-group">
+                        <label for="password">密码</label>
+                        <input id="password" type="password" v-model="loginUsertoken" placeholder="请输入Token" />
+                    </div>
+                    <button @click="handleLogin">登录</button>
+                    <p v-if="loginError" class="error">{{ loginError }}</p>
+                    <div>
+                        <p class="register-hint">
+                            没有账号？<a href="#" @click.prevent="openRegModal" class="register-link">注册</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </transition>
 
-        <Foot />
+        <transition name="fade">
+            <div v-if="RegModalVisible" class="login-modal">
+                <div class="modal-content" @click.stop>
+                    <h2>注册</h2>
+                    <button @click="closeRegModal" class="close-button" title="关闭">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="input-group">
+                        <label for="username">用户名</label>
+                        <input id="username" type="text" v-model="RegUsername" placeholder="请输入用户名" />
+                    </div>
+                    <div class="input-group">
+                        <label for="password1">密码</label>
+                        <input id="password1" type="password" v-model="RegPasswd1" placeholder="请输入密码" />
+                    </div>
+                    <div class="input-group">
+                        <label for="password2">重复密码</label>
+                        <input id="password2" type="password" v-model="RegPasswd2" placeholder="请再次输入密码" />
+                    </div>
+                    <button @click="handleReg">注册</button>
+                    <p v-if="RegError" class="error">{{ RegError }}</p>
+                </div>
+            </div>
+        </transition>
+
+        <transition name="fade">
+            <div v-if="RegSuccModalVisible" class="login-modal">
+                <div class="modal-content" @click.stop>
+                    <h2>注册成功</h2>
+                    <button @click="closeRegModal" class="close-button" title="关闭">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="input-group">
+                        <p class="success">3s后准备自动登录...</p>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        <br />
+        <br />
+        <footer class="custom-footer">
+            <div class="footer-content">
+                <p>
+                    Powered by
+                    <a href="https://github.com/yanhy2000/ImageGallery" target="_blank">ImageGallery</a>
+                </p>
+                <p>{{ displayContent }}</p>
+                <p>Copyright © <span id="footer-year"></span> yanhy2000</p>
+            </div>
+        </footer>
     </div>
 </template>
 
@@ -138,15 +239,13 @@ import {
     cleanExpiredPhotos,
     refreshCache,
 } from "@/services/cacheService";
-import Header from '@/components/Header.vue'
-import Foot from '@/components/Foot.vue'
 
 export default {
     name: "IndexManager",
-    components: { Header, Foot },
     setup() {
-
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+        const title = import.meta.env.VITE_APP_TITLE;
+        const subtitle = import.meta.env.VITE_APP_SUBTITLE;
         const custom_text = import.meta.env.VITE_APP_CUSTOM_CONTENT.replace(
             /\n/g,
             "<br>"
@@ -159,6 +258,19 @@ export default {
         const currentThumbnailUrl = ref(null);
         const imageModalVisible = ref(false);
 
+        const isLoggedIn = ref(false);
+        const username = ref("");
+        const LoginModalVisible = ref(false);
+        const loginUsername = ref("");
+        const loginUsertoken = ref("");
+        const loginError = ref("");
+
+        const RegSuccModalVisible = ref(false);
+        const RegModalVisible = ref(false);
+        const RegUsername = ref("");
+        const RegPasswd1 = ref("");
+        const RegPasswd2 = ref("");
+        const RegError = ref("");
 
         const newComment = ref("");
         const replyText = ref("");
@@ -167,8 +279,19 @@ export default {
         const totalPhotos = ref(0);
         const perPageOptions = [6, 9, 15, 20, 25, 30];
         const error = ref(null);
+        const DarkMode = ref(false);
         const isTooltipVisible = ref(false);
+        const config = ref({
+            version: "1.1.0",
+            customContent: import.meta.env.VITE_API_FOOTER_CONTENT,
+        });
+        const year = new Date().getFullYear();
 
+        const displayContent = computed(() => {
+            return config.value.customContent
+                ? `${config.value.customContent} V${config.value.version}`
+                : `${title.value}  V${config.value.version}`;
+        });
 
         const changePage = (action) => {
             if (action === "first") {
@@ -510,9 +633,11 @@ export default {
             if (
                 event.key === "Escape" &&
                 (imageModalVisible.value ||
+                    LoginModalVisible.value ||
                     CommentModalVisible.value)
             ) {
                 imageModalVisible.value = false;
+                LoginModalVisible.value = false;
                 CommentModalVisible.value = false;
             }
         };
@@ -521,6 +646,27 @@ export default {
             if (event.target === event.currentTarget) {
                 imageModalVisible.value = false;
             }
+        };
+
+        const toggleDarkMode = () => {
+            DarkMode.value = !DarkMode.value;
+            if (DarkMode.value) {
+                document.body.classList.add("dark-mode");
+            } else {
+                document.body.classList.remove("dark-mode");
+            }
+        };
+
+        const checkDarkMode = () => {
+            const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
+            if (prefersDarkMode.matches) {
+                DarkMode.value = true;
+                document.body.classList.add("dark-mode");
+            } else {
+                DarkMode.value = false;
+                document.body.classList.remove("dark-mode");
+            }
+            prefersDarkMode.addEventListener("change", () => { });
         };
 
         const showTooltip = () => {
@@ -535,15 +681,184 @@ export default {
             isTooltipVisible.value = !isTooltipVisible.value;
         };
 
-        
+        const showLoginModal = () => {
+            LoginModalVisible.value = true;
+        };
+
+        const closeLoginModal = () => {
+            LoginModalVisible.value = false;
+            loginError.value = "";
+        };
+
+        const loginModalClick = (event) => {
+            if (event.target === event.currentTarget) {
+                LoginModalVisible.value = false;
+            }
+        };
+
+        // 处理登录
+        const handleLogin = async () => {
+            try {
+                const response = await axios.post(
+                    `${import.meta.env.VITE_API_BASE_URL}/api/checktoken`,
+                    {
+                        username: loginUsername.value,
+                        usertoken: loginUsertoken.value,
+                    }
+                );
+
+                if (response.data.code === 200 && response.data.data.allowlogin) {
+                    isLoggedIn.value = true;
+                    username.value = loginUsername.value;
+                    localStorage.setItem("jwttoken", response.data.data.token);
+                    localStorage.setItem("username", loginUsername.value);
+                    closeLoginModal();
+                    location.reload();
+                } else if (
+                    response.data.code === 200 &&
+                    !response.data.data.allowlogin
+                ) {
+                    loginError.value = "用户已被封禁，请联系管理员";
+                } else {
+                    loginError.value = "登录失败，请检查用户名和 Token";
+                }
+            } catch (error) {
+                loginError.value = "登录失败，请稍后重试";
+            }
+        };
+
+        const handleLogout = () => {
+            isLoggedIn.value = false;
+            username.value = "";
+            localStorage.removeItem("jwttoken");
+            localStorage.removeItem("username");
+            location.reload();
+        };
+
+        // 注册逻辑
+        const openRegModal = () => {
+            closeLoginModal();
+            RegModalVisible.value = true;
+            RegError.value = "";
+        };
+
+        const closeRegModal = () => {
+            RegModalVisible.value = false;
+            RegError.value = "";
+        };
+
+        const handleRegisterError = (code) => {
+            switch (code) {
+                case 400:
+                    RegError.value = "用户名已存在";
+                    break;
+                case 401:
+                    RegError.value = "接口未传入用户名或密码";
+                    break;
+                case 402:
+                    RegError.value = "密码不符合要求";
+                    break;
+                case 403:
+                    RegError.value = "用户名不符合要求";
+                    break;
+                case 404:
+                    RegError.value = "服务器未开放注册";
+                    break;
+                default:
+                    RegError.value = `注册失败 (错误码: ${code})`;
+            }
+        };
+
+        const handleReg = async () => {
+            if (RegPasswd1.value != "" && RegPasswd2.value != "") {
+                if (RegPasswd1.value != RegPasswd2.value) {
+                    RegError.value = "两次输入的密码不一致！";
+                    RegPasswd2.value = "";
+                    return;
+                } else {
+                    const reg_pass = /^[a-zA-Z0-9]{6,20}$/;
+                    const reg_user = /^[_0-9a-zA-Z][a-zA-Z0-9_]{3,16}$/;
+                    if (!reg_pass.test(RegPasswd1.value)) {
+                        RegError.value = "密码必须为6-20位字母或数字！";
+                        RegPasswd2.value = "";
+                        return;
+                    }
+                    if (!reg_user.test(RegUsername.value)) {
+                        RegError.value = "用户名必须为4-16位字母或数字或下划线！";
+                        RegUsername.value = "";
+                        RegPasswd1.value = "";
+                        RegPasswd2.value = "";
+                        return;
+                    }
+                }
+            }
+            try {
+                const response = await axios.post(
+                    `${import.meta.env.VITE_API_BASE_URL}/api/register`,
+                    {
+                        username: RegUsername.value,
+                        usertoken: RegPasswd1.value,
+                    }
+                );
+                if (response.data.code === 200) {
+                    closeRegModal();
+                    RegSuccModalVisible.value = true;
+                    setTimeout(() => {
+                        loginUsername.value = RegUsername.value;
+                        loginUsertoken.value = RegPasswd1.value;
+                        handleLogin();
+                        RegSuccModalVisible.value = false;
+                    }, 3000);
+                }
+            } catch (error) {
+                if (error.response) {
+                    handleRegisterError(error.response.data.code);
+                } else {
+                    RegError.value = '注册失败，请联系管理员或稍后重试';
+                }
+            }
+        };
 
         onMounted(async () => {
+            const storedToken = localStorage.getItem("jwttoken");
+            const storedUsername = localStorage.getItem("username");
+
+            if (storedToken && storedUsername) {
+                try {
+                    const response = await axios.get(
+                        `${import.meta.env.VITE_API_BASE_URL}/api/protected`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${storedToken}`,
+                            },
+                        }
+                    );
+
+                    if (response.data.code === 200) {
+                        isLoggedIn.value = true;
+                        username.value = storedUsername;
+                    } else if (response.data.code === 403) {
+                        localStorage.removeItem("jwttoken");
+                        localStorage.removeItem("username");
+                        alert("用户已被封禁，请重新登录");
+                    } else {
+                        localStorage.removeItem("jwttoken");
+                        localStorage.removeItem("username");
+                    }
+                } catch (error) {
+                    alert("自动登录失败, Token 无效或过期", error);
+                    localStorage.removeItem("jwttoken");
+                    localStorage.removeItem("username");
+                }
+            }
+
             const isMobile = window.innerWidth <= 768;
             if (isMobile) {
                 perPage.value = 6;
             }
             await fetchPhotos();
             await checkUserLikes();
+            checkDarkMode();
             await cleanExpiredPhotos();
             const link = document.createElement("link");
             link.rel = "icon";
@@ -551,6 +866,7 @@ export default {
 
             document.head.appendChild(link);
             document.addEventListener("keydown", handleEscKey);
+            document.getElementById("footer-year").innerText = year;
         });
 
         onBeforeUnmount(() => {
@@ -559,6 +875,8 @@ export default {
 
         return {
             API_BASE_URL,
+            title,
+            subtitle,
             custom_text,
             photos,
             currentPage,
@@ -575,7 +893,26 @@ export default {
             getPhotoInfo,
             closeImageModal,
 
-            
+            isLoggedIn,
+            username,
+            LoginModalVisible,
+            loginUsername,
+            loginUsertoken,
+            loginError,
+            showLoginModal,
+            closeLoginModal,
+            handleLogin,
+            handleLogout,
+
+            openRegModal,
+            closeRegModal,
+            RegUsername,
+            RegError,
+            RegPasswd1,
+            RegPasswd2,
+            RegModalVisible,
+            RegSuccModalVisible,
+            handleReg,
 
             comments,
             newComment,
@@ -588,16 +925,21 @@ export default {
             closeCommentModal,
             CommentModalVisible,
 
+            LoginModalVisible,
+            loginModalClick,
+            showLoginModal,
+            toggleDarkMode,
+            DarkMode,
             imageModalClick,
             imageCardStyle,
             gridStyle,
             refreshCache,
+            displayContent,
             isTooltipVisible,
             hideTooltip,
             showTooltip,
             toggleTooltip,
             toggleLike,
-
         };
     },
 };
