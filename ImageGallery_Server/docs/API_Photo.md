@@ -296,6 +296,53 @@ Content-Disposition: form-data; name="album"
 }
 ```
 
+---
+
+## 9. 获取用户自己的照片列表 (GET /api/user_photos)
+
+**描述**：获取用户自己的照片列表（分页展示）
+
+**请求**：
+* **URL**：`/api/user_photos`
+* **方法**：`GET`
+* **认证**：需要`usertoken`
+* **权限**：`permissions >= 0`
+
+**请求头**：
+
+* `Content-Type: application/json`
+
+
+**参数**：
+* **查询参数**：
+  * `page`: 当前页码（默认1）
+  * `perpage`: 每页数量（默认10）
+
+**返回示例**：
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "totalPhotos": 100,
+    "totalPages": 10,
+    "per_page": 10,
+    "current_page": 1,
+    "photos": [
+      {
+        "photoid": 1,
+        "desc": "美丽的风景",
+        "upload_time": "2023-05-20 12:00:00",
+        "thumbnail": "/uploads/thumbnails/abc123.jpg",
+        "album_name": "test"
+      }
+    ]
+  }
+}
+```
+
+---
+
 ## 特殊说明
 
 1. **缩略图生成规则**：

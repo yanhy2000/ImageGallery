@@ -1,4 +1,3 @@
-/* 基础布局和响应式设计 */
 .upload-container {
     width: 90%;
     max-width: 1000px;
@@ -9,8 +8,7 @@
     flex-direction: column;
     justify-content: center;
   }
-  
-  /* 上传区域 - 白天模式 */
+
   .upload-area {
     border: 2px dashed #ccc;
     border-radius: 12px;
@@ -25,8 +23,7 @@
     align-items: center;
     justify-content: center;
   }
-  
-  /* 上传区域 - 夜间模式 */
+
   body.dark-mode .upload-area {
     border-color: #3a3a3a;
     background-color: #1e1e1e;
@@ -233,16 +230,6 @@
   
   body.dark-mode .upload-button:hover {
     background-color: #267a56;
-  }
-  
-  .upload-button:disabled {
-    background-color: #a0d9bb;
-    cursor: not-allowed;
-    transform: none;
-  }
-  
-  body.dark-mode .upload-button:disabled {
-    background-color: #1e5a46;
   }
   
   .uploading-text {

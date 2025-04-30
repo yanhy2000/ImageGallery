@@ -615,4 +615,6 @@ export default {
 @import "@/css/status-bar.css";
 @import "@/css/action-modal.css";
 @import "@/css/comment.css";
+@import "@/css/account-page.css";
+@import "@/css/upload-page.css";
 </style>

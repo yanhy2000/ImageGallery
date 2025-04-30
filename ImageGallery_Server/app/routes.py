@@ -73,6 +73,18 @@ def index():
 def get_photos():
     return photo.get_photo_list()
 
+# [ok]获取用户自己的照片列表
+@app.route('/api/user_photos', methods=['GET'])
+@jwt_required() 
+def get_user_photos():
+    return photo.get_user_photos()
+
+# [ok]获取用户自己的相册列表
+@app.route('/api/user_albums', methods=['GET'])
+@jwt_required() 
+def get_user_albums():
+    return album.get_user_albums()
+
 # [ok]获取图片详细信息列表
 @app.route('/api/photolist', methods=['POST'])
 def get_photolist():
@@ -165,6 +177,12 @@ def upload():
 def upload_photo():
     return photo.upload_photo()
 
+# [ok]新-删除用户自己的照片
+@app.route('/api/del_user_photo', methods=['POST'])
+@jwt_required() 
+def del_user_photo():
+    return photo.del_user_photo()
+
 # [ok]删除照片
 @app.route('/api/deletephoto', methods=['POST'])
 def delete_photo_route():
@@ -220,6 +238,12 @@ def delete_album():
     if usertoken:
         return album.delete_album(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# [ok]新-删除用户自己的相册
+@app.route('/api/del_user_album', methods=['POST'])
+@jwt_required() 
+def del_user_album():
+    return album.del_user_album()
 
 # [ok]修改相册信息
 @app.route('/api/setalbum', methods=['POST'])

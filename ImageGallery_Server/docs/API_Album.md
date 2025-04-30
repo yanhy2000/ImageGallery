@@ -160,6 +160,49 @@
 
 ---
 
+## 5. 获取用户自己的相册列表 (GET /api/user_albums)
+
+**描述**：获取用户自己的相册列表（分页展示）
+
+**请求**：
+* **URL**：`/api/user_albums`
+* **方法**：`GET`
+* **认证**：需要`usertoken`
+* **权限**：`permissions >= 0`
+
+**请求头**：
+
+* `Content-Type: application/json`
+* `Authorization: Bearer <usertoken>`
+
+**参数**：
+* **查询参数**：
+  * `page`: 当前页码（默认1）
+  * `perpage`: 每页数量（默认10）
+
+**返回示例**：
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "totalAlbums": 15,
+    "totalPages": 2,
+    "per_page": 10,
+    "current_page": 1,
+    "albums": [
+      {
+        "albumid": 1,
+        "name": "旅行相册",
+        "create_time": "2023-05-20 12:00:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
 ## 安全说明
 
 1. **权限验证**：

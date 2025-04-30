@@ -84,6 +84,44 @@ def get_photolist(usertoken):
         }
     })
 
+# 获取用户自己的照片列表
+def get_user_photos():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(username=current_user).first()
+
+    if not user:
+        return jsonify({"code": 401, "message": "token failed"}), 401
+    if user.permissions < 0:
+        return jsonify({"code": 403, "message": "permission denied"}), 403
+    current_page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('perpage', 10, type=int)
+    query = Photo.query.filter_by(userid=user.userid)
+    pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
+    photos = pagination.items
+    photo_list = []
+    total_photos = pagination.total
+    total_pages = ceil(total_photos / per_page)
+    for photo in photos:
+        album = Album.query.filter_by(albumid=photo.albumid).first()
+        photo_list.append({
+            "photoid": photo.photoid,
+            "thumbnail": photo.thumbnail,
+            "desc": photo.desc,
+            "album_name": album.name,
+            "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
+        })
+    return jsonify({
+        "code": 200,
+        "message": "success",
+        "data": {
+            "tatolPhotos": total_photos,
+            "totalPages": total_pages,
+            "per_page": per_page,
+            "current_page": current_page,
+            "photos": photo_list
+        }
+    })
+
 # 创建本地缩略图
 def create_thumbnail(image_path):
     with Image.open(image_path) as img:
@@ -244,7 +282,7 @@ def delete_photo(usertoken):
     if not photo:
         return jsonify({"code": 404, "message": "Photo not found"}), 404
     # 检查用户是否有权限删除该照片（如果是上传者或者管理员可以删除）
-    if photo.userid != user.userid and user.permissions < 0:
+    if user.permissions < 1:
         return jsonify({"code": 403, "message": "permission denied"}), 403
 
     # 删除本地存储的图片文件
@@ -271,6 +309,50 @@ def delete_photo(usertoken):
         return jsonify({"code": 500, "message": f"Error deleting from database: {str(e)}"}), 500
 
     return jsonify({"code": 200, "message": "Photo deleted successfully"}), 200
+
+# 新-删除用户自己的照片
+def del_user_photo():
+    data = request.get_json()
+    photoid = data.get('photoid')
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(username=current_user).first()
+    if not user:
+        return jsonify({"code": 401, "message": "token failed"}), 401
+
+    photo = Photo.query.filter_by(photoid=photoid).first()
+    if not photo:
+        return jsonify({"code": 404, "message": "Photo not found"}), 404
+
+    # 检查用户是否有权限删除该照片（上传者以上可以删除）
+    if photo.userid != user.userid or user.permissions < 0:
+        return jsonify({"code": 403, "message": "permission denied"}), 403
+
+    # 删除本地存储的图片文件
+    try:
+        # 删除缩略图文件
+        thu = del_thumbnail(photoid)
+        if thu[1] == 200:
+            pass
+        else:
+            return jsonify({"code": 201, "message": f"Error deleting thumbnail:{thu}"}), 500
+        # 删除原图文件
+        file_path = photo.photo_url
+        if os.path.exists(file_path):
+            os.remove(file_path)
+    except Exception as e:
+        return jsonify({"code": 500, "message": f"Error deleting files: {str(e)}"}), 500
+
+    # 删除数据库中的照片记录
+    try:
+        db.session.delete(photo)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"code": 500, "message": f"Error deleting from database: {str(e)}"}), 500
+
+    return jsonify({"code": 200, "message": "Photo deleted successfully"}), 200
+
+
 
 # 下载照片（通过photo_id获取文件；如果thumbnail为1，则获取缩略图）
 def get_photo_file(photo_id, thumbnail=1):

@@ -1,0 +1,253 @@
+.account-management {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.tab-container {
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 1.5rem;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+  padding-top: 0.5rem;
+}
+
+.tab-button {
+  padding: 0.75rem 1.8rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s ease;
+  position: relative;
+  margin-right: 0.5rem;
+}
+
+.tab-button.active {
+  color: #666;
+  border-bottom-color: #42b983;
+  font-weight: 600;
+}
+
+.tab-button:hover.active {
+  color: #333;
+  border-bottom-color: #42b983;
+  font-weight: 600;
+}
+
+.tab-button:hover:not(.active) {
+  color: #666;
+  background-color: #f5f5f5;
+  border-radius: 6px 6px 0 0;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.data-table th {
+  padding: 1rem 0.75rem;
+  text-align: left;
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #e9ecef;
+  position: sticky;
+  z-index: 5;
+}
+
+.data-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+.data-table tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.data-table tr:hover {
+  background-color: #f1f3f5;
+}
+
+
+body.dark-mode .account-management {
+  background-color: #2c2c2c;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .tab-container {
+  background-color: #2c2c2c;
+  border-bottom-color: #444;
+}
+
+body.dark-mode .tab-button {
+  color: #eeebeb;
+}
+
+body.dark-mode .tab-button.active {
+  color: #d8d5d5;
+}
+
+body.dark-mode .tab-button:hover:not(.active) {
+  color: #eeebeb;
+  background-color: #3a3a3a;
+}
+
+body.dark-mode .table-container {
+  border-color: #444;
+}
+
+body.dark-mode .data-table th {
+  background-color: #252525;
+  color: #ddd;
+  border-bottom-color: #444;
+}
+
+body.dark-mode .data-table td {
+  border-bottom-color: #444;
+  color: #ccc;
+}
+
+body.dark-mode .data-table tr:nth-child(even) {
+  background-color: #252525;
+}
+
+body.dark-mode .data-table tr:hover {
+  background-color: #3a3a3a;
+}
+
+
+.thumbnail-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.action-button {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.delete-button {
+  background-color: #ff4d4f;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #ff7875;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination button {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.page-info {
+  margin: 0 0.5rem;
+}
+
+.per-page-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.per-page-selector select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* 夜间模式适配 */
+body.dark-mode .pagination button {
+  background-color: #333;
+  border-color: #444;
+  color: #ddd;
+}
+
+body.dark-mode .pagination button:hover:not(:disabled) {
+  background-color: #444;
+}
+
+body.dark-mode .per-page-selector select {
+  background-color: #333;
+  border-color: #444;
+  color: #ddd;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .account-management {
+    padding: 1rem;
+    margin: 1rem auto;
+  }
+  
+  .tab-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .data-table th {
+    top: 42px; /* 调整粘性位置 */
+  }
+
+  .pagination-controls {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .thumbnail-img {
+    width: 60px;
+    height: 60px;
+  }
+}

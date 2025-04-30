@@ -1,8 +1,12 @@
 <template>
   <div class="container">
     <Header />
+    <div class="back-home-container">
+      <button class="back-home" @click="handleBackToHome">
+        <i class="fa-solid fa-house"></i> 返回主页
+      </button>
+    </div>
     <main class="upload-container">
-      <!-- 上传区域 -->
       <div 
         class="upload-area"
         :class="{ 'drag-active': isDragging, 'hidden': fileSelected }"
@@ -119,6 +123,8 @@ export default {
 
     const description = ref('');
     const album = ref('');
+
+    const handleBackToHome = () => router.push('/');
 
     const triggerFileInput = () => {
       fileInput.value.click();
@@ -260,6 +266,7 @@ export default {
       submitUpload: HandleUpload,
       SuccModalVisible,
       Upload_status,
+      handleBackToHome,
     };
   }
 };
