@@ -7,8 +7,8 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     #Token\密钥类型,可选Token\Password
     #该项仅在初始化时生效，取决于项目运作方式，如不开放注册仅由管理员发放token则推荐选Token类型，每个用户以Token鉴权
-    #如作为开放社区开放自由注册建议改为Password、
-    #功能开发中，目前以token为主导
+    #如作为开放社区开放自由注册建议改为Password，如使用Token类型则会出现密码相同的无法注册情况
+    #功能开发中，目前以token为主导，且尚未做数据库加密处理，选项暂时无效
     Token_Type = Token
 
     # 是否保存原图

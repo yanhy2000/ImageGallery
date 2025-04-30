@@ -1,93 +1,158 @@
 /* 状态栏容器 */
 .status-bar {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px; /* 按钮和用户名之间的间距 */
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 用户名样式 */
+.username {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+body.dark-mode .username {
+  color: white;
+}
+
+/* 用户菜单容器 */
+.user-menu-container {
+  position: relative;
+  &:hover .dropdown-menu {
+    display: block;
   }
+  margin-right: 10px;
+}
+
+/* 下拉菜单 */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  min-width: 130px;
+  background: lightcyan;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 100;
+  overflow: hidden;
+
+  .dropdown-item {
+    color: #333;
+    border-bottom: 2px solid #dddddd;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+body.dark-mode {
+  .dropdown-menu {
+    background: none;
+    .dropdown-item {
+      color: #eee;
+      border-bottom: 2px solid #444;
+    }
+  }
+}
+
+.user-menu-container:hover .dropdown-menu {
+  display: block;
+}
+
+/* 下拉菜单项 */
+.dropdown-item {
+  width: 100%;
+  padding: 10px 15px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
   
-  /* 用户名样式 */
+}
+
+body.dark-mode .dropdown-item {
+  .dropdown-menu {
+    background: #333;
+  }
+}
+
+/* 通用按钮样式 */
+.status-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  width: 40px;
+  background-color: rgba(47, 228, 235, 0.5);
+  color: gray;
+  border: none;
+  border-radius: 50%;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.status-button:hover {
+  background-color: #c4c4c4;
+  transform: scale(1.1);
+}
+
+.status-button:active {
+  transform: scale(0.95);
+}
+
+/* 夜间模式样式 */
+body.dark-mode .status-button {
+  background-color: #858585;
+  color: white;
+}
+
+body.dark-mode .status-button:hover {
+  background-color: rgba(47, 228, 235, 0.5);
+}
+
+/* 登录按钮扩展样式 */
+.login-button {
+  font-size: 14px;
+  color: #555;
+  padding: 0;
+}
+
+body.dark-mode .login-button {
+  color: white;
+}
+
+/* 模式切换按钮扩展样式 */
+.mode-toggle-btn i {
+  pointer-events: none;
+}
+
+/* 调整按钮间距和对齐方式 */
+@media (max-width: 768px) {
+  .status-bar {
+    top: 10px;
+    right: 10px;
+    gap: 8px;
+  }
+
   .username {
-    font-size: 14px; /* 字体大小 */
-    color: #555; /* 默认字体颜色 */
-    font-weight: bold; /* 加粗 */
-    white-space: nowrap; /* 防止折行 */
-    margin-right: 10px; /* 与登录按钮的间距 */
+    font-size: 12px;
+    margin-right: 8px;
   }
-  
-  body.dark-mode .username {
-    color: white; /* 夜间模式下字体颜色变为白色 */
-  }
-  
-  /* 通用按钮样式 */
+
   .status-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 1 / 1; /* 宽高相等，保持圆形 */
-    width: 40px; /* 按钮宽度 */
-    background-color: rgba(47, 228, 235, 0.5); /* 半透明蓝色背景 */
-    color: gray; /* 默认文字/图标颜色 */
-    border: none;
-    border-radius: 50%; /* 圆形按钮 */
-    font-size: 15px; /* 按钮字体大小 */
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s; /* 平滑过渡效果 */
+    width: 35px;
+    font-size: 13px;
   }
-  
-  .status-button:hover {
-    background-color: #c4c4c4; /* 鼠标悬浮时背景变为浅灰色 */
-    transform: scale(1.1); /* 鼠标悬浮时轻微放大 */
-  }
-  
-  .status-button:active {
-    transform: scale(0.95); /* 点击时轻微缩小 */
-  }
-  
-  /* 夜间模式样式 */
-  body.dark-mode .status-button {
-    background-color: #858585; /* 深灰色背景 */
-    color: white; /* 白色文字/图标 */
-  }
-  
-  body.dark-mode .status-button:hover {
-    background-color: rgba(47, 228, 235, 0.5); /* 鼠标悬浮时恢复蓝色背景 */
-  }
-  
-  /* 登录按钮扩展样式 */
-  .login-button {
-    font-size: 14px; /* 登录按钮文字大小 */
-    color: #555; /* 默认颜色 */
-    padding: 0; /* 去除默认内边距 */
-  }
-  
-  body.dark-mode .login-button {
-    color: white; /* 夜间模式中文本变为白色 */
-  }
-  
-  /* 模式切换按钮扩展样式 */
-  .mode-toggle-btn i {
-    pointer-events: none; /* 禁止鼠标事件 */
-  }
-  
-  /* 调整按钮间距和对齐方式 */
-  @media (max-width: 768px) {
-    .status-bar {
-      top: 10px;
-      right: 10px;
-      gap: 8px; /* 缩小按钮间距 */
-    }
-  
-    .username {
-      font-size: 12px; /* 缩小用户名字体 */
-      margin-right: 8px; /* 减少间距 */
-    }
-  
-    .status-button {
-      width: 35px;
-      font-size: 13px; /* 缩小按钮字体 */
-    }
-  }
-  
+}

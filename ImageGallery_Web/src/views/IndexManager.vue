@@ -4,9 +4,23 @@
             <h1>{{ title }}</h1>
             <h2>{{ subtitle }}</h2>
             <div class="status-bar">
-                <span v-if="isLoggedIn" class="username" @click="handleLogout">
-                    {{ username }}
-                </span>
+                <div v-if="isLoggedIn" class="user-menu-container">
+                    <span class="username" @click="goToAccount">
+                        {{ username }}
+                        <i class="fa-solid fa-caret-down"></i>
+                    </span>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item" @click="showUploadModal">
+                        <i class="fa-solid fa-upload"></i> 上传照片
+                        </button>
+                        <button class="dropdown-item" @click="goToAccount">
+                        <i class="fa-solid fa-user-gear"></i> 账户管理
+                        </button>
+                        <button class="dropdown-item" @click="handleLogout">
+                        <i class="fa-solid fa-right-from-bracket"></i> 注销
+                        </button>
+                    </div>
+                </div>
                 <button v-else class="status-button login-button" @click="showLoginModal">
                     登录
                 </button>
