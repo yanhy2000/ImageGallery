@@ -14,7 +14,7 @@
 <script>
 import { ref, onMounted, } from "vue";
 import { useRouter } from 'vue-router';
-import Login from './Login.vue'
+import Login from '@/components/Login.vue'
 
 export default {
     name: "IndexManager",

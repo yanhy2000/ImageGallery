@@ -153,11 +153,17 @@ def update_photo():
 
 # [ok]上传照片
 @app.route('/api/upload', methods=['POST'])
-def upload_photo():
+def upload():
     usertoken = split_token(request)
     if usertoken:
         return photo.upload_new_photo(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
+
+# [ok]新-上传照片
+@app.route('/api/uploadphoto', methods=['POST'])
+@jwt_required() 
+def upload_photo():
+    return photo.upload_photo()
 
 # [ok]删除照片
 @app.route('/api/deletephoto', methods=['POST'])

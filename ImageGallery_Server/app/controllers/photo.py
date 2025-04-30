@@ -9,6 +9,7 @@ from datetime import datetime
 from app.config import Config
 from math import ceil
 from sqlalchemy import desc
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # 获取照片列表（公开）
 def get_photo_list():
@@ -163,6 +164,67 @@ def upload_new_photo(usertoken):
         db.session.commit()
     except Exception as e:
         print("upload_new_photo error:",e)
+        return jsonify({"code": 500, "message": f"error:{e}"}), 500
+    # 返回成功响应
+    return jsonify({
+        "code": 200,
+        "message": "success",
+        "data": new_photo.photoid
+    })
+
+# 上传照片-新接口
+def upload_photo():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(username=current_user).first()
+    if not user:
+        return jsonify({"code": 401, "message": "token failed"}), 401
+    if user.permissions < 0:
+        return jsonify({"code": 403, "message": "permission denied"}), 403
+    file = request.files.get("file")
+    name =request.form.get("name", file.filename)
+    desc = request.form.get("desc", "无描述")
+    album_name = request.form.get("album", user.username)
+    if album_name == "":
+        album_name = user.username
+
+    if not file:
+        return jsonify({"code": 404, "message": "need file"}), 404
+
+    today = get_utc_time()
+    year = today.year
+    month = today.month
+    day = today.day
+
+    upload_dir = os.path.join('uploads', str(year).zfill(2), str(month).zfill(2), str(day).zfill(2))
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+
+    # 处理文件名
+    filename = generate_uuid_filename() + os.path.splitext(file.filename)[-1]
+    file_path = os.path.join(upload_dir, filename)
+    file.save(file_path)
+    try:
+        thumbnail_url = create_thumbnail(file_path)
+        album = Album.query.filter_by(name=album_name, userid=user.userid).first()
+        if not album:
+            album = Album(name=album_name, userid=user.userid)
+            db.session.add(album)
+            db.session.commit()
+
+        new_photo = Photo(
+            name=name or file.filename,
+            desc=desc,
+            upload_time=get_utc_time(),
+            thumbnail=thumbnail_url,
+            photo_url=file_path,
+            albumid=album.albumid,
+            userid=user.userid
+        )
+
+        db.session.add(new_photo)
+        db.session.commit()
+    except Exception as e:
+        print("upload_photo error:",e)
         return jsonify({"code": 500, "message": f"error:{e}"}), 500
     # 返回成功响应
     return jsonify({

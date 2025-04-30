@@ -23,15 +23,21 @@ body.dark-mode .username {
 /* 用户菜单容器 */
 .user-menu-container {
   position: relative;
-  &:hover .dropdown-menu {
-    display: block;
-  }
   margin-right: 10px;
+  
+  &:hover .dropdown-menu {
+    opacity: 1;     
+    visibility: visible;
+    transform: translateY(0);
+  }
 }
 
 /* 下拉菜单 */
 .dropdown-menu {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
   position: absolute;
   right: 0;
   top: 100%;
@@ -39,7 +45,7 @@ body.dark-mode .username {
   background: lightcyan;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  z-index: 100;
+  z-index: 999;
   overflow: hidden;
 
   .dropdown-item {
@@ -52,15 +58,6 @@ body.dark-mode .username {
   }
 }
 
-body.dark-mode {
-  .dropdown-menu {
-    background: none;
-    .dropdown-item {
-      color: #eee;
-      border-bottom: 2px solid #444;
-    }
-  }
-}
 
 .user-menu-container:hover .dropdown-menu {
   display: block;
@@ -68,6 +65,9 @@ body.dark-mode {
 
 /* 下拉菜单项 */
 .dropdown-item {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1000;
   width: 100%;
   padding: 10px 15px;
   text-align: left;
@@ -81,8 +81,15 @@ body.dark-mode {
   
 }
 
-body.dark-mode .dropdown-item {
+body.dark-mode {
   .dropdown-menu {
+    background: #333; 
+  }
+  .dropdown-item {
+    color: #eee;
+    border-bottom: 2px solid #444;
+    
+    /* 明确指定黑暗模式下的背景 */
     background: #333;
   }
 }

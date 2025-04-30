@@ -95,12 +95,12 @@
 
 ---
 
-## 3. 上传照片 (POST /api/photos)
+## 3. 上传照片 (POST /api/upload)
 
 **描述**：上传新照片
 
 **请求**：
-* **URL**：`/api/photos`
+* **URL**：`/api/upload`
 * **方法**：`POST`
 * **认证**：需要`usertoken`
 * **权限**：`permissions >= 0`

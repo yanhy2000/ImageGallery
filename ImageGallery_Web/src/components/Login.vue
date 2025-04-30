@@ -1,6 +1,6 @@
 <template>
     <div v-if="isLoggedIn" class="user-menu-container">
-        <span class="username" @click="AccountManager">
+        <span class="username">
             {{ username }}
             <i class="fa-solid fa-caret-down"></i>
         </span>
@@ -97,6 +97,7 @@ export default {
     setup() {
         const isLoggedIn = ref(false);
         const username = ref("");
+        
         const router = useRouter();
         const UploadManager = () => router.push('/upload');
         const AccountManager = () => router.push('/account');
