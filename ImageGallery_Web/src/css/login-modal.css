@@ -88,6 +88,12 @@ body.dark-mode .login-modal {
     text-align: center;
 }
 
+.success {
+    color: green;
+    font-size: 14px;
+    margin-top: 10px;
+    text-align: center;
+}
 
 .username {
     cursor: pointer;
@@ -216,6 +222,16 @@ body.dark-mode .login-info p:not(:first-child) {
     color: #ffffff;
 } */
 
+.register-hint {
+    color: #666;
+    font-size: 0.9em;
+    text-align: center;
+}
+.register-link {
+    color: #666;
+    text-decoration: underline;
+    cursor: pointer;
+}
 
 @media (max-width: 768px) {
     .modal-content {
@@ -236,3 +252,4 @@ body.dark-mode .login-info p:not(:first-child) {
         max-height: calc(100vh - 200px); 
       }
 }
+

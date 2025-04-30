@@ -166,7 +166,15 @@ def delete_photo_route():
     if usertoken:
         return photo.delete_photo(usertoken)
     return jsonify({"code": 400, "message": "usertoken and photoid are required"}), 400
-    
+
+# [ok]用户注册
+@app.route('/api/register', methods=['POST'])
+def register_user():
+    if Config.ENABLE_REGISTER:
+        return user.register()
+    else:
+        return jsonify({"code": 404, "message": "User registration is disabled"}), 403
+
 # [ok]新增用户
 @app.route('/api/adduser', methods=['POST'])
 def add_user():

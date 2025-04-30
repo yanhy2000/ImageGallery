@@ -11,6 +11,7 @@ app = Flask(__name__)
 CORS(app)
 #CORS(app, origins=["http://127.0.0.1:8080"])
 
+
 # 配置文件
 try:
     app.config.from_object('app.config.Config')

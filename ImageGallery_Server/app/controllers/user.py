@@ -3,6 +3,7 @@ from app import db
 from app.models import User
 from app.utils import generate_user_uuid
 from math import ceil
+import re
 
 def get_all_users(usertoken):
     user = User.query.filter_by(usertoken=usertoken).first()
@@ -39,6 +40,35 @@ def get_all_users(usertoken):
             "totalPages": total_pages
         }
     })
+
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    usertoken = data.get('usertoken')
+    if not username or not usertoken:
+        return jsonify({"code": 401, "message": "Username and password are required"}), 403
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        if not re.match(r'^[a-zA-Z0-9]{6,20}$', usertoken):
+            return jsonify({"code": 402, "message": "Password not allow"}), 403
+        if not re.match(r'^[_0-9a-zA-Z][a-zA-Z0-9_]{3,16}$', username):
+            return jsonify({"code": 403, "message": "Username not allow"}), 403
+
+        new_user = User(username=username, usertoken=usertoken, permissions=0)
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({
+            "code": 200,
+            "message": "success",
+            "data": {
+                "userid": new_user.userid,
+                "username": new_user.username,
+                "usertoken": new_user.usertoken
+            }
+        })
+    else:
+        return jsonify({"code": 400, "message": "Username already exists"}), 403
+
 
 def add_new_user(usertoken):
     data = request.get_json()
