@@ -398,26 +398,25 @@ export default {
                 const data = response.data;
 
                 if (data.code === 200) {
-                    // alert("succ")
                 } else {
                     alert(data);
                 }
             } catch (e) {
                 alert(e.message);
             } finally {
-                refreshCache();
                 closeDeleteAlbumModal();
-                location.reload();
-                activeTab.value = "albums";
+                refreshCache();
             }
         };
 
         onMounted(() => {
             storedToken.value = localStorage.getItem("jwttoken");
             if (!storedToken.value) {
-                throw new Error("请先登录");
+                alert("请先登录");
+                router.push('/');
+            }else{
+                fetchAll();
             }
-            fetchAll();
         });
 
         return {

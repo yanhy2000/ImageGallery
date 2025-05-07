@@ -94,7 +94,7 @@ const cleanCacheSize = async (store, maxCacheSize) => {
   });
 };
 
-export const refreshCache = async () => {
+export const refreshCache = async (reload=true) => {
   const db = await openDatabase();
   const transaction = db.transaction('photos', 'readwrite');
   const store = transaction.objectStore('photos');
@@ -108,4 +108,8 @@ export const refreshCache = async () => {
     });
   }
   console.log('Browser cache cleared.');
+  if(reload){
+    window.location.reload();
+  }
+  
 };
