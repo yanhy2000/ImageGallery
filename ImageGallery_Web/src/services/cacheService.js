@@ -108,5 +108,4 @@ export const refreshCache = async () => {
     });
   }
   console.log('Browser cache cleared.');
-  window.location.reload();
 };

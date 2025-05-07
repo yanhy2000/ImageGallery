@@ -104,6 +104,9 @@ import axios from 'axios';
 import Header from '@/components/Header.vue'
 import Foot from '@/components/Foot.vue'
 import { useRouter } from 'vue-router';
+import {
+    refreshCache,
+} from "@/services/cacheService";
 export default {
   components: { Header, Foot },
   setup() {
@@ -207,6 +210,7 @@ export default {
         if (response.data.code === 200) {
           Upload_status.value = "上传成功"
           SuccModalVisible.value = true;
+          refreshCache();
           setTimeout(() => {
               resetForm();
               SuccModalVisible.value = false;

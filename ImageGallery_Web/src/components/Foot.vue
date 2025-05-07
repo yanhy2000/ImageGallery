@@ -13,12 +13,12 @@
         </footer>
 </template>
 <script>
-import { ref, onMounted, computed, onBeforeUnmount } from "vue";
+import { ref, onMounted, computed } from "vue";
 export default {
     name: "IndexManager",
     setup() {
         const config = ref({
-            version: "1.1.0",
+            version: "1.1.2",
             customContent: import.meta.env.VITE_API_FOOTER_CONTENT,
         });
         const year = new Date().getFullYear();

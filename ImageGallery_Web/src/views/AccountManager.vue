@@ -42,7 +42,7 @@
                                 <td>{{ photo.album_name }}</td>
                                 <td>{{ formatDateTime(photo.upload_time) }}</td>
                                 <td>
-                                    <button class="action-button delete-button" @click="deletePhoto(photo.photoid)">
+                                    <button class="action-button delete-button" @click="openDeletePhotoModal(photo.photoid)">
                                         删除
                                     </button>
                                 </td>
@@ -70,7 +70,7 @@
 
                         <div class="per-page-selector">
                             <label for="perPageSelect">每页展示数量：</label>
-                            <select id="perPageSelect" v-model="perPage" @change="fetchPhoto">
+                            <select id="perPageSelect" v-model="perPage" @change="fetchAll">
                                 <option v-for="option in perPageOptions" :key="option" :value="option">
                                     {{ option }}
                                 </option>
@@ -98,7 +98,7 @@
                                 <td>{{ album.name }}</td>
                                 <td>{{ formatDateTime(album.create_time) }}</td>
                                 <td>
-                                    <button class="action-button delete-button" @click="deleteAlbum(album.albumid)">
+                                    <button class="action-button delete-button" @click="openDeleteAlbumModal(album.albumid)">
                                         删除
                                     </button>
                                 </td>
@@ -126,7 +126,7 @@
 
                         <div class="per-page-selector">
                             <label for="perPageSelect">每页展示数量：</label>
-                            <select id="perPageSelect" v-model="perPage" @change="fetchPhoto">
+                            <select id="perPageSelect" v-model="perPage" @change="fetchAll">
                                 <option v-for="option in perPageOptions" :key="option" :value="option">
                                     {{ option }}
                                 </option>
@@ -138,14 +138,36 @@
         </main>
 
         <transition name="fade">
-            <div v-if="StatusModalVisible" class="login-modal">
+            <div v-if="deletePhotoModalVisible" class="confirm-modal">
                 <div class="modal-content">
-                    <h2>{{ statusTitle }}</h2>
-                    <button @click="closeModal" class="close-button" title="关闭">
+                    <h2>删除图片</h2>
+                    <button @click="closeDeletePhotoModal" class="close-button" title="关闭">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
-                    <div class="input-group">
-                        <p class="success">{{ statusContent }}</p>
+                    <div class="modal-body">
+                        <p class="confirm-message">确定要删除ID为{{SelectPhotoid}}的图片吗？</p>
+                        <div class="button-group">
+                            <button class="cancel-button" @click="closeDeletePhotoModal">取消</button>
+                            <button class="confirm-button" @click="confirmDeletePhoto">确认删除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <transition name="fade">
+            <div v-if="deleteAlbumModalVisible" class="confirm-modal">
+                <div class="modal-content">
+                    <h2>删除相册</h2>
+                    <button @click="closeDeleteAlbumModal" class="close-button" title="关闭">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="modal-body">
+                        <p class="confirm-message">确定要删除ID为{{SelectAlbumid}}的相册吗？请注意，当删除相册后，该相册内全部图片都将会被删除！</p>
+                        <div class="button-group">
+                            <button class="cancel-button" @click="closeDeleteAlbumModal">取消</button>
+                            <button class="confirm-button" @click="confirmDeleteAlbum">确认删除</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,7 +186,6 @@ import { useRouter } from 'vue-router';
 import {
     cachePhoto,
     getCachedPhoto,
-    cleanExpiredPhotos,
     refreshCache,
 } from "@/services/cacheService";
 export default {
@@ -181,14 +202,17 @@ export default {
         const storedToken = ref("");
         const handleBackToHome = () => router.push('/');
 
-        const StatusModalVisible = ref(false);
-        const statusTitle = ref("Title");
-        const statusContent = ref("Content");
+        const SelectPhotoid = ref(0);
+        const deletePhotoModalVisible = ref(false);
+
+        const SelectAlbumid = ref(0);
+        const deleteAlbumModalVisible = ref(false);
+
 
         const switchTab = (tab) => {
             activeTab.value = tab;
             currentPage.value = 1;
-            fetchPhoto();
+            fetchAll();
         };
 
         const formatDateTime = (datetime) => {
@@ -206,15 +230,9 @@ export default {
             } else if (action === "last") {
                 currentPage.value = totalPages.value;
             }
-            fetchPhoto();
+            fetchAll();
         };
 
-        const openModal = () => {
-            StatusModalVisible.value = true;
-        }
-        const closeModal = () => {
-            StatusModalVisible.value = false;
-        }
 
         const fetchThumbnail = async (photoId) => {
             try {
@@ -250,7 +268,7 @@ export default {
             }
         };
 
-        const fetchPhoto = async () => {
+        const fetchAll = async () => {
 
             try {
                 const config = {
@@ -292,7 +310,7 @@ export default {
                             }
                         }
                     } else {
-                        error.value = data.message;
+                        console.error('获取数据失败:', data.message);
                     }
                 } else {
                     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user_albums`, config);
@@ -303,40 +321,24 @@ export default {
                 console.error('获取数据失败:', error);
             }
         };
-        // 获取相册
-        const fetchAlbums = async () => {
-            try {
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${storedToken.value}`
-                    },
-                    params: {
-                        page: currentPage.value,
-                        perpage: perPage.value
-                    }
-                };
 
-                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user_albums`, config);
-                if (response.status !== 200) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = response.data;
-                if (data.code === 200) {
-                    albums.value = data.data.albums;
-                    totalAlbums.value = data.data.totalAlbums;
-                    totalPages.value = data.data.totalPages;
-                } else {
-                    error.value = data.message;
-                }
-            } catch (e) {
-                error.value = e.message;
-            }
-        };
-        //实现删除逻辑
-        const deletePhoto = async (photoid) => {
+        // 打开删除照片确认框
+        const openDeletePhotoModal = (photoid) => {
+            SelectPhotoid.value = photoid;
+            deletePhotoModalVisible.value = true;
+        }
+
+        // 关闭删除照片确认框
+        const closeDeletePhotoModal = () => {
+            SelectPhotoid.value = 0;
+            deletePhotoModalVisible.value = false;
+        }
+
+        // 确认删除照片
+        const confirmDeletePhoto = async () => {
             try {
                 const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/del_user_photo`, {
-                    photoid: photoid
+                    photoid: SelectPhotoid.value
                 }, {
                     headers: {
                         'Content-Type': 'application/json',
@@ -351,21 +353,37 @@ export default {
                 const data = response.data;
 
                 if (data.code === 200) {
-                    alert("succ")
+                    // alert("succ")
                 } else {
                     alert(data);
                 }
             } catch (e) {
                 alert(e.message);
             } finally {
-                closeModal();
+                refreshCache();
+                closeDeletePhotoModal();
+                location.reload();
             }
         };
+
+
+        // 打开删除相册确认框
+        const openDeleteAlbumModal = (Albumid) => {
+            SelectAlbumid.value = Albumid;
+            deleteAlbumModalVisible.value = true;
+        }
+
+        // 关闭删除相册确认框
+        const closeDeleteAlbumModal = () => {
+            SelectAlbumid.value = 0;
+            deleteAlbumModalVisible.value = false;
+        }
+
         //删除相册
-        const deleteAlbum = async (albumid) => {
+        const confirmDeleteAlbum = async () => {
             try {
                 const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/del_user_album`, {
-                    albumid: albumid
+                    albumid: SelectAlbumid.value
                 }, {
                     headers: {
                         'Content-Type': 'application/json',
@@ -380,14 +398,17 @@ export default {
                 const data = response.data;
 
                 if (data.code === 200) {
-                    alert("succ")
+                    // alert("succ")
                 } else {
                     alert(data);
                 }
             } catch (e) {
                 alert(e.message);
             } finally {
-                closeModal();
+                refreshCache();
+                closeDeleteAlbumModal();
+                location.reload();
+                activeTab.value = "albums";
             }
         };
 
@@ -396,8 +417,7 @@ export default {
             if (!storedToken.value) {
                 throw new Error("请先登录");
             }
-            fetchPhoto();
-            fetchAlbums();
+            fetchAll();
         });
 
         return {
@@ -412,8 +432,19 @@ export default {
             switchTab,
             changePage,
             formatDateTime,
-            deletePhoto,
-            deleteAlbum
+
+            openDeletePhotoModal,
+            deletePhotoModalVisible,
+            closeDeletePhotoModal,
+            SelectPhotoid,
+            confirmDeletePhoto,
+
+            openDeleteAlbumModal,
+            deleteAlbumModalVisible,
+            closeDeleteAlbumModal,
+            SelectAlbumid,
+            confirmDeleteAlbum,
+
         };
     }
 };
