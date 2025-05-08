@@ -54,11 +54,11 @@
       </transition>
 
       <transition name="fade">
-        <div v-if="SuccModalVisible" class="login-modal">
-          <div class="modal-content">
-            <h2>{{ Upload_status }}</h2>
-            <div class="input-group">
-              <p class="success">2s后返回主页...</p>
+        <div v-if="SuccModalVisible" class="modal-overlay">
+          <div class="modal-content modal-content--small">
+            <h2 class="modal-title">{{ Upload_status }}</h2>
+            <div class="modal-content-group">
+              <p class="modal-message modal-message--success">2s后返回主页...</p>
             </div>
           </div>
         </div>

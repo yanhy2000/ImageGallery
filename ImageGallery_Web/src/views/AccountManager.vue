@@ -138,17 +138,17 @@
         </main>
 
         <transition name="fade">
-            <div v-if="deletePhotoModalVisible" class="confirm-modal">
-                <div class="modal-content">
-                    <h2>删除图片</h2>
-                    <button @click="closeDeletePhotoModal" class="close-button" title="关闭">
+            <div v-if="deletePhotoModalVisible" class="modal-overlay">
+                <div class="modal-content modal-content--medium">
+                    <h2 class="modal-title">删除图片</h2>
+                    <button @click="closeDeletePhotoModal" class="modal-close-button" title="关闭">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
-                    <div class="modal-body">
-                        <p class="confirm-message">确定要删除ID为{{SelectPhotoid}}的图片吗？</p>
-                        <div class="button-group">
-                            <button class="cancel-button" @click="closeDeletePhotoModal">取消</button>
-                            <button class="confirm-button" @click="confirmDeletePhoto">确认删除</button>
+                    <div class="modal-content-group">
+                        <p class="modal-message modal-message--error">确定要删除ID为{{SelectPhotoid}}的图片吗？</p>
+                        <div class="modal-button-group">
+                            <button class="modal-button modal-button--cancel" @click="closeDeletePhotoModal">取消</button>
+                            <button class="modal-button modal-button--danger" @click="confirmDeletePhoto">确认删除</button>
                         </div>
                     </div>
                 </div>
@@ -156,17 +156,17 @@
         </transition>
 
         <transition name="fade">
-            <div v-if="deleteAlbumModalVisible" class="confirm-modal">
-                <div class="modal-content">
-                    <h2>删除相册</h2>
+            <div v-if="deleteAlbumModalVisible" class="modal-overlay">
+                <div class="modal-content modal-content--medium">
+                    <h2 class="modal-title">删除相册</h2>
                     <button @click="closeDeleteAlbumModal" class="close-button" title="关闭">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
-                    <div class="modal-body">
-                        <p class="confirm-message">确定要删除ID为{{SelectAlbumid}}的相册吗？请注意，当删除相册后，该相册内全部图片都将会被删除！</p>
-                        <div class="button-group">
-                            <button class="cancel-button" @click="closeDeleteAlbumModal">取消</button>
-                            <button class="confirm-button" @click="confirmDeleteAlbum">确认删除</button>
+                    <div class="modal-content-group">
+                        <p class="modal-message modal-message--error">确定要删除ID为{{SelectAlbumid}}的相册吗？请注意，当删除相册后，该相册内全部图片都将会被删除！</p>
+                        <div class="modal-button-group">
+                            <button class="modal-button modal-button--cancel" @click="closeDeleteAlbumModal">取消</button>
+                            <button class="modal-button modal-button--danger" @click="confirmDeleteAlbum">确认删除</button>
                         </div>
                     </div>
                 </div>
@@ -353,7 +353,6 @@ export default {
                 const data = response.data;
 
                 if (data.code === 200) {
-                    // alert("succ")
                 } else {
                     alert(data);
                 }

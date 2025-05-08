@@ -2,10 +2,10 @@
 
 
 /* 全局按钮 */
-button {
+/* button {
     background-color: #8054a33d;
     border: none;
-    color: white;
+    color: rgb(0, 0, 0);
     padding: 8px 16px;
     cursor: pointer;
     border-radius: 4px;
@@ -25,7 +25,7 @@ body.dark-mode button {
 
 body.dark-mode button:hover {
     background-color: #3486e2;
-}
+} */
 
 /* 关闭按钮 */
 .close-button {

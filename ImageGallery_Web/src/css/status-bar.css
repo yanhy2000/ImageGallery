@@ -1,29 +1,69 @@
-/* 状态栏容器 */
+/* ==================== 状态栏容器 ==================== */
 .status-bar {
   position: absolute;
   top: 20px;
   right: 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
 }
 
-/* 用户名样式 */
-.username {
-  cursor: pointer;
+/* ==================== 上传按钮 ==================== */
+.upload-btn {
   display: flex;
   align-items: center;
   gap: 5px;
+  padding: 8px 12px;
+  background-color: rgba(128, 84, 163, 0.24);
+  color: #333;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  text-decoration: none;
 }
 
-body.dark-mode .username {
+.upload-btn:hover {
+  background-color: #3486e2;
   color: white;
 }
 
-/* 用户菜单容器 */
+.upload-btn i {
+  font-size: 12px;
+}
+
+/* ==================== 主题切换按钮 ==================== */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: rgba(47, 228, 235, 0.5);
+  color: gray;
+  border: none;
+  border-radius: 50%;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  background-color: #c4c4c4;
+  transform: scale(1.1);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+/* ==================== 用户相关样式 ==================== */
 .user-menu-container {
   position: relative;
-  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   
   &:hover .dropdown-menu {
     opacity: 1;     
@@ -32,7 +72,21 @@ body.dark-mode .username {
   }
 }
 
-/* 下拉菜单 */
+.username {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.username:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ==================== 下拉菜单 ==================== */
 .dropdown-menu {
   opacity: 0;
   visibility: hidden;
@@ -40,34 +94,16 @@ body.dark-mode .username {
   transition: all 0.3s ease;
   position: absolute;
   right: 0;
-  top: 100%;
-  min-width: 130px;
-  background: lightcyan;
+  top: calc(100% + 10px);
+  min-width: 160px;
+  background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  z-index: 999;
-  overflow: hidden;
-
-  .dropdown-item {
-    color: #333;
-    border-bottom: 2px solid #dddddd;
-    
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-}
-
-
-.user-menu-container:hover .dropdown-menu {
-  display: block;
-}
-
-/* 下拉菜单项 */
-.dropdown-item {
-  pointer-events: auto !important;
-  position: relative;
   z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-item {
   width: 100%;
   padding: 10px 15px;
   text-align: left;
@@ -76,90 +112,120 @@ body.dark-mode .username {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 14px;
-  
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
 }
 
-body.dark-mode {
-  .dropdown-menu {
-    background: #333; 
-  }
-  .dropdown-item {
-    color: #eee;
-    border-bottom: 2px solid #444;
-    
-    /* 明确指定黑暗模式下的背景 */
-    background: #333;
-  }
+.dropdown-item:hover {
+  background-color: #f5f5f5;
 }
 
-/* 通用按钮样式 */
-.status-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1 / 1;
-  width: 40px;
-  background-color: rgba(47, 228, 235, 0.5);
-  color: gray;
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item i {
+  width: 18px;
+  text-align: center;
+}
+
+/* ==================== 登录按钮 ==================== */
+.login-btn {
+  padding: 8px 12px;
+  background-color: rgba(128, 84, 163, 0.24);
+  color: #333;
+  border-radius: 4px;
   border: none;
-  border-radius: 50%;
-  font-size: 15px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-}
-
-.status-button:hover {
-  background-color: #c4c4c4;
-  transform: scale(1.1);
-}
-
-.status-button:active {
-  transform: scale(0.95);
-}
-
-/* 夜间模式样式 */
-body.dark-mode .status-button {
-  background-color: #858585;
-  color: white;
-}
-
-body.dark-mode .status-button:hover {
-  background-color: rgba(47, 228, 235, 0.5);
-}
-
-/* 登录按钮扩展样式 */
-.login-button {
   font-size: 14px;
-  color: #555;
-  padding: 0;
+  transition: all 0.3s ease;
 }
 
-body.dark-mode .login-button {
+.login-btn:hover {
+  background-color: #3486e2;
   color: white;
 }
 
-/* 模式切换按钮扩展样式 */
-.mode-toggle-btn i {
-  pointer-events: none;
+/* ==================== 夜间模式适配 ==================== */
+body.dark-mode {
+  .upload-btn,
+  .login-btn {
+    background-color: #3c3c3c;
+    color: #e0e0e0;
+  }
+  
+  .upload-btn:hover,
+  .login-btn:hover {
+    background-color: #3486e2;
+    color: white;
+  }
+  
+  .theme-toggle-btn {
+    background-color: #858585;
+    color: white;
+  }
+  
+  .theme-toggle-btn:hover {
+    background-color: rgba(47, 228, 235, 0.5);
+  }
+  
+  .username {
+    color: white;
+  }
+  
+  .username:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .dropdown-menu {
+    background: #2c2c2c;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  
+  .dropdown-item {
+    color: #e0e0e0;
+    border-bottom-color: #444;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #3c3c3c;
+  }
 }
 
-/* 调整按钮间距和对齐方式 */
+/* ==================== 响应式设计 ==================== */
 @media (max-width: 768px) {
   .status-bar {
     top: 10px;
     right: 10px;
-    gap: 8px;
+    gap: 10px;
   }
-
+  
+  .upload-btn,
+  .login-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  
+  .theme-toggle-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
   .username {
-    font-size: 12px;
-    margin-right: 8px;
+    font-size: 13px;
+    padding: 5px 8px;
   }
-
-  .status-button {
-    width: 35px;
+  
+  .dropdown-menu {
+    min-width: 140px;
+  }
+  
+  .dropdown-item {
+    padding: 8px 12px;
     font-size: 13px;
   }
 }

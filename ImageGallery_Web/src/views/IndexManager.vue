@@ -19,9 +19,6 @@
                     </div>
                 </div>
                 <div class="action-section">
-                    <!-- <div class="comment-section" @click.stop="showCommentModal(photo.photoid)">
-                        <i class="fa-regular fa-comment"></i>
-                    </div> -->
                     <div class="like-section" @click.stop="toggleLike(photo.photoid)">
                         <i class="fa-regular fa-heart" :class="{ 'fa-solid': photo.isLiked, liked: photo.isLiked }"></i>
                         <span class="like-count">{{ photo.likes }}</span>
@@ -184,89 +181,6 @@ export default {
             fetchPhotos();
             checkUserLikes();
         };
-
-        const submitComment = () => {
-            if (newComment.value.trim()) {
-                comments.value.push({
-                    commentid: comments.value.length + 1,
-                    content: newComment.value,
-                    create_time: new Date().toLocaleString(),
-                    userid: props.currentUser.userid,
-                    username: props.currentUser.username,
-                    likes: 0,
-                    isLiked: false,
-                    replies: [],
-                });
-                newComment.value = "";
-            }
-        };
-
-        const submitReply = (commentid) => {
-            if (replyText.value.trim()) {
-                const comment = comments.value.find((c) => c.commentid === commentid);
-                if (comment) {
-                    comment.replies.push({
-                        commentid: comment.replies.length + 1,
-                        content: replyText.value,
-                        create_time: new Date().toLocaleString(),
-                        userid: props.currentUser.userid,
-                        username: props.currentUser.username,
-                    });
-                    replyText.value = "";
-                }
-            }
-        };
-
-        const toggleCommentLike = (commentid) => {
-            const comment = comments.value.find((c) => c.commentid === commentid);
-            if (comment) {
-                comment.isLiked = !comment.isLiked;
-                comment.likes += comment.isLiked ? 1 : -1;
-            }
-        };
-
-        const deleteComment = (commentid) => {
-            comments.value = comments.value.filter((c) => c.commentid !== commentid);
-        };
-
-        const showCommentModal = (photoid) => {
-            CommentModalVisible.value = true;
-        };
-
-        const closeCommentModal = () => {
-            CommentModalVisible.value = false;
-        };
-
-        const comments = ref([
-            {
-                commentid: 1,
-                content: "这是一条示例评论。",
-                create_time: "2023-10-01 12:00",
-                userid: 1,
-                username: "用户A",
-                likes: 11,
-                isLiked: false,
-                replies: [
-                    {
-                        commentid: 2,
-                        content: "这是一条回复评论。",
-                        create_time: "2023-10-01 12:05",
-                        userid: 2,
-                        username: "用户B",
-                    },
-                ],
-            },
-            {
-                commentid: 3,
-                content: "这是另一条示例评论。",
-                create_time: "2023-10-01 12:10",
-                userid: 3,
-                username: "用户C",
-                likes: 5,
-                isLiked: false,
-                replies: [],
-            },
-        ]);
 
         // 点赞功能
         const toggleLike = async (photoid) => {
@@ -576,19 +490,6 @@ export default {
             getPhotoInfo,
             closeImageModal,
 
-            
-
-            comments,
-            newComment,
-            replyText,
-            submitComment,
-            submitReply,
-            toggleCommentLike,
-            deleteComment,
-            showCommentModal,
-            closeCommentModal,
-            CommentModalVisible,
-
             imageModalClick,
             imageCardStyle,
             gridStyle,
@@ -608,13 +509,10 @@ export default {
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 @import "@/css/index.css";
 @import "@/css/image-modal.css";
-@import "@/css/login-modal.css";
-@import "@/css/pagination.css";
+@import "@/css/utils-modal.css";
 @import "@/css/btn.css";
 @import "@/css/action.css";
 @import "@/css/status-bar.css";
-/* @import "@/css/action-modal.css"; */
-@import "@/css/comment.css";
 @import "@/css/account-page.css";
 @import "@/css/upload-page.css";
 </style>

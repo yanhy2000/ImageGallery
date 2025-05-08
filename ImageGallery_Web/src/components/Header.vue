@@ -4,9 +4,13 @@
         <h2>{{ subtitle }}</h2>
         <div class="status-bar">
             <Login />
-            <button class="status-button mode-toggle-btn" @click="toggleDarkMode">
+            <router-link to="/upload" class="upload-btn" v-if="!isLoggedIn">
+                <i class="fa-solid fa-plus"></i> 上传
+            </router-link>
+            <button class="theme-toggle-btn mode-toggle-btn" @click="toggleDarkMode">
                 <i :class="DarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>
             </button>
+
         </div>
     </header>
 </template>

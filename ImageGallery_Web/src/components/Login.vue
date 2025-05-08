@@ -1,90 +1,95 @@
 <template>
-    <div v-if="isLoggedIn" class="user-menu-container">
-        <span class="username">
-            {{ username }}
-            <i class="fa-solid fa-caret-down"></i>
-        </span>
-        <div class="dropdown-menu">
-            <button class="dropdown-item" @click="UploadManager">
-                <i class="fa-solid fa-upload"></i> 上传照片
-            </button>
-            <button class="dropdown-item" @click="AccountManager">
-                <i class="fa-solid fa-user-gear"></i> 账户管理
-            </button>
-            <button class="dropdown-item" @click="handleLogout">
-                <i class="fa-solid fa-right-from-bracket"></i> 注销
-            </button>
-        </div>
-    </div>
+        
+        <div v-if="isLoggedIn" class="user-menu-container">
+            <span class="username">
+                {{ username }}
+                <i class="fa-solid fa-caret-down"></i>
+            </span>
 
-    <button v-else class="status-button login-button" @click="showLoginModal">
-        登录
-    </button>
+            <div class="dropdown-menu">
+                <button class="dropdown-item" @click="UploadManager">
+                    <i class="fa-solid fa-upload"></i> 上传照片
+                </button>
+                <button class="dropdown-item" @click="AccountManager">
+                    <i class="fa-solid fa-user-gear"></i> 账户管理
+                </button>
+                <button class="dropdown-item" @click="handleLogout">
+                    <i class="fa-solid fa-right-from-bracket"></i> 注销
+                </button>
+            </div>
+        </div>
+        <button v-else class="status-button login-btn" @click="showLoginModal">
+            登录
+        </button>
 
     <transition name="fade">
-            <div v-if="LoginModalVisible" class="login-modal">
-                <div class="modal-content" @click.stop>
-                    <h2>登录</h2>
-                    <button @click="closeLoginModal" class="close-button" title="关闭">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                    <div class="input-group">
-                        <label for="username">用户名</label>
-                        <input id="username" type="text" v-model="loginUsername" placeholder="请输入用户名" />
-                    </div>
-                    <div class="input-group">
-                        <label for="password">密码</label>
-                        <input id="password" type="password" v-model="loginUsertoken" placeholder="请输入Token" />
-                    </div>
-                    <button @click="handleLogin">登录</button>
-                    <p v-if="loginError" class="error">{{ loginError }}</p>
-                    <div>
-                        <p class="register-hint">
-                            没有账号？<a href="#" @click.prevent="openRegModal" class="register-link">注册</a>
-                        </p>
-                    </div>
+        <div v-if="LoginModalVisible" class="modal-overlay">
+            <div class="modal-content modal-content--medium" @click.stop>
+                <h2 class="modal-title">登录</h2>
+                <button @click="closeLoginModal" class="close-button" title="关闭">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="modal-content-group">
+                    <label for="username">用户名</label>
+                    <input id="username" type="text" v-model="loginUsername" placeholder="请输入用户名" />
+                </div>
+                <div class="modal-content-group">
+                    <label for="password">密码</label>
+                    <input id="password" type="password" v-model="loginUsertoken" placeholder="请输入Token" />
+                </div>
+                <div class="modal-footer">
+                    <button @click="handleLogin" class="modal-button">登录</button>
+                </div>
+                <p v-if="loginError" class="modal-message modal-message--error">{{ loginError }}</p>
+                <div>
+                    <p>
+                        没有账号？<a href="#" @click.prevent="openRegModal" class="url-link">注册</a>
+                    </p>
                 </div>
             </div>
-        </transition>
+        </div>
+    </transition>
 
-        <transition name="fade">
-            <div v-if="RegModalVisible" class="login-modal">
-                <div class="modal-content" @click.stop>
-                    <h2>注册</h2>
-                    <button @click="closeRegModal" class="close-button" title="关闭">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                    <div class="input-group">
-                        <label for="username">用户名</label>
-                        <input id="username" type="text" v-model="RegUsername" placeholder="请输入用户名" />
-                    </div>
-                    <div class="input-group">
-                        <label for="password1">密码</label>
-                        <input id="password1" type="password" v-model="RegPasswd1" placeholder="请输入密码" />
-                    </div>
-                    <div class="input-group">
-                        <label for="password2">重复密码</label>
-                        <input id="password2" type="password" v-model="RegPasswd2" placeholder="请再次输入密码" />
-                    </div>
-                    <button @click="handleReg">注册</button>
-                    <p v-if="RegError" class="error">{{ RegError }}</p>
+    <transition name="fade">
+        <div v-if="RegModalVisible" class="modal-overlay">
+            <div class="modal-content modal-content--medium" @click.stop>
+                <h2 class="modal-title">注册</h2>
+                <button @click="closeRegModal" class="close-button" title="关闭">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="content-group">
+                    <label for="username">用户名</label>
+                    <input id="username" type="text" v-model="RegUsername" placeholder="请输入用户名" />
                 </div>
+                <div class="content-group">
+                    <label for="password1">密码</label>
+                    <input id="password1" type="password" v-model="RegPasswd1" placeholder="请输入密码" />
+                </div>
+                <div class="content-group">
+                    <label for="password2">重复密码</label>
+                    <input id="password2" type="password" v-model="RegPasswd2" placeholder="请再次输入密码" />
+                </div>
+                <div class="modal-footer">
+                    <button @click="handleReg" class="modal-button">注册</button>
+                </div>
+                <p v-if="RegError" class="modal-message modal-message--error">{{ RegError }}</p>
             </div>
-        </transition>
+        </div>
+    </transition>
 
-        <transition name="fade">
-            <div v-if="RegSuccModalVisible" class="login-modal">
-                <div class="modal-content" @click.stop>
-                    <h2>注册成功</h2>
-                    <button @click="closeRegModal" class="close-button" title="关闭">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                    <div class="input-group">
-                        <p class="success">3s后准备自动登录...</p>
-                    </div>
+    <transition name="fade">
+        <div v-if="RegSuccModalVisible" class="modal-overlay">
+            <div class="modal-content modal-content--small" @click.stop>
+                <h2 class="modal-title">注册成功</h2>
+                <button @click="closeRegModal" class="close-button" title="关闭">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="content-group">
+                    <p class="modal-message modal-message--success">3s后准备自动登录...</p>
                 </div>
             </div>
-        </transition>
+        </div>
+    </transition>
 </template>
 
 <script>
@@ -97,7 +102,7 @@ export default {
     setup() {
         const isLoggedIn = ref(false);
         const username = ref("");
-        
+
         const router = useRouter();
         const UploadManager = () => router.push('/upload');
         const AccountManager = () => router.push('/account');
