@@ -18,7 +18,7 @@ export default {
     name: "IndexManager",
     setup() {
         const config = ref({
-            version: "1.1.2",
+            version: "1.2.0",
             customContent: import.meta.env.VITE_API_FOOTER_CONTENT,
         });
         const year = new Date().getFullYear();

@@ -173,7 +173,6 @@ body.dark-mode .url-link {
 }
 
 .modal-content-group {
-    display: flex;
     align-items: center;
     margin-bottom: 15px;
 }

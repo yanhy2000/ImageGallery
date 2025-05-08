@@ -16,6 +16,9 @@
                 <button class="tab-button" :class="{ 'active': activeTab === 'albums' }" @click="switchTab('albums')">
                     相册管理
                 </button>
+                <button class="tab-button" :class="{ 'active': activeTab === 'liked' }" @click="switchTab('liked')">
+                    我点赞的图片
+                </button>
             </div>
 
             <!-- 图片管理 -->
@@ -27,6 +30,7 @@
                                 <th>图片ID</th>
                                 <th>预览</th>
                                 <th>描述</th>
+                                <th>点赞数</th>
                                 <th>相册名</th>
                                 <th>上传时间</th>
                                 <th>操作</th>
@@ -39,10 +43,30 @@
                                     <img :src="photo.thumbnailUrl" class="thumbnail-img">
                                 </td>
                                 <td>{{ photo.desc || '无描述' }}</td>
+                                <td>
+                                    <div class="like-info">
+                                        <span>{{ photo.like_count || '0' }}</span>
+                                        <div class="like-tooltip-container" v-if="photo.like_count > 0">
+                                            <i class="fa-solid fa-circle-info like-icon"></i>
+                                            <div class="like-tooltip">
+                                                <p>总赞数: {{ photo.like_count }}</p>
+                                                <div class="likedUsers">
+                                                    <ul>
+                                                        <li v-for="(user, index) in photo.liked_users" :key="index">
+                                                            {{ user }}
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td>{{ photo.album_name }}</td>
                                 <td>{{ formatDateTime(photo.upload_time) }}</td>
                                 <td>
-                                    <button class="action-button delete-button" @click="openDeletePhotoModal(photo.photoid)">
+                                    <button class="action-button delete-button"
+                                        @click="openDeletePhotoModal(photo.photoid)">
                                         删除
                                     </button>
                                 </td>
@@ -98,7 +122,8 @@
                                 <td>{{ album.name }}</td>
                                 <td>{{ formatDateTime(album.create_time) }}</td>
                                 <td>
-                                    <button class="action-button delete-button" @click="openDeleteAlbumModal(album.albumid)">
+                                    <button class="action-button delete-button"
+                                        @click="openDeleteAlbumModal(album.albumid)">
                                         删除
                                     </button>
                                 </td>
@@ -135,6 +160,66 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 点赞的图片 -->
+            <div v-if="activeTab === 'liked'" class="management-content">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>图片ID</th>
+                                <th>预览</th>
+                                <th>点赞数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="like in LikedList" :key="like.photoid">
+                                <td>{{ like.photoid }}</td>
+                                <td>
+                                    <img :src="like.thumbnailUrl" class="thumbnail-img">
+                                </td>
+                                <td>{{ like.like_count || '0' }}</td>
+                                <td>
+                                    <button class="action-button delete-button"
+                                        @click="openUnlikePhotoModal(like.photoid)">
+                                        取消点赞
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- 分页控制 -->
+                    <div class="pagination-controls">
+                        <div class="pagination">
+                            <button @click="changePage('first')" :disabled="currentPage <= 1" title="首页">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </button>
+                            <button @click="changePage('prev')" :disabled="currentPage <= 1" title="上一页">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </button>
+                            <span class="page-info">第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+                            <button @click="changePage('next')" :disabled="currentPage >= totalPages" title="下一页">
+                                <i class="fa-solid fa-angle-right"></i>
+                            </button>
+                            <button @click="changePage('last')" :disabled="currentPage >= totalPages" title="尾页">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </button>
+                        </div>
+
+                        <div class="per-page-selector">
+                            <label for="perPageSelect">每页展示数量：</label>
+                            <select id="perPageSelect" v-model="perPage" @change="fetchAll">
+                                <option v-for="option in perPageOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
 
         <transition name="fade">
@@ -145,11 +230,11 @@
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                     <div class="modal-content-group">
-                        <p class="modal-message modal-message--error">确定要删除ID为{{SelectPhotoid}}的图片吗？</p>
-                        <div class="modal-button-group">
-                            <button class="modal-button modal-button--cancel" @click="closeDeletePhotoModal">取消</button>
-                            <button class="modal-button modal-button--danger" @click="confirmDeletePhoto">确认删除</button>
-                        </div>
+                        <p class="modal-message modal-message--error">确认要删除ID为{{ SelectPhotoid }}的图片吗？</p>
+                    </div>
+                    <div class="modal-button-group">
+                        <button class="modal-button modal-button--cancel" @click="closeDeletePhotoModal">取消</button>
+                        <button class="modal-button modal-button--danger" @click="confirmDeletePhoto">确认删除</button>
                     </div>
                 </div>
             </div>
@@ -163,11 +248,30 @@
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                     <div class="modal-content-group">
-                        <p class="modal-message modal-message--error">确定要删除ID为{{SelectAlbumid}}的相册吗？请注意，当删除相册后，该相册内全部图片都将会被删除！</p>
-                        <div class="modal-button-group">
-                            <button class="modal-button modal-button--cancel" @click="closeDeleteAlbumModal">取消</button>
-                            <button class="modal-button modal-button--danger" @click="confirmDeleteAlbum">确认删除</button>
-                        </div>
+                        <p class="modal-message modal-message--error">
+                            确认要删除ID为{{ SelectAlbumid }}的相册吗？请注意，当删除相册后，该相册内全部图片都将会被删除！</p>
+                    </div>
+                    <div class="modal-button-group">
+                        <button class="modal-button modal-button--cancel" @click="closeDeleteAlbumModal">取消</button>
+                        <button class="modal-button modal-button--danger" @click="confirmDeleteAlbum">确认删除</button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <transition name="fade">
+            <div v-if="UnlikePhotoModalVisible" class="modal-overlay">
+                <div class="modal-content modal-content--medium">
+                    <h2 class="modal-title">取消点赞图片</h2>
+                    <button @click="closeUnlikePhotoModal" class="modal-close-button" title="关闭">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="modal-content-group">
+                        <p class="modal-message modal-message--error">确认要取消点赞ID为{{ SelectUnlikePhotoid }}的图片吗？</p>
+                    </div>
+                    <div class="modal-button-group">
+                        <button class="modal-button modal-button--cancel" @click="closeUnlikePhotoModal">取消</button>
+                        <button class="modal-button modal-button--danger" @click="confirmUnlikePhoto">确认</button>
                     </div>
                 </div>
             </div>
@@ -195,6 +299,8 @@ export default {
         const activeTab = ref('photos');
         const photoList = ref([]);
         const albumList = ref([]);
+        const LikedList = ref([]);
+        const receivedLikeList = ref([]);
         const currentPage = ref(1);
         const totalPages = ref(1);
         const perPage = ref(10);
@@ -208,6 +314,8 @@ export default {
         const SelectAlbumid = ref(0);
         const deleteAlbumModalVisible = ref(false);
 
+        const SelectUnlikePhotoid = ref(0);
+        const UnlikePhotoModalVisible = ref(false);
 
         const switchTab = (tab) => {
             activeTab.value = tab;
@@ -312,11 +420,25 @@ export default {
                     } else {
                         console.error('获取数据失败:', data.message);
                     }
-                } else {
+                } else if (activeTab.value === 'albums') {
                     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user_albums`, config);
                     albumList.value = response.data.data.albums;
                     totalPages.value = response.data.data.totalPages;
+                } else if (activeTab.value === 'liked') {
+                    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/userlikes`, config);
+                    LikedList.value = response.data.data.likes;
+                    totalPages.value = response.data.data.totalPages;
+
+                    for (let i = 0; i < LikedList.value.length; i++) {
+                        const like = LikedList.value[i];
+                        const thumbnailUrl = await fetchThumbnail(like.photoid);
+                        if (thumbnailUrl) {
+                            LikedList.value[i].thumbnailUrl = thumbnailUrl;
+                        }
+                    }
+
                 }
+
             } catch (error) {
                 console.error('获取数据失败:', error);
             }
@@ -408,12 +530,54 @@ export default {
             }
         };
 
+        // 打开取消点赞确认框
+        const openUnlikePhotoModal = (photoid) => {
+            SelectUnlikePhotoid.value = photoid;
+            UnlikePhotoModalVisible.value = true;
+        }
+
+        // 关闭取消点赞确认框
+        const closeUnlikePhotoModal = () => {
+            SelectUnlikePhotoid.value = 0;
+            UnlikePhotoModalVisible.value = false;
+        }
+
+        // 取消点赞图片
+        const confirmUnlikePhoto = async () => {
+            try {
+                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/unlikephoto`, {
+                    photoid: SelectUnlikePhotoid.value
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${storedToken.value}`
+                    }
+                });
+
+                if (response.status !== 200) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = response.data;
+
+                if (data.code === 200) {
+                } else {
+                    alert(data);
+                }
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                closeUnlikePhotoModal();
+                refreshCache();
+            }
+        };
+
         onMounted(() => {
             storedToken.value = localStorage.getItem("jwttoken");
             if (!storedToken.value) {
                 alert("请先登录");
                 router.push('/');
-            }else{
+            } else {
                 fetchAll();
             }
         });
@@ -421,8 +585,6 @@ export default {
         return {
             handleBackToHome,
             activeTab,
-            photoList,
-            albumList,
             currentPage,
             totalPages,
             perPage,
@@ -430,6 +592,12 @@ export default {
             switchTab,
             changePage,
             formatDateTime,
+            fetchAll,
+
+            photoList,
+            albumList,
+            LikedList,
+            receivedLikeList,
 
             openDeletePhotoModal,
             deletePhotoModalVisible,
@@ -442,6 +610,12 @@ export default {
             closeDeleteAlbumModal,
             SelectAlbumid,
             confirmDeleteAlbum,
+
+            openUnlikePhotoModal,
+            UnlikePhotoModalVisible,
+            closeUnlikePhotoModal,
+            SelectUnlikePhotoid,
+            confirmUnlikePhoto,
 
         };
     }

@@ -18,6 +18,7 @@
                         <p>{{ photo.desc }}</p>
                     </div>
                 </div>
+                <!-- 点赞部分 -->
                 <div class="action-section">
                     <div class="like-section" @click.stop="toggleLike(photo.photoid)">
                         <i class="fa-regular fa-heart" :class="{ 'fa-solid': photo.isLiked, liked: photo.isLiked }"></i>
@@ -58,46 +59,6 @@
                 </button>
             </div>
         </div>
-
-        <transition name="fade">
-            <div v-if="CommentModalVisible" class="comment-modal">
-                <div class="modal-content">
-                    <button @click="closeCommentModal" class="close-button" title="关闭">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-
-                    <div class="comment-list">
-                        <div v-for="comment in comments" :key="comment.commentid" class="comment-item">
-                            <div class="comment-content">
-                                <div class="comment-info">
-                                    <span class="comment-username">{{ comment.username }}:</span>
-                                    <span class="comment-text">{{ comment.content }}</span>
-                                </div>
-                                <div class="comment-actions">
-                                    <button @click="toggleCommentLike(comment.commentid)" class="like-button">
-                                        <i class="fa-regular fa-heart" :class="{ 'fa-solid': comment.isLiked }"></i>
-                                        <span class="like-count">{{ comment.likes }}</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div v-if="comment.replies.length > 0" class="reply-list">
-                                <div v-for="reply in comment.replies" :key="reply.commentid" class="reply-item">
-                                    <div class="comment-info">
-                                        <span class="comment-username"> {{ reply.username }}:</span>
-                                        <span class="comment-text">{{ reply.content }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="login-prompt">
-                        <p>评论系统暂未开放</p>
-                    </div>
-                </div>
-            </div>
-        </transition>
 
         <transition name="fade">
             <div v-if="imageModalVisible" class="image-modal" @click="imageModalClick">

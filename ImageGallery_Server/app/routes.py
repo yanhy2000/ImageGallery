@@ -253,6 +253,12 @@ def set_album():
         return album.modify_album(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
 
+# [ok]新-获取图片点赞的用户
+@app.route('/api/get_likedUsers', methods=['POST'])
+@jwt_required() 
+def get_likedUsers():
+    return like.get_likedUsers()
+
 # 点赞图片
 @app.route('/api/likephoto', methods=['POST'])
 @jwt_required() 
@@ -273,8 +279,8 @@ def get_photo_like_count():
 # 获取用户点赞的图片
 @app.route('/api/userlikes', methods=['GET'])
 @jwt_required()
-def user_likes():
-    return like.user_likes()
+def get_userlikes():
+    return like.get_userlikes()
 
 # 发表评论
 @app.route('/api/commentphoto', methods=['POST'])

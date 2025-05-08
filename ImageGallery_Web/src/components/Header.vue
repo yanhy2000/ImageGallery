@@ -4,7 +4,7 @@
         <h2>{{ subtitle }}</h2>
         <div class="status-bar">
             <Login />
-            <router-link to="/upload" class="upload-btn" v-if="!isLoggedIn">
+            <router-link to="/upload" class="upload-btn">
                 <i class="fa-solid fa-plus"></i> 上传
             </router-link>
             <button class="theme-toggle-btn mode-toggle-btn" @click="toggleDarkMode">

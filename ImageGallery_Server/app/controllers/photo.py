@@ -93,23 +93,44 @@ def get_user_photos():
         return jsonify({"code": 401, "message": "token failed"}), 401
     if user.permissions < 0:
         return jsonify({"code": 403, "message": "permission denied"}), 403
+
     current_page = request.args.get('page', 1, type=int)
     per_page = request.args.get('perpage', 10, type=int)
-    query = Photo.query.filter_by(userid=user.userid)
-    pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
-    photos = pagination.items
-    photo_list = []
+    
+    photos_query = db.session.query(
+        Photo,
+        Album.name.label('album_name'),
+        db.func.count(Like.photoid).label('like_count'),
+        db.func.group_concat(User.username).label('liked_usernames')
+    ).join(
+        Album, Album.albumid == Photo.albumid
+    ).outerjoin(
+        Like, Like.photoid == Photo.photoid
+    ).outerjoin(
+        User, User.userid == Like.userid
+    ).filter(
+        Photo.userid == user.userid
+    ).group_by(
+        Photo.photoid
+    )
+
+    pagination = photos_query.paginate(page=current_page, per_page=per_page, error_out=False)
+    items = pagination.items
     total_photos = pagination.total
     total_pages = ceil(total_photos / per_page)
-    for photo in photos:
-        album = Album.query.filter_by(albumid=photo.albumid).first()
+
+    photo_list = []
+    for photo, album_name, like_count, liked_usernames in items:
         photo_list.append({
             "photoid": photo.photoid,
             "thumbnail": photo.thumbnail,
             "desc": photo.desc,
-            "album_name": album.name,
+            "like_count": like_count or 0,
+            "liked_users": liked_usernames.split(',') if liked_usernames else [],
+            "album_name": album_name,
             "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
         })
+
     return jsonify({
         "code": 200,
         "message": "success",
@@ -302,6 +323,9 @@ def delete_photo(usertoken):
 
     # 删除数据库中的照片记录
     try:
+        Like.query.filter_by(photoid=photoid).delete()
+        Comment.query.filter_by(photoid=photoid).delete()
+
         db.session.delete(photo)
         db.session.commit()
     except Exception as e:
@@ -344,6 +368,8 @@ def del_user_photo():
 
     # 删除数据库中的照片记录
     try:
+        Like.query.filter_by(photoid=photoid).delete()
+        Comment.query.filter_by(photoid=photoid).delete()
         db.session.delete(photo)
         db.session.commit()
     except Exception as e:

@@ -2,7 +2,48 @@ from app import db
 from app.models import Photo, User, Like, Comment, CommentLike
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from math import ceil
 
+# [ok]新-获取图片点赞的用户
+# def get_likedUsers():
+#     current_user = get_jwt_identity()
+#     user = User.query.filter_by(username=current_user).first()
+
+#     if not user:
+#         return jsonify({"code": 401, "message": "token failed"}), 401
+#     if user.permissions < 0:
+#         return jsonify({"code": 403, "message": "permission denied"}), 403
+
+#     current_page = request.args.get('page', 1, type=int)
+#     per_page = request.args.get('perpage', 10, type=int)
+#     query = Photo.query.filter_by(userid=user.userid)
+#     pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
+#     photos = pagination.items
+#     photo_list = []
+#     total_photos = pagination.total
+#     total_pages = ceil(total_photos / per_page)
+#     for photo in photos:
+#         album = Album.query.filter_by(albumid=photo.albumid).first()
+#         like_count = Like.query.filter_by(photoid=photo.photoid).count()
+#         photo_list.append({
+#             "photoid": photo.photoid,
+#             "thumbnail": photo.thumbnail,
+#             "desc": photo.desc,
+#             "like_count": like_count,
+#             "album_name": album.name,
+#             "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
+#         })
+#     return jsonify({
+#         "code": 200,
+#         "message": "success",
+#         "data": {
+#             "tatolPhotos": total_photos,
+#             "totalPages": total_pages,
+#             "per_page": per_page,
+#             "current_page": current_page,
+#             "photos": photo_list
+#         }
+#     })
 # 照片点赞
 def like_photo():
     data = request.get_json()
@@ -84,7 +125,7 @@ def get_photo_like_count():
         }), 500
 
 # 获取用户点赞的图片
-def user_likes():
+def get_userlikes():
     current_user = get_jwt_identity()
     user = User.query.filter_by(username=current_user).first()
     if not user:
@@ -92,23 +133,34 @@ def user_likes():
     if user.permissions < 0:
         return jsonify({"code": 403, "message": "Permissions denied"}), 403
 
-    try:
-        user_likelist = Like.query.filter_by(userid=user.userid).all()
-        likes_data = [like.to_dict() for like in user_likelist]
+    current_page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('perpage', 10, type=int)
+    query = Like.query.filter_by(userid=user.userid)
+    pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
+    likes = pagination.items
+    likes_list = []
+    total_likes = pagination.total
+    total_pages = ceil(total_likes / per_page)
 
-        return jsonify({
+    for like in likes:
+        like_count = Like.query.filter_by(photoid=like.photoid).count()
+        likes_list.append({
+            'likeid': like.likeid,
+            'photoid': like.photoid,
+            "like_count": like_count,
+            'userid': like.userid
+        })
+    return jsonify({
             "code": 200,
             "message": "success",
             "data": {
-                "likes": likes_data 
+                "tatolAlbums": total_likes,
+                "totalPages": total_pages,
+                "per_page": per_page,
+                "current_page": current_page,
+                "likes": likes_list
             }
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "code": 500,
-            "message": f"Internal server error: {str(e)}"
-        }), 500
-    
+        })
 
 # 评论点赞
 def like_comment(usertoken):
