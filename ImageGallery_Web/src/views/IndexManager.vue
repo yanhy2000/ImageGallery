@@ -104,7 +104,7 @@
 
         <transition name="fade">
             <div v-if="imageModalVisible" class="image-modal" @click="imageModalClick">
-                <div class="modal-content" @click.stop>
+                <div class="image-modal-content" @click.stop>
                     <img :src="currentThumbnailUrl ? currentThumbnailUrl : ''"
                         :alt="currentImage ? currentImage.desc : ''" class="modal-image" />
                     <div class="image-info">
@@ -613,7 +613,7 @@ export default {
 @import "@/css/btn.css";
 @import "@/css/action.css";
 @import "@/css/status-bar.css";
-@import "@/css/action-modal.css";
+/* @import "@/css/action-modal.css"; */
 @import "@/css/comment.css";
 @import "@/css/account-page.css";
 @import "@/css/upload-page.css";
