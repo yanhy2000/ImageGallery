@@ -135,8 +135,12 @@ def get_userlikes():
 
     current_page = request.args.get('page', 1, type=int)
     per_page = request.args.get('perpage', 10, type=int)
+
     query = Like.query.filter_by(userid=user.userid)
-    pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
+    if current_page==1 and per_page==999:
+        pagination = query.paginate(error_out=False)
+    else:
+        pagination = query.paginate(page=current_page, per_page=per_page, error_out=False)
     likes = pagination.items
     likes_list = []
     total_likes = pagination.total

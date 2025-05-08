@@ -118,10 +118,6 @@ export default {
         const currentThumbnailUrl = ref(null);
         const imageModalVisible = ref(false);
 
-
-        const newComment = ref("");
-        const replyText = ref("");
-
         const CommentModalVisible = ref(false);
         const totalPhotos = ref(0);
         const perPageOptions = [6, 9, 15, 20, 25, 30];
@@ -188,6 +184,10 @@ export default {
                         headers: {
                             Authorization: `Bearer ${storedToken}`,
                         },
+                        params: {
+                            page: 1,
+                            perpage: 999
+                        }
                     }
                 );
 
@@ -309,6 +309,8 @@ export default {
                     alert("Token unauthorized!");
                 }
                 error.value = e.message;
+            } finally{
+                await checkUserLikes();
             }
         };
 
@@ -419,7 +421,7 @@ export default {
                 perPage.value = 6;
             }
             await fetchPhotos();
-            await checkUserLikes();
+            
             await cleanExpiredPhotos();
             const link = document.createElement("link");
             link.rel = "icon";
