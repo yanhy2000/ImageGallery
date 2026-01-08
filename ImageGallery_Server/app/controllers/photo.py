@@ -6,7 +6,7 @@ from app.controllers import photo, album, user, like, comment
 from flask import request, jsonify, send_file
 from app.utils import generate_uuid_filename, get_project_root, get_utc_time,utc_to_local
 from datetime import datetime
-from app.config import Config
+from config import Config
 from math import ceil
 from sqlalchemy import desc
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -27,7 +27,7 @@ def get_photo_list():
             "photoid": photo.photoid,
             "desc": photo.desc if photo.desc else "无描述",
             "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "upload_user": username, 
+            "upload_user": username,
             "thumbnail": photo.thumbnail,
             "likes": like.get_comment_like_count(photo.photoid),
         })
@@ -39,7 +39,7 @@ def get_photo_list():
             "totalPages": total_pages,
             "per_page": per_page,
             "current_page": current_page,
-            "photos": photo_list 
+            "photos": photo_list
         }
     })
 
@@ -96,7 +96,7 @@ def get_user_photos():
 
     current_page = request.args.get('page', 1, type=int)
     per_page = request.args.get('perpage', 10, type=int)
-    
+
     photos_query = db.session.query(
         Photo,
         Album.name.label('album_name'),
@@ -170,7 +170,7 @@ def del_thumbnail(photo_id):
         return jsonify({"code": 200, "message": "Thumbnail deleted"}), 200
     return jsonify({"code": 200, "message": "success"}), 200
 
-        
+
 # 上传新照片
 def upload_new_photo(usertoken):
     user = User.query.filter_by(usertoken=usertoken).first()
@@ -389,9 +389,9 @@ def get_photo_file(photo_id, thumbnail=1):
 
     # # 获取文件路径
     # if thumbnail==1:
-        
+
     # else:
-    #     if Config.SAVE_ORIGINAL_IMAGE: 
+    #     if Config.SAVE_ORIGINAL_IMAGE:
     #         file_path = os.path.join(get_project_root(), photo.photo_url)
     #     else: # 如果不保存原图，则返回缩略图，供后台使用
     #         file_path = os.path.join(get_project_root(), photo.thumbnail)

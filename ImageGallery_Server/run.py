@@ -1,6 +1,6 @@
 from app import app, db, utils
 from app.controllers import user
-from app.config import Config
+from config import Config
 import os
 
 if __name__ == '__main__':
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     except Exception as e:
         print(f'数据库不存在或连接失败, 请检查数据库配置:{e}')
         exit()
-    
+
     try:
         if not os.path.exists("./ssl"):
             print('ssl证书不存在, 将使用http协议')

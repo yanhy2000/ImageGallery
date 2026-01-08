@@ -3,7 +3,7 @@ from flask import request, jsonify
 from app.controllers import photo, album, user, like, comment
 from app.models import Photo, Album, User
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
-from app.config import Config
+from config import Config
 from datetime import timedelta
 
 app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
@@ -36,10 +36,10 @@ def check_token():
 @jwt_required()
 def protected_route():
     current_user = get_jwt_identity()
-    jwt_data = get_jwt() 
+    jwt_data = get_jwt()
 
     user = User.query.filter_by(username=current_user).first()
-    if user and user.permissions < 0: 
+    if user and user.permissions < 0:
         return jsonify({"code": 403, "message": "用户已被封禁"}), 403
     return jsonify({
         "code": 200,
@@ -75,13 +75,13 @@ def get_photos():
 
 # [ok]获取用户自己的照片列表
 @app.route('/api/user_photos', methods=['GET'])
-@jwt_required() 
+@jwt_required()
 def get_user_photos():
     return photo.get_user_photos()
 
 # [ok]获取用户自己的相册列表
 @app.route('/api/user_albums', methods=['GET'])
-@jwt_required() 
+@jwt_required()
 def get_user_albums():
     return album.get_user_albums()
 
@@ -100,7 +100,7 @@ def get_albums():
     if usertoken:
         return album.get_all_albums(usertoken)
     return jsonify({"code": 400, "message": "usertoken is required"}), 400
-    
+
 # [ok]获取所有用户列表
 @app.route('/api/userlist', methods=['POST'])
 def get_users():
@@ -173,13 +173,13 @@ def upload():
 
 # [ok]新-上传照片
 @app.route('/api/uploadphoto', methods=['POST'])
-@jwt_required() 
+@jwt_required()
 def upload_photo():
     return photo.upload_photo()
 
 # [ok]新-删除用户自己的照片
 @app.route('/api/del_user_photo', methods=['POST'])
-@jwt_required() 
+@jwt_required()
 def del_user_photo():
     return photo.del_user_photo()
 
@@ -241,7 +241,7 @@ def delete_album():
 
 # [ok]新-删除用户自己的相册
 @app.route('/api/del_user_album', methods=['POST'])
-@jwt_required() 
+@jwt_required()
 def del_user_album():
     return album.del_user_album()
 
@@ -255,19 +255,19 @@ def set_album():
 
 # [ok]新-获取图片点赞的用户
 @app.route('/api/get_likedUsers', methods=['POST'])
-@jwt_required() 
+@jwt_required()
 def get_likedUsers():
     return like.get_likedUsers()
 
 # 点赞图片
 @app.route('/api/likephoto', methods=['POST'])
-@jwt_required() 
+@jwt_required()
 def like_photo():
     return like.like_photo()
 
 # 取消点赞图片
 @app.route('/api/unlikephoto', methods=['POST'])
-@jwt_required() 
+@jwt_required()
 def unlike_photo():
     return like.unlike_photo()
 

@@ -57,15 +57,15 @@
                 <button @click="closeRegModal" class="close-button" title="关闭">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
-                <div class="content-group">
+                <div class="modal-content-group">
                     <label for="username">用户名</label>
                     <input id="username" type="text" v-model="RegUsername" placeholder="请输入用户名" />
                 </div>
-                <div class="content-group">
+                <div class="modal-content-group">
                     <label for="password1">密码</label>
                     <input id="password1" type="password" v-model="RegPasswd1" placeholder="请输入密码" />
                 </div>
-                <div class="content-group">
+                <div class="modal-content-group">
                     <label for="password2">重复密码</label>
                     <input id="password2" type="password" v-model="RegPasswd2" placeholder="请再次输入密码" />
                 </div>

@@ -14,7 +14,7 @@ def get_all_albums(usertoken):
         return jsonify({"code": 401, "message": "token failed"}), 401
     if user.permissions < 1:
         return jsonify({"code": 403, "message": "permission denied"}), 403
-    
+
     current_page = request.args.get('page', 1, type=int)
     per_page = request.args.get('perpage', 10, type=int)
     query = Album.query
@@ -51,7 +51,7 @@ def get_user_albums():
         return jsonify({"code": 401, "message": "token failed"}), 401
     if user.permissions < 0:
         return jsonify({"code": 403, "message": "permission denied"}), 403
-    
+
     current_page = request.args.get('page', 1, type=int)
     per_page = request.args.get('perpage', 10, type=int)
     query = Album.query.filter_by(userid=user.userid)
@@ -86,15 +86,15 @@ def create_album(usertoken):
         return jsonify({"code": 401, "message": "token failed"}), 401
     if user.permissions < 1:
         return jsonify({"code": 403, "message": "permission denied"}), 403
-    
+
     name = request.json.get('name')
     if not name:
         return jsonify({"code": 400, "message": "name is required"}), 400
-    
+
     album = Album(name=name, userid=user.userid,create_time=get_utc_time())
     db.session.add(album)
     db.session.commit()
-    
+
     return jsonify({
             "code": 200,
             "message": "success",
@@ -110,14 +110,14 @@ def delete_album(usertoken):
         return jsonify({"code": 401, "message": "token failed"}), 401
     if user.permissions < 1:
         return jsonify({"code": 403, "message": "permission denied"}), 403
-    
+
     albumid = request.json.get('albumid')
     if not albumid:
         return jsonify({"code": 400, "message": "albumid is required"}), 400
     album = Album.query.filter_by(albumid=albumid).first()
     if not album:
         return jsonify({"code": 404, "message": "album not found"}), 404
-    
+
     # 删除相册下的所有照片
     photos = Photo.query.filter_by(albumid=albumid).all()
     for photo in photos:
@@ -133,7 +133,7 @@ def delete_album(usertoken):
     # 删除相册
     db.session.delete(album)
     db.session.commit()
-    
+
     return jsonify({
             "code": 200,
             "message": "success"
@@ -155,7 +155,7 @@ def del_user_album():
         return jsonify({"code": 404, "message": "album not found"}), 404
     if album.userid != user.userid or user.permissions < 0:
         return jsonify({"code": 403, "message": "permission denied"}), 403
-        
+
     # 删除相册下的所有照片
     photos = Photo.query.filter_by(albumid=albumid).all()
     for photo in photos:
@@ -171,7 +171,7 @@ def del_user_album():
     # 删除相册
     db.session.delete(album)
     db.session.commit()
-    
+
     return jsonify({
             "code": 200,
             "message": "success"
@@ -184,22 +184,22 @@ def modify_album(usertoken):
         return jsonify({"code": 401, "message": "token failed"}), 401
     if user.permissions < 1:
         return jsonify({"code": 403, "message": "permission denied"}), 403
-    
+
     albumid = request.json.get('albumid')
     if not albumid:
         return jsonify({"code": 400, "message": "albumid is required"}), 400
     album = Album.query.filter_by(albumid=albumid).first()
     if not album:
         return jsonify({"code": 404, "message": "album not found"}), 404
-    
+
     name = request.json.get('name')
     if name is not None:
         album.name = name
     else:
         return jsonify({"code": 400, "message": "no modification"}), 400
-    
+
     db.session.commit()
-    
+
     return jsonify({
             "code": 200,
             "message": "success"

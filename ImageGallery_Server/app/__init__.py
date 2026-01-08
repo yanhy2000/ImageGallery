@@ -14,7 +14,7 @@ CORS(app)
 
 # 配置文件
 try:
-    app.config.from_object('app.config.Config')
+    app.config.from_object('config.Config')
 except ImportError:
     print('配置文件不存在，请修改config_demo.py为config.py以启用配置文件')
     exit()
