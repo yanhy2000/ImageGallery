@@ -408,6 +408,7 @@ def get_photo_file(photo_id, thumbnail=1):
 # 获取照片信息
 def get_photo_info_all(photo_id, usertoken):
     user = User.query.filter_by(usertoken=usertoken).first()
+    username = User.query.filter_by(userid=photo.userid).first().username
     if not user:
         return jsonify({"code": 401, "message": "token failed"}), 401
     photo = Photo.query.filter_by(photoid=photo_id).first()
@@ -424,6 +425,7 @@ def get_photo_info_all(photo_id, usertoken):
             "name": photo.name,
             "desc": photo.desc,
             "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "uploader": username,
             "thumbnail": photo.thumbnail,
             "photo_url": photo.photo_url,
             "albumname": albumname,
@@ -446,11 +448,11 @@ def get_photo_info(photo_id):
             "name": photo.name,
             "desc": photo.desc,
             "upload_time": photo.upload_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "uploader": username,
+            # "uploader": username,
             "thumbnail": photo.thumbnail,
-            "photo_url": photo.photo_url,
-            "albumname": albumname,
-            "userid": photo.userid
+            # "photo_url": photo.photo_url,
+            "albumname": albumname
+            # "userid": photo.userid
         }
     })
 

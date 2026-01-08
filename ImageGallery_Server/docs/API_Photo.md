@@ -194,9 +194,9 @@ Content-Disposition: form-data; name="album"
 
 ---
 
-## 6. 获取照片信息 (GET /api/photos/{photoid})
+## 6. 获取公开的照片信息 (GET /api/photos/{photoid})
 
-**描述**：获取照片详细信息（公开版）
+**描述**：获取公开的照片详细信息
 
 **请求**：
 * **URL**：`/api/photos/{photoid}`
@@ -217,11 +217,8 @@ Content-Disposition: form-data; name="album"
     "name": "sunset.jpg",
     "desc": "美丽的日落",
     "upload_time": "2023-05-20 12:00:00",
-    "uploader": "user1",
     "thumbnail": "/uploads/thumbnails/abc123.jpg",
-    "photo_url": "/uploads/original/abc123.jpg",
-    "albumname": "旅行相册",
-    "userid": 1
+    "albumname": "旅行相册"
   }
 }
 ```
@@ -253,6 +250,7 @@ Content-Disposition: form-data; name="album"
     "name": "sunset.jpg",
     "desc": "美丽的日落",
     "upload_time": "2023-05-20 12:00:00",
+    "uploader": "user1",
     "thumbnail": "/uploads/thumbnails/abc123.jpg",
     "photo_url": "/uploads/original/abc123.jpg",
     "albumname": "旅行相册",
